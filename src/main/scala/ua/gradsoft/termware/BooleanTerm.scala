@@ -12,7 +12,7 @@ class BooleanTerm(v:Boolean) extends PrimitiveTerm
   def termUnify(t: Term, s: Substitution)
    = 
      if (t.isBoolean) 
-       if (t.getBoolean==v_) Some(s)
+       if (t.getBoolean.get==v_) Some(s)
        else None
      else
        if (t.isX) 

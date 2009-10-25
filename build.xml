@@ -21,7 +21,8 @@
 
  <path id="test.path">
   <path refid="build.path" />
-  <fileset dir="lib" includes="junit-*.jar" />
+  <fileset dir="lib" includes="scalatest-*.jar" />
+   <pathelement location="${basedir}/build/test"/>
  </path>
   
 <!-- targets -->
@@ -47,6 +48,13 @@
    </taskdef>
  </target>
 
+ <target name="define-scalatest">
+   <taskdef name="scalatest" classname="org.scalatest.tools.ScalaTestAntTask">
+    <classpath>
+     <path refid="test.path" />
+    </classpath>
+   </taskdef>
+ </target>
  
 
  <target name="build-classes" depends="define-scalac">
@@ -75,30 +83,27 @@
  </target>
 
  <target name="build-tests"  depends="build-classes,retrieve-for-test">
- <!--
-  <javac srcdir="src/test/java" includes="**/*.java" debug="${debug}" 
-         destdir="build/test/classes" >
-    <classpath refid="test.path" />
-  </javac>
-  <jar basedir="build/test/classes" includes="**/*.class" 
-       destfile="lib/termwaretests-${version}.jar" 
+  <mkdir  dir="build/test" />
+  <scalac srcdir="src/test/scala"  
+          classpathref="test.path"
+          destdir="build/test" >
+  </scalac>
+  <jar basedir="build/test" includes="**/*.class" 
+       destfile="lib/stermwaretests-${version}.jar" 
        index="true">
   <include name="build"/>
   <manifest>
    <attribute name="Build-By" value="${user-name}"/>
   </manifest>
   </jar>
- -->
  </target>
 
-  <target name="test" depends="build-tests" >      
- <!--
-   <junit showoutput="true" fork="true" dir="." >
-      <formatter usefile="false" type="brief" />      
-      <test name="ua.gradsoft.termwaretests.MainTestSuite"/>
-      <classpath refid="test.path" />
-   </junit>
- -->
+  <target name="test" depends="build-tests, define-scalatest" >      
+   <scalatest wildcard="ua.gradsoft.termware" >
+      <runpath>      
+         <path refid="test.path" />
+      </runpath>      
+   </scalatest>
  </target>
 
  
