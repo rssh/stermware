@@ -14,9 +14,13 @@ trait Term extends TValue
 
   def subtermsIterator: Iterator[Term];
 
+  def name: Name;
+
+  def patternName: Name = name;
+
   //def termType: Term;
 
-  //def termSignature: TermSignature;
+  def termSignature: TermSignature;
 
   def isX: Boolean;
 
