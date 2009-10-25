@@ -2,6 +2,7 @@ package ua.gradsoft.termware;
 
 import ua.gradsoft.termware.vm.VM;
 
+@serializable
 trait Term extends TValue
 {
 
