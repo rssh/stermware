@@ -1,0 +1,117 @@
+<?xml version="1.0"?>
+<!-- build file for TermWare/Scala project -->
+<project name="stermware" default="build" basedir="." 
+>
+
+<!-- proeprties -->
+
+<property file="build.properties" />
+
+<condition property="ivy.int.home" value="${ivy.home}" 
+                                   else="${user.home}/.ivy2">
+  <isset property="ivy.home" />
+</condition>
+
+ <import file="build-ivy.xml" />
+
+ <path id="build.path">
+   <pathelement location="${scala.home}/lib/scala-library.jar"/>
+   <pathelement location="${basedir}/build/main"/>
+ </path>
+
+ <path id="test.path">
+  <path refid="build.path" />
+  <fileset dir="lib" includes="junit-*.jar" />
+ </path>
+  
+<!-- targets -->
+
+ <target name="clean">
+  <delete>
+   <fileset dir="${basedir}/build"   includes="**/*.class" />
+  </delete>
+ </target>
+
+ <target name="clean-all" depends="clean">
+  <delete>
+   <fileset dir="doc/api"   includes="**/*" />
+  </delete>
+ </target>
+
+ <target name="define-scalac">
+   <taskdef resource="scala/tools/ant/antlib.xml">
+    <classpath>
+     <pathelement location="${scala.home}/lib/scala-compiler.jar"/>  
+     <pathelement location="${scala.home}/lib/scala-library.jar"/>  
+    </classpath>
+   </taskdef>
+ </target>
+
+ 
+
+ <target name="build-classes" depends="define-scalac">
+  <mkdir  dir="build/main" />
+  <scalac srcdir="src/main/scala" 
+          destdir="build/main"
+          classpathref="build.path" 
+          >
+    <include name="**/*.scala" />
+  </scalac>
+  <jar basedir="build/main" 
+       includes="**/*.class,**/*.dtd,META-INF/**/*" 
+       destfile="dist/stermware-${version}.jar" 
+       index="true">
+  <include name="build"/>
+  <manifest>
+   <attribute name="Build-By" value="${user.name}"/>
+   <attribute name="Extension-Name" value="TermWare" />
+   <attribute name="Specification-Vendor" value="GradSoft Ltd" />
+   <attribute name="Specification-Version" value="4.0" />
+   <attribute name="Implementation-Vendor-Id" value="ua.gradsoft" />
+   <attribute name="Implementation-Vendor" value="GradSoft Ltd" />
+   <attribute name="Implementation-Version" value="${version}" />
+  </manifest>
+  </jar>
+ </target>
+
+ <target name="build-tests"  depends="build-classes,retrieve-for-test">
+ <!--
+  <javac srcdir="src/test/java" includes="**/*.java" debug="${debug}" 
+         destdir="build/test/classes" >
+    <classpath refid="test.path" />
+  </javac>
+  <jar basedir="build/test/classes" includes="**/*.class" 
+       destfile="lib/termwaretests-${version}.jar" 
+       index="true">
+  <include name="build"/>
+  <manifest>
+   <attribute name="Build-By" value="${user-name}"/>
+  </manifest>
+  </jar>
+ -->
+ </target>
+
+  <target name="test" depends="build-tests" >      
+ <!--
+   <junit showoutput="true" fork="true" dir="." >
+      <formatter usefile="false" type="brief" />      
+      <test name="ua.gradsoft.termwaretests.MainTestSuite"/>
+      <classpath refid="test.path" />
+   </junit>
+ -->
+ </target>
+
+ 
+ <target name="build"  depends="build-classes,build-tests">
+ </target>
+ <target name="api-docs">
+  <javadoc sourcepath="jsrc-core" destdir="jdocs"
+           packagenames="ua.gradsoft.termware,ua.gradsoft.termware.*"
+  >
+    <link href="http://java.sun.com/javase/6/docs/api/" />
+  </javadoc>
+ </target>
+
+ <target name="docs" depends="api-docs" />
+
+</project>
