@@ -4,6 +4,8 @@ object TermWare {
 
  val instance = new TermWare();
 
+ def symbolTable = instance.symbolTable;
+
 }
 
 class TermWare extends TermWareInstance 

@@ -14,13 +14,13 @@ trait PrimitiveTerm extends Term
 
   def subterm(name:Name) = None;
 
-  def subtermsIterator = Iterator.empty;
+  def subterms = Seq.empty;
 
-  def isX = false;
+  override def isX = false;
 
-  def getXIndex = None;
+  override def isEta = false;
 
-
-  def termSubst(s:Substitution):Term = this;
+  def termSubst(s:PartialFunction[Term,Term]):Term = 
+    if (s.isDefinedAt(this)) s.apply(this) else this;
 
 }

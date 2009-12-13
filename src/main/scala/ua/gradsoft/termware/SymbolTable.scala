@@ -10,7 +10,6 @@ final class SName(value:String,index:Int) extends Name
  def getIndex: Int = i;
  def getString: String = v;
 
-
  private val v = value;
  private val i = index;
 }

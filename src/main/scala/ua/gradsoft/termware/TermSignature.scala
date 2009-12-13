@@ -1,38 +1,30 @@
 package ua.gradsoft.termware;
 
-
+/**
+ * Term signature. Can be interpreted as behaviourial definition
+ * for family of some kinds of term.
+ */
 trait TermSignature
 {
 
   /**
-   * is arity of this term is fixed ?
-   * @return if signature of this term fix arity.
-   */
-  def isFixedArity: Boolean;
-
-  /**
    * @return fixed arity (or exception if getFixedArity is false.)
    */
-  def getFixedArity: Option[Int];
-
-  /**    
-   * @return true if we have named subterms.
-   */
-  def isNamedSubterms: Boolean;
+  def fixedArity: Option[Int];
 
   /**
    * @param name = name of subterm.
    * @return index of subterm with name, or null if isNamedSubterm is false
    *  or name is not found.
    */
-  def getIndexByName(name:Name): Option[Int];
+  def indexByName: Option[Name => Option[Int]];
 
   /**
    * return index-name of subterm.
    * @param index
    * @return
    */
-  def getNameByIndex(index:Int): Option[Name];
+  def nameByIndex: Option[Int => Option[Name]];
 
   /**     
    * @return true, if this term can't contains free variables.
@@ -41,34 +33,66 @@ trait TermSignature
 
 
   /**
-   * @return true, if signature have fixed name.
+   * @return fixed name of objects with such signature or none if one 
+   * does not exists
    */
-  def  isFixedName: Boolean
+  def  fixedName: Option[Name];
 
 
   /**
-   * @return get fixed name of object, or null if one does not exists
-   */
-  def  getFixedName: Option[Name];
-
-  /**
-   *
    * @param name - name of term to create. if isFixedName is true, than
    *  must be same, as getFixedName
    * @param args - arguments to create.
-   * @return newly-created term.  If creation is impossible - throw exceptrim
+   * @return newly-created term if signature restrictions
+   *  allow one. Otherwise - none.
    */
-  // def createTerm(Name name, Term ... args): Either[Term];
+   def createTerm(name:Name, args: Term*): Option[Term];
+
+  /**
+   * create term, getting term values from data stack.
+   */
+   def createTermFn(name:Name, arity:Int): VM=>VM = {
+    vm:VM => {
+     val args = new Array[Term](arity);
+     for( i <- 0 to arity ) {
+       args(arity-i-1)=vm.popData.asInstanceOf[Term];
+     };
+     createTerm(name, args:_*);
+     vm;
+    }
+   }
+
+   def createTerm(name:String, args: Term*):Option[Term] =
+    createTerm(theory.symbolTable.getOrCreateElement(name),args:_*);
+
+   def createTermFn(name:String, arity: Int):VM=>VM =
+    createTermFn(theory.symbolTable.getOrCreateElement(name),arity);
+
     
    /**
-    * get constant, defined by object.
+    * get constant, defined by object
     */
    def createConstant(arg:Any): Option[Term];
     
-   ///**
-   // * create special construct (names are difined in subclasses).
-   // */
-   //def createSpecial(Any ... args): Either[TermRestrictionException,Term];
+   /**
+    * create special construct (names are difined in subclasses).
+    */
+   def createSpecial(args: Any*): Option[Term];
 
+   /**
+    * calculate type of term
+    **/
+   def getType(t:Term):Term;
+
+   /**
+    * function, which get <code> t </code> from data stack and
+    * put calculated type instead.
+    **/
+   def getTypeFn:VM=>VM;
+
+   /**
+    * get theory, where signature was defined
+    **/
+   def theory: Theory;
 
 }

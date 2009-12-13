@@ -1,18 +1,16 @@
 package ua.gradsoft.termware;
 
-import ua.gradsoft.termware.vm.VM;
 
 @serializable
-trait Term extends TValue
+trait Term extends TValue 
+        with Ordered[Term]
 {
 
   def arity: Int;
 
   def subterm(i:Int): Option[Term];
 
-  def subterm(name:Name): Option[Term];
-
-  def subtermsIterator: Iterator[Term];
+  def subterms(): Seq[Term];
 
   def name: Name;
 
@@ -20,18 +18,41 @@ trait Term extends TValue
 
   //def termType: Term;
 
-  def termSignature: TermSignature;
+  def signature: TermSignature;
 
-  def isX: Boolean;
+  def isX: Boolean = false;
 
-  def getXIndex: Option[Int];
+  def xOwner: Option[Term] = None; 
 
-  def termSubst(s: Substitution, vm: VM): Either[VM,Term];
+  def xLabel: Int = 0;
 
-  def termSubst(s: Substitution): Term;
+  def isNil: Boolean;
 
-  def termUnify(t:Term, s:Substitution, vm: VM): Either[VM,Option[Substitution]];
-  def termUnify(t:Term, s:Substitution): Option[Substitution];
+  def isAtom: Boolean;
+
+  def isEta: Boolean;
+
+  def termSubstFn(s: PartialFunction[Term,Term]): (VM=>VM) ;
+
+  def termSubst(s: PartialFunction[Term,Term], vm: VM):Term;
+
+  def termSubst(s: PartialFunction[Term,Term]): Term;
+
+  def termUnifyFn(t:Term, s: Substitution): (VM=>VM) ;
+
+  def termUnify(t:Term, s:Substitution, vm: VM): (Boolean, Substitution);
+
+  def termUnify(t:Term, s:Substitution): (Boolean, Substitution);
+
+  def termClassIndex: Int; 
+
+  def termCompare(t:Term): Int; 
+
+  def compare(that:Term):Int = termCompare(that);
+
+  def termHashCode: Int; 
+
+  override def hashCode = termHashCode;
 
 }
 

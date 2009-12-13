@@ -12,6 +12,8 @@ trait Name extends Comparable[Name]
    else
         getKindIndex - that.getKindIndex
    ;
+
+ override lazy val hashCode = getKindIndex+getIndex+getString.hashCode;
 }
 
 
