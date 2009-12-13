@@ -1,0 +1,704 @@
+\documentclass[10pt]{article}
+%\usepackage[OT2,T2A]{fontenc}
+%\usepackage{html}
+\usepackage{latexsym}
+
+
+\title{ $\rho\eta\theta$: On road to realistic formalization:
+   Yet another calculus for variable-free term rewriting with actions.
+      }
+
+
+\newcommand{\CmBase}{../..}
+\newcommand{\APIBase}{\CmBase/jdocs/ua/gradsoft/termware}
+\newcommand{\TAPIBase}{\CmBase/docs/TAPI/}
+
+
+\bibliographystyle{plain} 
+
+\begin{document}
+
+                                               
+\maketitle{}
+
+\tableofcontents
+
+
+
+\section{ Background }
+
+ Let's introduce some common notation: we will work with some sets of terms $T$ over
+ alphabet $A$ via some inductive scheme, which contains set of variables $x_{i}$.
+ 
+ $g$ is contained in term $h$ as $g\lhd h$,
+ (or $g\unlhd h$ for contained or equals)
+ for some term $t$ set of free variables in it denoted as $FV(t)$  
+ Substitution $S$ is set of pairs from variables and terms 
+ ($\{(x_1,y_1), ,, (x_{n},y_{n})$, result of applying substitution $S$ to 
+ term $t$ we will denote as $t[S]$.  
+ Syntax equality of terms will be denoted as $t_{1} = t_{2}$, 
+ Instance equality will be denoted as $t_{1}\equiv t_{2}$.
+ Also we will use Cartesian production and projection functions ($x\times y$ and 
+ $/i$  respectively) : $X\times Y$ is set of pairs $(x,y)$ where
+  $x \in X \land y\in Y$.  $(x,y)/1=x$, $(x,y)/2=y$. Also for set of
+  pairs let define $S/i = \{s/i : s\in S\}$.    
+ 
+\section{ definition of $\eta$-terms for untyped case }
+
+ Let our alphabet contains from constants $c_i \in C$, functional symbols $f_i \in F$ and
+propositional variables $x_i \in X$.
+
+ Set of $\eta$-terms $T_{\eta}^s$ can be build inductively: 
+\begin{itemize}
+ \item constants: if $c_i \in C$ then $c_i \in T_{\eta}^s$. Let $C$ contains special 'failure' term $\bot$  with special constants for $true$ and $false$
+ \item variables: if $x_i \in X$ then $x_i \in T_{\eta}^s$
+ \item first order functions: if $f_i \in F, t_{1}\dots t_{n} \in T_{\eta}^s$ 
+         then $f(t_1,\dots,t_n)\in T_{\eta}^s$. We assume, that set of functional
+         symbols include at least sequence constructor: ($seq_n(x_1\dots x_n)$),
+         projections $proj_i$, condition $cond(x,y,z)$ and action.
+ \item high order function composition: if $t \in T_{\eta}^s$, 
+     $t_{1}\dots t_{n} \in T_{\eta}^s$ 
+         then $t(t_1,\dots,t_n)\in T_{\eta}^s$                                                  
+ \item $\eta$ terms: if $v=\{x_1 \dots x_n\}:x_{i} \in X$, $f,g, h \in T_{\eta}^s$, then 
+    $\let \,v . f \to g \wr h $       
+ \item Let application $let\;x \leftarrow f . g$. (Sometimes we will instead 
+   use $g\,where\,x\leftarrow f$ with same semantics) 
+\end{itemize}
+
+  If $R$ is $\eta$-term, let's name $X_{R}$ set of variables, bound in high level scope of
+ $R$; $P_{R}$, $T_{R}$ and  $F_{R}$ : $f$, $g$ and $h$ (pattern, success and fail parts)  
+  respectively.
+
+  Now, let choose from $T$ subset with fully bounded eta-terms ${\eta}{T}$, as
+\begin{itemize}
+ \item constants: if $c_i \in C$ then $c_i \in {\eta}T$
+ \item first order functions: if $f_i \in F, t_{1}\dots t_{n} \in {\eta}T$ 
+         then $f(t_1,\dots,t_n)\in {\eta}T$
+ \item high order functions: if $t \in {\eta}T, t_{1}\dots t_{n} \in {\eta}T$ 
+         then $t(t_1,\dots,t_n)\in {\eta}T$                          
+ \item fully bound eta terms: 
+ if $\{ x_1 \dots x_n \in X \}$, $f,g,h \in T$, then 
+     $$\forall x : x \lhd f \Rightarrow 
+          \left[
+          \begin{array}{l}
+            x \in X \\
+            x \lhd \eta z_{1}\dots z_{n} \lhd f 
+         \end{array}\right.$$         
+       and 
+    $(\eta x_{1} \dots x_{n} . f \to g \wr h)\in {\eta}T$ iff 
+      $$\forall x : x \lhd g \Rightarrow 
+          \left[
+          \begin{array}{l}
+            x\lhd f \land x \in \{ x_{1} \dots x_n \} \\
+            x \lhd \eta z_{1}\dots z_{n} \lhd g 
+         \end{array}\right.$$
+       and  
+     $$\forall x : x \lhd h \Rightarrow 
+          \left[
+          \begin{array}{l}
+            x \lhd x_{1} \dots x_n \\
+            x \lhd \eta z_{1}\dots z_{n} \lhd f 
+         \end{array}\right.$$         
+\end{itemize}
+
+ i. e. all $\eta$-terms are closed ($t \in {\eta}T: FV(t)=\emptyset$), each variable
+ from $g$ or form top-level set of variables or from some $\eta$-term inside $g$, the
+ same with $f$ and $g$. For each variable $x$ it is possible to determinate $\eta$-term 
+ where this variable was defined: $\eta{t}(x)$
+
+\subsection{Operational semantics }
+
+At first, let's define operations for sequence and projections.
+sequence we will write as $seq(t_{1}\dots t_{n})$ and sometimes 
+denote as $\langle x_{1}\dots x_{n}\rangle$.
+ $proj_i$ means $i$-th element of sequence and also sometimes will be
+denoted as $|_{i}$, 
+
+$${
+ \langle x_{1} \dots x_{i-1}, x_{i}, x_{i+1} \dots x_{n} \rangle |_{i} = x_i
+}\,\,\,\,\,{(proj)}$$
+
+let-expression is used to show sharing of subterms and can be fully
+eliminated:
+$$
+ let\;x\leftarrow y.z=z[\langle x\leftarrow y]
+ \,\,\,\,\,{(let-)}
+$$
+
+Condition expression can be reduced when first argument is true or false.
+  $cond(true,f,g) = f$,  $cond(false,f,g)=g$.
+
+
+The main operation is rule reduction, which from high level can be described
+ as
+$$
+{
+  ({\eta v. f\to g \wr h}) q = \left\{
+    \begin{array}{l l}
+      g[S]  &  match(f,h)|_{1} \land S=match(f,h)|_{2}  \\
+      h q  & \neg match(x,f)|_{1} \\       
+    \end{array}
+    \right.   
+}\,\,\,\,{(\rho:match)}  
+ %\label{eq:rho_match}                                
+$$
+
+  (i. e. success of term rewriting depends from matching of right part of rule and argument,
+  on success we receive substitution of right part of rule with set of bounds, creating 
+  during matching).
+
+  we will transform one to conditional substitution (later we will see, that this 
+  construction with constraints on execution of matching operation is analogical to 
+  delayed matching operation in $\rho$-calculus.)
+
+  $$
+   (\eta v.f\to g \wr h) q  =  let\;m\leftarrow match_v(f,q) . (cond(m|_{1},q[m|_2],h q) )
+  $$
+
+  The main essence of formalization is in matching problem. We will define result
+  of matching as pair from boolean and substitution.
+  
+  To terms ($x$ and $y$) are matched, when exists such substitution $S$, 
+  that $x[S]$ = $y$. We will define the process of scoped match, which 
+  behavior is depends from scope of arguments: when we match variables,
+  defined in different $\eta$-terms, then appropriated pair is 
+  added to substitution during matching, but when variables was defined in 
+  $\eta$-term, then for matching success this variables must  be equal as 
+  syntax entities.
+  
+   when $x,v\in X$, 
+    $$
+    {
+    match(x,y) = \left\{
+     \begin{array}{l l}
+        (true,\{(x,y)\}) &  \eta t(x) \not\equiv \eta t(y) \\
+        (x=y,\emptyset) &   \eta t(x) \equiv \eta t(y) \\
+     \end{array}
+    \right.
+    }\,\,\,\,{(match:vars)}
+    $$ 
+    when $x \in X$, $y \not \in X$ then we add pair $(x,y)$ to current substitution.
+    $$
+    {
+     match(x,y) = (true, \{\langle x,y\rangle\}) 
+    }\,\,\,\,\,{(match:var)}  
+    $$    
+    
+     Matching of structured terms defined by induction as usual:
+      let $x$, $y$ : functional terms, $x=x_0(x_1\dots,x_n)$, 
+      $y=y_0(y_1\dots,y_m)$, then
+      $${
+        match(x,y) = \left\{
+       \begin{array}{l l}
+        {\prod_{i=0}}^n match(x_i,y_i) & m = n \\
+        (false,\emptyset) &   m \neq n \\
+       \end{array}
+      \right.
+        }\,\,\,\,{(match:f)}
+      $$ 
+
+    where $\land$ defined as 
+    $$\langle b_1, s_1\rangle \land \langle b_2, s_2\rangle
+       =
+    \langle b_1\land b_2\land compatible(s_1,s_2), s_{1}\cup s_2 \cup (s_1\oplus s_2)
+                                                                                  \rangle \\
+    $$
+    where two sets $s_1$ and $s_2$ compatible if 
+     $\forall x,y,z (x,y)\in s1 \land (x,y)\in s2 \Rightarrow match(x,y)$ 
+    and 
+     $s_1\oplus s_2 = \bigcup_{{y,z}:(\exists x:x\to y \land x\to z)}(x,y)$ 
+      
+    Matching of constants is structure equality:
+    $$
+     match(c_1,c_2)=\left\{
+      \begin{array}{ l l }
+        true  &  c_1=c_2  \\
+        false &  c_1\not=c_2        
+      \end{array}
+     \right.
+    $$  
+
+    And terms with different constructs can't be matched:
+  \begin{itemize}
+   \item $match(c_1,x_1(x_2\dots x_n))=(false,\emptyset)$
+   \item $match(c_1,\eta X. f\to g )=(false,\emptyset)$
+   \item $match(x_1(x_2\dots x_n),c_i)=(false,\emptyset)$
+   \item $match(x_1(x_2\dots x_n),\eta X. f\to g)=(false,\emptyset)$
+   \item $match(\eta X. f\to g, c)=(false,\emptyset)$
+   \item $match(\eta X. f\to g, x_1(x_2\dots x_n))=(false,\emptyset)$
+  \end{itemize}  
+     
+
+  Also, to keep confluence property, we need keep order of relation between matching and
+  reduction:  let's assume, that for any terms $t_1$ and $t_2$, $match(t_1,t_2)$ can be
+  evaluated only in next cases:
+  \begin{itemize}
+    \item if some argument of match is rule term, that $\rho:match$ is applied to arguments before matching: 
+    $$match((\eta\;v.x\to y \wr z) w, q) = \left\{
+    \begin{array}{l l}
+      match(y[m|_{2}],q) &  m|_{1} \\
+      match(z w, q)  & \neg m|_{1} \\
+                     & where\,m=match(x,w)
+    \end{array}{l l}\right.  
+    $$
+      and reverse:
+     $$
+      match(q,(\eta\;v.x\to y \wr z) w )=\left\{
+    \begin{array}{l l}
+      match(q,y[m|_{2}]) &  m|_{1} \\
+      match(q,z w)  & \neg m|_{1} \\
+                     & where\,m=match(x,w)
+    \end{array}{l l}\right.        
+     $$ 
+    \item does not exists variables in some high-level scope, common for both
+  terms.  i.e.  $\exists t^*: match(t_1,t_2)\lhd t^* \land v\in t_1\land v\in t_2$  
+  \end{itemize}
+  In expression $\eta x y. f(x,y) \to match(x,y)$, 
+  $match(x,y)$ can't be reduced, while  expression 
+  $(\eta x y. f(x,y)\to match(x,y) f(1,2)$ can be:
+  $$
+   \begin{array}{l l l}
+    1 &  & (\eta x y. f(x,y)\to match(x,y) f(1,2) \\
+    2 &  & let\,m\leftarrow match_{x,y}(f(x,y),f(1,2)) (if\,m|_{1} then\,match(x,y)\wr id) \\
+    3 &  & m=(match(f,f) \land match(x,1)\land match(x,2)) (if\,m|_{1}\,then\,match(x,y)\wr id) \\
+    4 &  & m=\langle true, \{\} \rangle  \land
+             \langle true, \{\langle x, 1\rangle\}\rangle \land 
+             \langle true, \{\langle y, 2\rangle\}\rangle \\
+      &  &     cond(m|_{1},match(x,y)[m|_2],id) \\ 
+    5 &  & let\, m\leftarrow \langle true, \{ \langle x,1\rangle,\langle y,2\rangle\}\rangle
+           cond(m|_{1},match(x,y)[m|_2],id) \\
+    6 &  & cond(true,match(1,2),id \\       
+    7 &  & match(1,2) \\
+    8 &  & false        
+   \end{array}
+  $$
+
+  $$match((x y) z, v w)=match(x y,v)\land match(z,w)$$ only if $x$ does not contains 
+   $\eta$ terms.
+   
+let's look on other example of term, which usually shows absence of confluence in high-order rewriting \cite{DBLP:conf/rta/CirsteaF07}:,
+$$ 
+\begin{array}{l l l}
+   1 &  &  (\eta x. x a -> x) ((\eta y. y->y) a) \\
+   2 &  &  let\,m\leftarrow match(x a, \eta y.y\to y\, a) 
+           cond(m|_{1},x[m|_{2}],id) \\
+   3 &  &  let\,m \leftarrow match(x a,(
+             let\, m \leftarrow match(y a).cond(m|_{1},a[m|_2],id)
+                                 )    ) \\
+     &   & \,\,\,\,\,         cond(m|_{1},x[m|_{2}],id)\\
+   4 &   & let\,m\leftarrow match(x a, 
+                               let m\leftarrow\rangle true, \{\langle y,a\rangle\}\rangle
+                               cond(m|_{1},y[m|_{2}],id)\\
+     &   & \,\,\,\,\,         cond(m|_{1},x[m|_{2}],id)\\                            
+   5 &   &  let\,m\leftarrow match(x a,cond(true,a,id)) cond(m|_{1},x[m|_2],id) \\
+   6 &   &  let\,m\leftarrow match(x a,a) cond(m|_{1},x[m|_2],id) \\  
+   7 &   &  let\,m\leftarrow \langle false, \emptyset \rangle cond(m|_{1},x[m|_{2}],id) \\
+   8 &   &  cond(false,x,id) \\ 
+   9 &   &  id                     
+\end{array}
+$$ 
+  
+  Also, in addition to reduction also exits possibility to add/delete unused variables
+  from $\eta$-definitions: 
+  \begin{itemize}
+    \item $\eta X. f \to g$ can be transformed to $\eta X-\{x\}. f \to g$
+        if $x \in X: \neg x \lhd f \land \neg x \lhd g $ $\,\,\,\,(\eta -)$
+    \item $\eta X. f \to g$ can be transformed to $\eta X\cup\{x\}. f \to g$
+        if $x \in X: \neg x \lhd f \land \neg x \lhd g $ $\,\,\,\,(\eta -)$      
+  \end{itemize}
+
+
+
+Some examples:
+\begin{itemize}
+ \item $\eta x1. (\eta x. f(x) \to y) \to z $ is the same as $(\eta x. f(x) \to y) \to z$  
+ \item $\eta x. (\eta y. f(x,y) \to y) \to z $ 
+ \item $\eta x. x \to x(x)$ is valid and application to self will reduce to
+  $(\eta x. x \to x(x))\eta x. x \to x(x))$
+ \item  $\eta x .(\eta y z. x(y,z) \to y) \to first$ will rewrite functions, which semantics
+ is get own first element into $first$.
+\end{itemize}
+
+% $\bot$ play role of 'exception': $x \bot = \bot$
+  
+ \subsection{Identity equality as analog of 'variable-renaming' disclaimer }
+ 
+ So, we build calculus for high-ordered rewriting, based on closed terms, where propositional
+variables in different scoped $\eta$-terms already different. Process of computation, based
+on such semantics can be build without renaming of free variables during rule applications: variables must be different only inside one $\eta$-term.  But instead, we
+need in two operations, which usually out of the scope of traditional semantics:
+\begin{itemize}
+ \item ability for any variable $x$ term, where one defined $\eta t(x)$:
+ \item use of identity equality $\equiv$, where $t_{1}\equiv t_{2}$  if $t_1$ and $t_2$ are
+  'same' term in expression. (assuming, that underlying representation does not allow sharing subterms). 
+\end{itemize}
+ So, all magic in variable renaming moved to fact, that identity equality must be dropped during term replication from left to right part.
+  
+ Natural interpretation of $\equiv$ can be equality of machine addresses for terms (with restriction, that system change addresses during $\eta$-rewriting).
+ 
+To define $\equiv$ without machine magic we can use model of 'labeled' terms, where for
+each term $t$ we have label with it's label $L(t)$ and require, that 
+\begin{itemize}
+  \item labels changed during each duplication of $\eta$-term. 
+  \item different terms must be labeled by different labels.
+    $t_{1}\not=t_{2} \Rightarrow L(t_1)\not=t_2$
+\end{itemize}   
+
+ To build theory without use of identity rewriting, we can use labels as explicit parts of $\eta-$-terms and propositional variables and change definition of structured  equality not take labels into account when comparing $\eta$-terms.
+ 
+Syntax: 
+ \begin{itemize}
+   \item $\eta$-terms which will look like $<L1,L2>\eta X. f \to g$ 
+   \item propositional variables looks like $<L1,L2>v_{i}$
+ \end{itemize}  
+    
+   Here label consists from two parts: $L1$ is unique identifier for $\eta$-term which is
+allocated during creation of initial set of terms and permanent during computation and
+$L2$ is variable part, which is changed during each substitution step.
+   
+ Then all what we need to reformulation of calculus is change rule $(\rho:match)$ to
+increment variable part of labels during copying in addition to 
+
+$$
+{
+ \rho({\eta X. f\to g},h) = \left\{
+    \begin{array}{l l}
+      inrcL(h[S])  &  match(f,h)/1 \land S=match(f,h)/2  \\
+      \bot         & \neg match(x,f)/1 \\       
+    \end{array}
+    \right.   
+}\,\,\,\,{(\rho:match)}  
+ %\label{eq:rho_match}                                
+$$
+
+where $incrL$ do some relabeling of copied terms.
+
+For example, let $incrL(t)=incrL2(t,\emptyset)/1$ where $incrL2$ is function
+from pair of term and set of terms (trace) such as:
+
+\begin{itemize}
+ \item when $t=<L1:L2>\eta X . f \to g$
+$$
+ incrL2(t,T) = 
+ \left\{
+ \begin{array}{l l l}
+    (t',T \cup \{t'\}) &  &  t \in T \\
+       & t'=<L1:L2+1> incrL2(f,W/2)/1 \to W/1 & \\
+       & W=incrL2(g,T) &  \\
+    (t, T \cup \{t\}) &  & t \not\in T \\
+ \end{array}
+ \right.
+$$
+ \item when $t=<L1:L2>x_{i}$
+$$
+ incrL2(t,T) = 
+ \left\{
+ \begin{array}{l l l}
+    (t', T) &  & \exists p=<L1:L2>f\to g : p \in T \\
+       & t'=<L1:L2+1>x_{i} & \\
+    (t,  T) &  & t \not\in T \\
+ \end{array}
+ \right. 
+$$
+ \item when $t=t_{0}(t_{1}\dots t_{n})$
+ $$
+ \begin{array}{ l l }
+  incrL2(t,T) = & w'_0/1(w'_1/1 \dots w'_{n}/1) \\
+                & w'_0 = incrL2(t_0,T) \\
+                & w'_1 = incrL2(t_1,w'_0/2) \\
+                & \vdots \\
+                & w'_{n} = incrL2(t_{n},w'_{n-1}/2) \\                
+ \end{array} 
+ $$
+ \item when $t=c_{i}$, $incrL2(t,T)=(t,T)$
+ \end{itemize}
+
+ So, we can say, that assumptions about identity equality and unshared machine representation 
+are equal to explicit process of variables renaming. Relabeling can be using as implementation guideline on platforms without possibility use direct address calculations, such as JVM.
+
+\subsection{Strategies and applying set of rules}
+
+Strategy
+
+  
+\subsubsection{ Ordered rulesets }
+
+Yet one common simplification for rule-based languages is that computation process must does not depend from ordering of rule applications.   
+
+Let's introduce partial ordering of rewriting rules by 'concretization' of input patterns.  I.e. we will say that $t_1 {\prec} t_2$ when $t_1$ is 'more concrete' than $t_2$.  
+For calculus with free variable we can say, that exists substitution of free variables $s$: $subst(t2,s) \equiv t1$.  In our case (for calculus without free variables) we can use matching as criteria i. e. $f \preceq g$ if  $\forall h. match(g,h)|_{1} \Rightarrow match(f,h)|_{1}$ 
+ 
+ 
+   Now, let $p=(in_{p} \to out_{p})$ and $s=(in_{s} \to out_{s})$ are two rules, which form critical pair.
+   
+   
+    we see that $p \le_{c} s$ if $in_{p} {\le}_{c} in_{s}$, and let's fix the order as evaluation as: more concrete term evaluated first, i. e.  
+$$
+ apply(\{p,s\},t)=\left\{
+  \begin{array}{l l}
+    apply(p,t) & p \le_{c} s \\
+    apply(s,t) & s \le_{c} p \\
+    \iota\{apply(p,t),apply(s,t)\} & p \sim_{c} s\\
+  \end{array}
+ \right.
+$$
+ where $\iota$ is operator of non-determenistics choice, defined by strategy.
+
+It's easy to show, that for each ruleset ${r_{1}\dots r_{n}}$ where $\forall i,j : i\neq j \Rightarrow \not {r_i} \sim_{c} r_j$ can be build equivalent locally-confluent ruleset.
+
+
+\subsection{Interaction with outer world: input and actions}
+
+In previous version of termware external world was represented by the facts database and
+information from external world was received by setting one of free variables from method
+of facts database use termware API.
+
+ In today's 'all variables must be scoped' approach, natural way is using special 
+construction for interactions: let's fact database represented to us be
+\begin{itemize}
+ \item set of 'input events' $in_i$ which can be represent by set of functional symbols.
+ \item set of 'output actions' $out_i$.
+\end{itemize} 
+
+Than let define so called 'in' and 'out' $\theta$-constructions
+ (${\theta}T_{in}$ and ${\theta}T_{out}$) via next recursive definition:
+\begin{itemize}
+ \item  $\eta$-term is $\theta$ construction:
+ if $t\in {\eta}T$ then $t\in {\theta}T_{in}  \land t\in {\theta}T_{out}$.
+ \item it $f_in\in {in}$, $t_1,\dots t_n \in {\theta}T_{in}$ then
+                   $f_{in}(t_1,\dots t_n) \in {\theta}T_{in}$  
+ \item if $f\in {\theta}T_{in}$, $g\in {\theta}T_{in}$ then 
+       $\theta\, \{x_i {\leftarrow_{in}} f\}.g \in {\theta}T_{in}$  
+ \item  
+ $\theta\, \{out_i \leftarrow_{out} t \}.f \in {\theta}T_{out} $ 
+ \item  $f\to g$ is interaction rule, 
+   if $f \in {\theta}T_{in}$ and $g \in {\theta}T_{out}$.
+\end{itemize}
+
+ operation semantic for 'in' $\theta$ constructions is to receive information from set of inputs ${in}_i$ into variables $x_i$ and for 'out' $\theta$ constructions -- send information
+to appropriate output $out$. 
+
+Operational semantics of such interaction rules can be described as 'resolving input interactions before matching, output - after substitution'. I. e. next rules:
+\begin{itemize}
+ \item[$\theta_{in}$],
+  if value of input $f_{in}(t_1\dots t_n)$ as $v$,
+    where $t_1 \dots t_n \in \eta T$
+    then $\theta\;x_{i}\leftarrow_{in}f . g = g[x_{i}/v_{in}$       
+ \item[$\theta_{out}$]
+     $\theta\;out_{i}\leftarrow_{out}f . g = g$ and $f$ is sending to $out$ as side effect.
+\end{itemize}
+  
+ 
+%
+%
+%domain ua.gradsoft.termwaredemos;
+% 
+%system Life {
+%
+%  facts {
+%    field: LifeField
+%  }
+%
+%  ruleset : {  
+%    with i, j, T :
+%        { l(i,j) : T } -> T
+%                [ 
+%                 out field <- (
+%                        3 -> putCell(i,j) 
+%                       |
+%                        2 ->  if existsCell(i,j) putCell(i,j)
+%                                             else  removeCell(i,j)
+%                       | removeCell(i,j)
+%                      ) n(i,j)
+%                 ]
+%                              
+%    {  } -> in T <- generateNextTestSet : T [ out showGeneration ]
+%
+%  }
+%
+%}
+%
+
+   
+
+\section{ Typing }
+
+ Now, let's introduce typed semantics. I. e. start with some set of type assigment to
+ constants and let's assign types to $\eta$-terms, $\theta$-terms and rewriting rules.
+
+\subsection{Simple typing without interactions}
+
+Also, let's change definition of $\eta$-construction: now all bounded variables must 
+be typed, i. e. instead $\eta x_1 \dots x_n\;. f\to g$ typed $\eta$-term looks like
+ $\eta x_1:t_1,..\eta x_{n}:t_{n}\;.f\to g$  
+
+So, let we have some order-sorted signature $(T,\le,\Sigma)$  and if we want enrich set of 
+terms, by adding $\eta$-terms, then we must build enriched type system by building
+recursive polymorphic types on top of T, similar to \cite{Abadi89faithfulideal}.
+
+i.e. $V=T + (V->V) + (V+V) + (V\times V)+W$
+
+So, let for each types $x$ and $y$ exists appropriate
+  \begin{itemize} 
+   \item functional type $x\to_{type}$
+   \item union $x \cup y$ and super ( $x \cap y$ ) types.
+   \item compound type $x \times y$   
+  \end{itemize} 
+  Also exists special error type.  Also let most general type will be denoted as $\bot$
+
+Coarse grained typing is simple: rules for appropriate lambda typing 
+ $\lambda 2 \nu \cup$ \cite{800528} directly translated to rules for $\eta$-terms:
+
+$$
+ (start)\,\,\,\,\,
+ {
+  {x:\delta \in \Gamma} \over {\Gamma \vdash x:\delta }
+ }
+$$ 
+
+$$
+ (\to elimination)\,\,\,\,\,
+{
+ {\Gamma \vdash M: \phi \to_{type} \tau\,
+  \Gamma \vdash N: \phi  
+ } 
+ \over 
+ {\Gamma (M N):\tau  }
+ }
+$$ 
+
+$$
+ (\to introduction)\,\,\,\,\,
+{	
+ {\Gamma \vdash M: \phi,
+  \Gamma \vdash N: \tau,
+  \Gamma \vdash Q: \delta
+ } 
+ \over 
+ {\Gamma \eta x. (M \to M \wr Q): (\phi \to_{type} \tau) \cup \delta }
+ }
+$$ 
+
+$$
+ (\cap elimination)\,\,\,\,\,
+{	
+ {\Gamma \vdash M: \phi \cap \delta,
+ } 
+ \over 
+ {\Gamma \vdash M:\phi \, \Gamma \vdash M:\delta }
+ }
+$$
+
+$$
+ (\cap introduction)\,\,\,\,\,
+{	
+ {\Gamma \vdash M: \phi, M: \delta,
+ } 
+ \over 
+ {\Gamma \vdash M: \phi \cap \delta }
+ }
+$$
+
+$$
+ (\times introduction)\,\,\,\,\,
+{	
+ {\Gamma \vdash M: \phi, N: \delta,
+ } 
+ \over 
+ {\Gamma \vdash M \times N: \phi \times \delta }
+ }
+$$
+ 
+$$
+ (\times elimination)\,\,\,\,\,
+{	
+ {\Gamma \vdash M: \phi \times \delta,
+ } 
+ \over 
+ {\exists A, B: M=A\times B\, \Gamma \vdash A : \phi \, \Gamma \vdash B: \delta }
+ }
+$$
+ 
+\subsection{ With interaction }
+
+ Now let's extend simple typing to rules with interactions: refine typing to be applicable
+for $\theta_{in}$ and $\theta_{out}$ constructions. Also, let bound input and output
+events to types, as with variable in $\eta$-term.  
+
+I. e. for now with each input event ${in}_{i} \in T_{in}$ we have associated type  
+$\tau_{in}$  and event-id $Id(in_{i})$ (let's denote this as $Id : \tau$) . 
+The same with output types.
+
+Than, for any input event $in(Id(in):\phi)$ and type $\delta$ exists types 
+  $\Theta_{in}( \{(Id:\phi)\}, \delta)$.
+
+  
+ With next rules: 
+   
+  $$ 
+    \Gamma \vdash g : \phi, 
+    \Gamma \vdash  Id(f) : \delta
+    \over 
+   \Gamma \vdash \theta\, \{x_i {\leftarrow_{in}} f\}.g : \Theta_{in}( Id(f):\phi,\delta) 
+   $$
+
+  $$
+    \Gamma \vdash g : \phi, 
+    \Gamma \vdash  f : \delta
+    \over 
+   \Gamma \vdash \theta\, \{out_i {\leftarrow_{out}} f\}.g : \Theta_{out}(out:\phi,\delta) 
+  $$
+
+What is relations of interactions with usual type operations:
+
+At first, how input and output reactions aligned into type ordering: let's assume that
+ existence of interactions does not touch result of type expression:
+
+\begin{itemize}
+    \item $\Theta_{in}(Id:\phi,\delta)  < \delta$
+    \item $\Theta_{out}(Id:\phi,\delta)  < \delta$
+\end{itemize}    
+
+ And let other operations will extended per-component:
+
+\begin{itemize}
+ \item $$
+    \Theta_{in}(Id1:\phi,\delta) \cup \Theta_{in}(Id2:\gamma,\tau) =
+         \Theta_{in}( {Id1:\phi}\cup{Id2:\gamma} , \delta \cup \tau)
+       $$
+ \item $$
+    \Theta_{in}(Id1:\phi,\delta) \cap \Theta_{in}(Id2:\gamma,\tau) =
+         \Theta_{in}(\{ Id1:\phi \}\cap,{Id2: \gamma}, \delta \cap \tau)
+       $$       
+ \item except production of interaction does not have sense, so we can use union. 
+     $$
+    \Theta_{in}(Id1:\phi,\delta) \times \Theta_{in}(Id2:\gamma,\tau) =
+         \Theta_{in}(\{ Id1:\phi \}\cap{Id2: \gamma}, \delta \times \tau)
+       $$                     
+\end{itemize}
+ 
+ 
+
+
+
+\subsection{ Depended and fine-grained typing. }
+ with fine-grained types, type matching can be used  
+ 
+  
+
+
+\section{relations to other formalization's }.
+
+ $\eta$ notation follow traditional semantics of rewriting rules and can be transformed to extended $\lambda\phi$ notation from \cite{Oostrom90lambdacalculus}
+ (i. e.  $\eta x_{1}\dots x_{n}. P \to F$ can be represented as 
+   $\lambda P \to F$)
+)
+   
+
+\
+
+\bibliography{Bib} 
+
+\end{document}
+
+
