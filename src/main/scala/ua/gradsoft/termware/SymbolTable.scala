@@ -38,6 +38,12 @@ class SymbolTable
 
   var byNames = new HashMap[String,SName];
   var byIndexes = new ArrayBuffer[SName];
+
+  val TYPE = getOrCreateElement("TYPE");
+  val ERROR = getOrCreateElement("ERROR");
+  val ETA = getOrCreateElement("ETA");
+
 }
+
 
 

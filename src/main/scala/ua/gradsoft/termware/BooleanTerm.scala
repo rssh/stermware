@@ -1,11 +1,7 @@
 package ua.gradsoft.termware;
 
-object BooleanTerm
-{
-   val TERM_CLASS_INDEX: Int = 5;
-}
 
-class BooleanTerm(v:Boolean, s: BooleanTermSignature) extends PrimitiveTerm
+case class BooleanTerm(v:Boolean, s: BooleanTermSignature) extends PrimitiveTerm
 {
 
   override def isBoolean: Boolean = true;
@@ -39,7 +35,7 @@ class BooleanTerm(v:Boolean, s: BooleanTermSignature) extends PrimitiveTerm
          (false, s)
    ;
 
-  def termClassIndex: Int = BooleanTerm.TERM_CLASS_INDEX;
+  def termClassIndex: Int = TermClassIndex.BOOLEAN;
 
   lazy val name = signature.theory.symbolTable.getOrCreateElement(
                                         if (value) "true" else "false" );

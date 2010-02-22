@@ -1,12 +1,12 @@
 package ua.gradsoft.termware;
 
-trait Name extends Comparable[Name]
+trait Name extends Ordered[Name]
 {
  def getKindIndex:  Int;
  def getIndex: Int;
  def getString: String;
 
- override def compareTo(that: Name):Int = 
+ override def compare(that: Name):Int = 
    if (getKindIndex == that.getKindIndex)
         getIndex - that.getIndex
    else

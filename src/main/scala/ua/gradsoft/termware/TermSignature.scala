@@ -8,7 +8,7 @@ trait TermSignature
 {
 
   /**
-   * @return fixed arity (or exception if getFixedArity is false.)
+   * @return fixed arity (or None if getFixedArity)
    */
   def fixedArity: Option[Int];
 
@@ -22,15 +22,9 @@ trait TermSignature
   /**
    * return index-name of subterm.
    * @param index
-   * @return
+   * @return name of subterm, if names by indexes are defined. 
    */
   def nameByIndex: Option[Int => Option[Name]];
-
-  /**     
-   * @return true, if this term can't contains free variables.
-   */
-  def isConcrete: Boolean;
-
 
   /**
    * @return fixed name of objects with such signature or none if one 
@@ -46,7 +40,20 @@ trait TermSignature
    * @return newly-created term if signature restrictions
    *  allow one. Otherwise - none.
    */
-   def createTerm(name:Name, args: Term*): Option[Term];
+   def createTerm(name:Name, args: RandomAccessSeq[Term]): Option[Term];
+
+   def createTerm(name:Name, args: Term*): Option[Term] = {
+    args match {
+     case x: RandomAccessSeq[Term] => createTerm(name,x)
+     case _ => {
+       val arr = new Array[Term](args.length);
+       for( i <- 0 to args.length) {
+          arr.update(i,args(i));
+       }
+       createTerm(name,arr);
+     }
+    }
+   }
 
   /**
    * create term, getting term values from data stack.
@@ -57,10 +64,13 @@ trait TermSignature
      for( i <- 0 to arity ) {
        args(arity-i-1)=vm.popData.asInstanceOf[Term];
      };
-     createTerm(name, args:_*);
+     createTerm(name, args);
      vm;
     }
    }
+
+   def createTerm(name:String, args: RandomAccessSeq[Term]):Option[Term] =
+    createTerm(theory.symbolTable.getOrCreateElement(name),args);
 
    def createTerm(name:String, args: Term*):Option[Term] =
     createTerm(theory.symbolTable.getOrCreateElement(name),args:_*);
@@ -88,7 +98,11 @@ trait TermSignature
     * function, which get <code> t </code> from data stack and
     * put calculated type instead.
     **/
-   def getTypeFn:VM=>VM;
+   def getTypeFn:VM=>VM
+     = (vm:VM) => { vm.popData match {
+                      case t:Term => vm.pushData(getType(t));
+                      case _      => throw new ErrorTermException("term on stack expected");
+                    }; vm; }
 
    /**
     * get theory, where signature was defined

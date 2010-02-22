@@ -2,9 +2,8 @@ package ua.gradsoft.termware;
 
 object TermWare {
 
+ val symbolTable = new SymbolTable();
  val instance = new TermWare();
-
- def symbolTable = instance.symbolTable;
 
 }
 
@@ -12,7 +11,9 @@ class TermWare extends TermWareInstance
                      with FreeAlgebra
 {
 
- val symbolTable = new SymbolTable(); 
+ def symbolTable = TermWare.symbolTable; 
  val freeTheory = this;
+
+ def typeAlgebra = { throw new RuntimeException("not implemented"); }
 
 }

@@ -3,6 +3,7 @@
  <!--<properties file="build.properties" />-->
  <property name="ibiblio-maven2-root" value="http://repo1.maven.org/maven2/" />
  <property name="scala-tools-maven2-root" value="http://www.scala-tools.org/repo-releases/" />
+ <property name="scala-tools-snapshots-maven2-root" value="http://www.scala-tools.org/repo-snapshots/" />
  <namespaces>
   <namespace name="maven2" />  
   <namespace name="gradsoft" />  
@@ -14,6 +15,9 @@
            m2compatible="true" namespace="maven2" />
   <ibiblio name="scala-tools" root="${scala-tools-maven2-root}"
            m2compatible="true" namespace="scala-tools" />
+  <ibiblio name="scala-tools-snapshots" 
+           root="${scala-tools-snapshots-maven2-root}"
+           m2compatible="true" namespace="scala-tools" />
   <url name="www.gradsoft.ua" namespace="gradsoft" >
      <ivy pattern="http://www.gradsoft.ua/common/termware/ivy-[revision].xml" />
      <artifact pattern="http://www.gradsoft.ua/common/termware/[artifact]-[revision].[ext]" />
@@ -21,6 +25,7 @@
   <chain name="global.chain" >
    <resolver ref="ibiblio" />
    <resolver ref="scala-tools" />
+   <resolver ref="scala-tools-snapshots" />
   </chain>
   <ssh name="publish.gradsoft.ua" namespace="gradsoft" >
      <ivy pattern="ssh://outpost.gradsoft.ua/www/gradsoft.com.ua/data/common/termware/ivy-[revision].xml" />

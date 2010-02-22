@@ -22,7 +22,8 @@
    <dependency org="izpack" name="installer" rev="3.10.2" 
                conf="src->default" transitive="false" />
    -->
-   <dependency org="org.scalatest" name="scalatest" rev="1.0" 
+   <dependency org="org.scalatest" name="scalatest" 
+               rev="1.0.1-for-scala-2.8.0.Beta1-SNAPSHOT" 
                conf="test->default" />
  </dependencies>
 </ivy-module>

@@ -4,19 +4,19 @@ package ua.gradsoft.termware;
 @serializable
 trait Term extends TValue 
         with Ordered[Term]
+        with Attributed[Term]
 {
 
   def arity: Int;
 
   def subterm(i:Int): Option[Term];
 
-  def subterms(): Seq[Term];
+  def subterms: RandomAccessSeq[Term];
 
   def name: Name;
 
   def patternName: Name = name;
-
-  //def termType: Term;
+  //def matcher: termMatched
 
   def signature: TermSignature;
 
@@ -32,12 +32,23 @@ trait Term extends TValue
 
   def isEta: Boolean;
 
+  def isError: Boolean;
+
+  def message: Option[String] = None;
+
   def termSubstFn(s: PartialFunction[Term,Term]): (VM=>VM) ;
 
   def termSubst(s: PartialFunction[Term,Term], vm: VM):Term;
 
   def termSubst(s: PartialFunction[Term,Term]): Term;
 
+  /**
+   * leave on stack result of unification.
+   * (on top is true or false, later - substitution)
+   * i.e.
+   * after termUnifyFn(t,s) ; 
+   *   (vm.popData , vm.popData) = termUnify(t,s)
+   **/
   def termUnifyFn(t:Term, s: Substitution): (VM=>VM) ;
 
   def termUnify(t:Term, s:Substitution, vm: VM): (Boolean, Substitution);
@@ -48,7 +59,7 @@ trait Term extends TValue
 
   def termCompare(t:Term): Int; 
 
-  def compare(that:Term):Int = termCompare(that);
+  override def compare(that:Term):Int = termCompare(that);
 
   def termHashCode: Int; 
 
