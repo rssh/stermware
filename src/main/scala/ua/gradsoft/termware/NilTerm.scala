@@ -5,18 +5,10 @@ class NilTerm(s:NilTermSignature) extends PrimitiveTerm
                                     with FixedNameTerm
 {
 
-  def isNil = true;
+  override def isNil = true;
 
-  def isAtom = false;
+  override def isAtom = false;
   
-  def termUnify(t:Term, s: Substitution) =
-   if (t.isNil) 
-     (true,s)
-   else if (t.isX) 
-     (s+(t->this))
-   else
-     (false,s); 
-          
   def termClassIndex=TermClassIndex.NIL;
 
   def termCompare(t:Term):Int = 

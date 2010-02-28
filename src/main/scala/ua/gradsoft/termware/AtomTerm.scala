@@ -4,20 +4,10 @@ package ua.gradsoft.termware;
 class AtomTerm(n:Name,s:AtomTermSignature) extends PrimitiveTerm
 {
 
-  def isAtom = true;
+  override def isAtom = true;
 
-  def isNil = false;
+  override def isNil = false;
   
-  def termUnify(t:Term, s: Substitution) =
-   if (t.isAtom)
-     if (t.name.compareTo(name)==0) (true,s)
-       else (false,s)
-    else 
-     if (t.isX)
-        s+(t->this)
-     else
-        (false,s);
-          
   def termClassIndex=TermClassIndex.ATOM;
 
   def termCompare(t:Term):Int = {

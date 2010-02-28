@@ -1,5 +1,8 @@
 package ua.gradsoft.termware;
 
+/**
+ * generic signature of term in free algebra.
+ **/
 class FreeFunctionalTermSignature(th:Theory) 
                                     extends FunctionalTermSignature
 {
@@ -12,7 +15,7 @@ class FreeFunctionalTermSignature(th:Theory)
  def fixedName:Option[Name] = None;
  
  def createTerm(name:Name, args:RandomAccessSeq[Term]) : Option[Term] =  
-         Some(new FunctionalTerm(name,args,this));
+         Some(new FreeFunctionalTerm(name,args,this));
  
  def getType(t:Term):Term = {
    t.getAttribute(theory.symbolTable.TYPE) match {
@@ -33,7 +36,6 @@ class FreeFunctionalTermSignature(th:Theory)
    val typeOut = theory.typeAlgebra.reduce(typeIn);
    return typeOut;
  }
- 
 
  val theory = th;
 }

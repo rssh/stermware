@@ -7,7 +7,7 @@ class AtomTermSignature(th:Theory, tn:Name) extends PrimitiveTermSignature
   
   def createConstant(arg:Any) = arg match {
      case x: String => Some(new AtomTerm(
-                          TermWare.instance.symbolTable.getOrCreateElement(x),
+                          TermWare.instance.symbolTable.getOrCreate(x),
                           this))
      case x: Name => Some(new AtomTerm(x,this))
      case _ => None

@@ -70,13 +70,13 @@ trait TermSignature
    }
 
    def createTerm(name:String, args: RandomAccessSeq[Term]):Option[Term] =
-    createTerm(theory.symbolTable.getOrCreateElement(name),args);
+    createTerm(theory.symbolTable.getOrCreate(name),args);
 
    def createTerm(name:String, args: Term*):Option[Term] =
-    createTerm(theory.symbolTable.getOrCreateElement(name),args:_*);
+    createTerm(theory.symbolTable.getOrCreate(name),args:_*);
 
    def createTermFn(name:String, arity: Int):VM=>VM =
-    createTermFn(theory.symbolTable.getOrCreateElement(name),arity);
+    createTermFn(theory.symbolTable.getOrCreate(name),arity);
 
     
    /**

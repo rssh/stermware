@@ -6,7 +6,7 @@ import scala.collection.mutable.ArrayBuffer;
 final class SName(value:String,index:Int) extends Name
 {
 
- def getKindIndex: Int = 1;
+ def getKindIndex: Int = NameKindIndex.forSName;
  def getIndex: Int = i;
  def getString: String = v;
 
@@ -18,7 +18,7 @@ final class SName(value:String,index:Int) extends Name
 class SymbolTable 
 {
 
-  def getOrCreateElement(s: String): Name =
+  def getOrCreate(s: String): Name =
   {
     val r = byNames.get(s);
     if (r!=None) {
@@ -39,9 +39,9 @@ class SymbolTable
   var byNames = new HashMap[String,SName];
   var byIndexes = new ArrayBuffer[SName];
 
-  val TYPE = getOrCreateElement("TYPE");
-  val ERROR = getOrCreateElement("ERROR");
-  val ETA = getOrCreateElement("ETA");
+  val TYPE = getOrCreate("TYPE");
+  val ERROR = getOrCreate("ERROR");
+  val ETA = getOrCreate("ETA");
 
 }
 

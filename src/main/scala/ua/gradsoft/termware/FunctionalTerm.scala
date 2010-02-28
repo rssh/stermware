@@ -3,25 +3,15 @@ package ua.gradsoft.termware;
 import scala.collection.mutable.HashMap;
 import ua.gradsoft.termware.fn._;
 
-case class FunctionalTerm(n:Name,ts:RandomAccessSeq[Term],
-                                 s:FunctionalTermSignature) 
-                                        extends Term
-                                          with ComplexUnify
-                                          with ComplexSubst
+abstract class FunctionalTerm(s:TermSignature) extends Term
+                                             with ComplexUnify
+                                             with ComplexSubst
 {
-
 
   def isNil: Boolean = false;
   def isAtom: Boolean = false;
   def isEta: Boolean = false;
   def isError: Boolean = false;
-
-  def arity: Int = subterms.length;
-
-  def subterm(i:Int):Option[Term] = 
-    if (i<subterms.length) Some(subterms(i)) else None
-  
-
 
   def termUnifyFn(t:Term, s: Substitution): (VM=>VM) =
    (vm:VM) => {
@@ -55,7 +45,7 @@ case class FunctionalTerm(n:Name,ts:RandomAccessSeq[Term],
   def termSubstFn(s: PartialFunction[Term,Term]): (VM=>VM) = {
    (vm:VM) => {
        vm.pushCommand(signature.createTermFn(name,arity));
-       for(i<- 0 to arity) {
+       for(i<- 0 to arity-1) {
          val st1 = subterm(arity-i-1).get;
          vm.pushCommand(st1.termSubstFn(s));
        }
@@ -71,15 +61,18 @@ case class FunctionalTerm(n:Name,ts:RandomAccessSeq[Term],
     c = arity - t.arity;
     if (c!=0) return c;
     c = name.compareTo(t.name);
+    if (c!=0) return c;
+    var i=0;
+    while(i<arity) {
+       c=subterms(i).termCompare(t.subterms(i));
+       if (c!=0) return c;
+       i=i+1;  // scala have no ++i 
+    }
     return c; 
   }
 
-  lazy val termHashCode = n.hashCode+subterms.
-                              foldLeft(0)((x:Int,y:Term)=>x+y.termHashCode);
   
-  val name=n;
-  val subterms=ts;
   val signature=s;
-  val attributes = new HashMap[Name,Term]();
+  lazy val attributes = new HashMap[Name,Term]();
 
 }

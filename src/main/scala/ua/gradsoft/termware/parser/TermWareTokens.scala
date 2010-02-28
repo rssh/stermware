@@ -3,6 +3,7 @@ package ua.gradsoft.termware.parser;
 import scala.util.parsing.syntax._;
 import scala.util.parsing.combinator._;
 import scala.util.parsing.combinator.lexical._;
+import scala.util.parsing.input._;
 
 /**
  * tokens for termware language
@@ -10,10 +11,13 @@ import scala.util.parsing.combinator.lexical._;
 trait TermWareTokens extends Tokens
 {
 
+  trait TermWareToken extends Token with Positional
+  {}
+
   /**
    * boolean primitive
    **/
-  case class BooleanToken(v:Boolean) extends Token
+  case class BooleanToken(v:Boolean) extends TermWareToken
   {
    val value = v;
    def chars = v.toString;
@@ -22,7 +26,7 @@ trait TermWareTokens extends Tokens
   /**
    * delimiter.
    **/
-  case class D(v:String) extends Token
+  case class D(v:String) extends TermWareToken
   {
    val chars = v;
   }
@@ -30,7 +34,7 @@ trait TermWareTokens extends Tokens
   /**
    * operator
    **/
-  case class Op(v:String) extends Token
+  case class Op(v:String) extends TermWareToken
   {
    val chars = v;
   }

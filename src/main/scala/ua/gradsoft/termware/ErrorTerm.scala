@@ -5,7 +5,7 @@ import ua.gradsoft.termware.fn.FnNone;
 
 class ErrorTerm(s: ErrorTermSignature, m:String) extends Term
                                           with SimpleSubst
-                                          with SimpleUnification
+                                          with SimpleUnifyWithoutVM
 {
 
   def arity: Int = 0;

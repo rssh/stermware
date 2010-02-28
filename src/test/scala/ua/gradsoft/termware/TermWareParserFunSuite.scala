@@ -11,7 +11,7 @@ class TermWareParserFunSuite extends FunSuite
 
   test("parse boolean constant") {
      val theory = TermWare.instance.freeTheory;
-     val parser = new TermWareParser(theory); 
+     val parser = new TermWareParser(theory,"inside"); 
      val r = parser.phrase(parser.term).apply(new parser.lexical.Scanner("true"));
      //System.out.println("received:"+r);
      //System.out.println("r.class:"+r.getClass());

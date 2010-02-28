@@ -3,19 +3,19 @@ package ua.gradsoft.termware;
 import scala.collection.mutable.Map;
 import scala.collection.mutable.HashMap;
 
-trait Attributed[T]
+trait TermAttributed
 {
 
-   def getAttribute(name:Name):Option[T]
+   def getAttribute(name:Name):Option[Term]
          = attributes.get(name);
 
-   def setAttribute(name:Name,value:T):Unit
+   def setAttribute(name:Name,value:Term):Unit
          = attributes.update(name,value);
 
-   def resetAttribute(name:Name):Option[T]
+   def resetAttribute(name:Name):Option[Term]
         = attributes.removeKey(name);
 
-   def attributes:Map[Name,T];
+   def attributes:Map[Name,Term];
 }
 
 

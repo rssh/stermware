@@ -4,7 +4,7 @@ package ua.gradsoft.termware;
 @serializable
 trait Term extends TValue 
         with Ordered[Term]
-        with Attributed[Term]
+        with TermAttributed
 {
 
   def arity: Int;
@@ -19,6 +19,8 @@ trait Term extends TValue
   //def matcher: termMatched
 
   def signature: TermSignature;
+
+  def theory: Theory = signature.theory;
 
   def isX: Boolean = false;
 
@@ -60,6 +62,8 @@ trait Term extends TValue
   def termCompare(t:Term): Int; 
 
   override def compare(that:Term):Int = termCompare(that);
+
+  def termEq(t:Term): Boolean = (termCompare(t)==0);
 
   def termHashCode: Int; 
 

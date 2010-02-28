@@ -7,7 +7,7 @@ class BooleanTermSignature(th:Theory) extends PrimitiveTermSignature
 {
 
   override def createConstant(arg:Any):Option[Term] = arg match {
-    case x:Boolean => Some(new BooleanTerm(x,this))
+    case x:Boolean => Some(BooleanTerm(x,this))
     case _ => None
   }
 
