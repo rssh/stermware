@@ -1,5 +1,6 @@
 package ua.gradsoft.termware;
 
+import java.lang.Number;
 
 /**
  * API for access values, wrapped in terms.
@@ -20,71 +21,76 @@ trait TValue
   /**
    * is this is byte ?
    **/
-  def isByte:  Boolean = false;
+  def isByte:  Boolean;
 
   /**
    * get byte value if one is byte.
    */
-  def getByte: Option[Byte] = None;
+  def getByte: Option[Byte];
 
   /**
    *  is this is short ?
    **/
-  def isShort:  Boolean = false;
+  def isShort:  Boolean;
 
   /**
    *  get short value.
    **/
-  def getShort:  Option[Short] = None;
+  def getShort:  Option[Short];
 
   /**
    *  is this is integer ?
    **/
-  def isInt:  Boolean = false;
+  def isInt:  Boolean;
 
   /**
    * get int value
    **/
-  def getInt: Option[Int] = None;
+  def getInt: Option[Int];
 
   /**
    * is this is long ?
    **/
-  def isLong:  Boolean = false;
+  def isLong:  Boolean;
 
   /**
    * get long is one is long.
    **/
-  def getLong: Option[Long] = None;
+  def getLong: Option[Long];
 
-  def isBigInt: Boolean = false;
+  /**
+   * if this is big integer
+   **/
+  def isBigInt: Boolean;
 
   /**
    * get BigInteger is one is big integer
    **/
-  def getBigInt: Option[BigInt] = None;
-
-  def isBigDecimal: Boolean = false;
-
-  def getBigDecimal: Option[BigDecimal] = None;
-
-  def isFloat: Boolean = false;
-
-  def getFloat: Option[Float] = None;
-
-  def isDouble: Boolean = false;
-
-  def getDouble: Option[Double] = None;
+  def getBigInt: Option[BigInt];
 
   /**
-   * is this is number of one of integer types
-   * (byte, short, int, long )
+   * it this term can be represented as big decimal ?
    **/
-  def isIntegerNumber: Boolean = false;
+  def isBigDecimal: Boolean;
 
-  def isNumber: Boolean = false;
+  def getBigDecimal: Option[BigDecimal];
 
-  def getNumber: Option[Number] = None;
+  def isFloat: Boolean;
+
+  def getFloat: Option[Float];
+
+  def isDouble: Boolean;
+
+  def getDouble: Option[Double];
+
+  /**
+   * if this is number type ?
+   **/
+  def isNumber: Boolean ;
+
+  def getNumber: Option[Number];
+
+  def getNumberKind: Option[Int];
 
   def isChar:  Boolean = false;
 

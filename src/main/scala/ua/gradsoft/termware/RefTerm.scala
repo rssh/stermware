@@ -1,7 +1,8 @@
 package ua.gradsoft.termware;
 
 
-case class RefTerm(v:AnyRef, s: RefTermSignature) extends PrimitiveTerm
+case class RefTerm(v:AnyRef, s: RefTermSignature) extends PrimitiveTerm(s)
+                                           with NonNumberTerm
 {
 
   override def isRef: Boolean = true;
@@ -31,9 +32,8 @@ case class RefTerm(v:AnyRef, s: RefTermSignature) extends PrimitiveTerm
                                                       "@"+value.hashCode
                                                           );
 
-  lazy val termHashCode = name.hashCode;
+  lazy val termHashCode = v.hashCode;
 
-  val signature = s;
   val value = v;
 }
 

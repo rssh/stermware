@@ -9,6 +9,7 @@ class EtaXTerm(n: Name, l:Int, t: Term, o:EtaTerm, s:EtaXTermSignature)
                                             extends Term
                                                with SimpleUnifyWithoutVM
                                                with SimpleSubst
+                                               with NonNumberTerm
 {
 
    /**

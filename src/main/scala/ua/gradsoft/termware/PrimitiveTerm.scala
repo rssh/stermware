@@ -5,9 +5,9 @@ import scala.collection.mutable.HashMap;
 /**
  * trait for primitive terms.
  */
-trait PrimitiveTerm extends Term
-                        with SimpleUnifyWithoutVM
-                        with SimpleSubst
+abstract class PrimitiveTerm(s:TermSignature) extends Term
+                                      with SimpleUnifyWithoutVM
+                                      with SimpleSubst
 {
 
   def arity: Int = 0;
@@ -46,5 +46,7 @@ trait PrimitiveTerm extends Term
    ;
 
 
-  var attributes = new HashMap[Name,Term]();
+  val signature = s;
+  lazy val attributes = new HashMap[Name,Term]();
+
 }

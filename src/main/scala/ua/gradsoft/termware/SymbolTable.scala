@@ -5,10 +5,17 @@ import scala.collection.mutable.ArrayBuffer;
 
 final class SName(value:String,index:Int) extends Name
 {
-
- def getKindIndex: Int = NameKindIndex.forSName;
+ def getKindIndex: Int = NameKindIndex.SNAME.id;
  def getIndex: Int = i;
  def getString: String = v;
+
+ override def compare(that: Name):Int =
+   if (getKindIndex == that.getKindIndex)
+        getIndex - that.getIndex
+   else
+        getKindIndex - that.getKindIndex
+   ;
+
 
  private val v = value;
  private val i = index;

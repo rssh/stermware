@@ -12,6 +12,7 @@ class EtaTerm(v:Set[EtaXTerm], l:Term, r:Term, rs:Term, s:EtaTermSignature)
                              extends EtaXOwner
                                          with ComplexUnify
                                          with ComplexSubst
+                                         with NonNumberTerm
 {
 
   def isNil = false;

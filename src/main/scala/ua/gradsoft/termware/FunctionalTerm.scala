@@ -6,6 +6,7 @@ import ua.gradsoft.termware.fn._;
 abstract class FunctionalTerm(s:TermSignature) extends Term
                                              with ComplexUnify
                                              with ComplexSubst
+                                             with NonNumberTerm
 {
 
   def isNil: Boolean = false;

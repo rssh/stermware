@@ -1,7 +1,9 @@
 package ua.gradsoft.termware;
 
 
-case class BooleanTerm(v:Boolean, s: BooleanTermSignature) extends PrimitiveTerm
+case class BooleanTerm(v:Boolean, s: BooleanTermSignature) 
+                                          extends PrimitiveTerm(s)
+                                            with NonNumberTerm
 {
 
   override def isBoolean: Boolean = true;
@@ -26,7 +28,6 @@ case class BooleanTerm(v:Boolean, s: BooleanTermSignature) extends PrimitiveTerm
 
   lazy val termHashCode = name.hashCode;
 
-  val signature = s;
   val value = v;
 }
 

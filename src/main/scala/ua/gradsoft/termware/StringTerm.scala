@@ -3,11 +3,12 @@ package ua.gradsoft.termware;
 
 
 
-case class StringTerm(v:String, s: StringTermSignature) extends PrimitiveTerm
+case class StringTerm(v:String, s: StringTermSignature) 
+                                            extends PrimitiveTerm(s)
+                                               with NonNumberTerm
 {
 
   override def isString: Boolean = true;
-
   override def getString: Option[String] = Some(value);
 
   def termCompare(t: Term):Int = {
@@ -24,7 +25,6 @@ case class StringTerm(v:String, s: StringTermSignature) extends PrimitiveTerm
 
   lazy val termHashCode = value.hashCode;
 
-  val signature = s;
   val value = v;
 }
 

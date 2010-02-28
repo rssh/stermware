@@ -1,12 +1,8 @@
 package ua.gradsoft.termware;
 
-object NameKindIndex
+object NameKindIndex extends Enumeration
 {
- val forSName = 1;
- val forRef = 2;
- val forBigInt = 3;
- val forBigDecimal = 4;
- val forLong = 5;
+ val SNAME, CHAR, STRING, REF, BIG_INT, BIG_DECIMAL, LONG, INT = Value;
 }
 
 trait Name extends Ordered[Name]
@@ -14,14 +10,5 @@ trait Name extends Ordered[Name]
  def getKindIndex:  Int;
  def getIndex: Int;
  def getString: String;
-
- override def compare(that: Name):Int = 
-   if (getKindIndex == that.getKindIndex)
-        getIndex - that.getIndex
-   else
-        getKindIndex - that.getKindIndex
-   ;
-
- override lazy val hashCode = getKindIndex+getIndex+getString.hashCode;
 }
 

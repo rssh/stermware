@@ -1,7 +1,8 @@
 package ua.gradsoft.termware;
 
 
-class AtomTerm(n:Name,s:AtomTermSignature) extends PrimitiveTerm
+class AtomTerm(n:Name,s:AtomTermSignature) extends PrimitiveTerm(s)
+                                            with NonNumberTerm
 {
 
   override def isAtom = true;
@@ -19,6 +20,5 @@ class AtomTerm(n:Name,s:AtomTermSignature) extends PrimitiveTerm
   def termHashCode: Int = 1+name.hashCode;
 
   val name = n;
-  val signature = s;
 }
 

@@ -4,16 +4,8 @@ import scala.collection.mutable.HashMap;
 import ua.gradsoft.termware.fn._;
 
 case class ListTerm(h:Term, t:Term, s:ListTermSignature) 
-                                        extends Term
-                                          with ComplexUnify
-                                          with ComplexSubst
+                                        extends FunctionalTerm(s)
 {
-
-
-  def isNil: Boolean = false;
-  def isAtom: Boolean = false;
-  def isEta: Boolean = false;
-  def isError: Boolean = false;
 
   def arity: Int = 2;
 
@@ -26,7 +18,7 @@ case class ListTerm(h:Term, t:Term, s:ListTermSignature)
 
   def subterms:RandomAccessSeq[Term] = RandomAccessSeq[Term](head,tail);
 
-  def termUnifyFn(t:Term, s: Substitution): (VM=>VM) =
+  override def termUnifyFn(t:Term, s: Substitution): (VM=>VM) =
    (vm:VM) => {
      if (patternName==t.patternName && t.arity==2) {
          val marker = vm.createAndPushMarker;
@@ -59,7 +51,7 @@ case class ListTerm(h:Term, t:Term, s:ListTermSignature)
      vm;
   }
 
-  def termSubstFn(s: PartialFunction[Term,Term]): (VM=>VM) = {
+  override def termSubstFn(s: PartialFunction[Term,Term]): (VM=>VM) = {
    (vm:VM) => {
        vm.pushCommand(signature.createTermFn(name,arity));
        vm.pushCommand(head.termSubstFn(s));
@@ -68,9 +60,7 @@ case class ListTerm(h:Term, t:Term, s:ListTermSignature)
    }
   }
 
-  def termClassIndex = TermClassIndex.FUNCTIONAL;
-
-  def termCompare(t:Term):Int = {
+  override def termCompare(t:Term):Int = {
     var c = termClassIndex - t.termClassIndex;
     if (c!=0) return c;
     c = arity - t.arity;
@@ -88,7 +78,5 @@ case class ListTerm(h:Term, t:Term, s:ListTermSignature)
   
   val head = h;
   val tail = t;
-  val signature = s;
-  val attributes = new HashMap[Name,Term]();
 
 }

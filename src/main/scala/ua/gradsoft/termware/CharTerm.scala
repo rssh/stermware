@@ -2,7 +2,7 @@ package ua.gradsoft.termware;
 
 case class CharName(v:Char) extends Name
 {
- def getKindIndex: Int = NameKindIndex.forBigDecimal;
+ def getKindIndex: Int = NameKindIndex.CHAR.id;
  def getIndex: Int = 0;
  def getString: String = value.toString;
 
@@ -17,11 +17,11 @@ case class CharName(v:Char) extends Name
 }
 
 
-case class CharTerm(v:Char, s: CharTermSignature) extends PrimitiveTerm
+case class CharTerm(v:Char, s: CharTermSignature) extends PrimitiveTerm(s)
+                                                  with NonNumberTerm
 {
 
   override def isChar: Boolean = true;
-
   override def getChar: Option[Char] = Some(value);
 
   def termCompare(t: Term):Int = {
@@ -33,10 +33,8 @@ case class CharTerm(v:Char, s: CharTermSignature) extends PrimitiveTerm
   def termClassIndex: Int = TermClassIndex.CHAR;
 
   lazy val name = new CharName(value);
-
   lazy val termHashCode = value.hashCode;
 
-  val signature = s;
   val value = v;
 }
 
