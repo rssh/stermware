@@ -27,13 +27,11 @@ class TermWareParser(th:Theory, fname:String) extends TokenParsers
   
 
   def posAttributes(t:Term, x:Positional) = {
-     t.setAttribute(FNAME,fname);
-     t.setAttribute(POSITION,x.pos.toString);
+     t.setAttribute(POS,new PositionWithFname(x.pos,fileName));
      t;
   }
 
   val theory = th;
   val fileName = fname;
-  lazy val POSITION = th.symbolTable.getOrCreate("POSITION");
-  lazy val FNAME = th.symbolTable.getOrCreate("FNAME");
+  lazy val POS = th.symbolTable.getOrCreate("POS");
 }

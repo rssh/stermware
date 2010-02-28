@@ -16,7 +16,6 @@ case class CharName(v:Char) extends Name
  val value=v;
 }
 
-
 case class CharTerm(v:Char, s: CharTermSignature) extends PrimitiveTerm(s)
                                                   with NonNumberTerm
 {
