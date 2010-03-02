@@ -12,5 +12,6 @@ abstract class NumberPrimitiveTerm[T](v:T, s:TermSignature)
   def termClassIndex: Int = TermClassIndex.NUMBER;
 
   val value = v;
+
 }
 

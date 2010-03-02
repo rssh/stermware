@@ -3,7 +3,7 @@ package ua.gradsoft.termware;
 /**
  * Signature for opaque object reference, incapsulated in term
  */
-class RefTermSignature(th:Theory) extends PrimitiveTermSignature
+class RefTermSignature(th:Theory) extends PrimitiveTermSignature(th)
 {
 
   override def createConstant(arg:Any):Option[Term] = arg match {
@@ -11,10 +11,6 @@ class RefTermSignature(th:Theory) extends PrimitiveTermSignature
           case _ => None;
   }
 
-  def getType(t:Term):Term = termType;
-
-  val theory: Theory = th;
-
-  lazy val termType = th.freeAtomSignature.createConstant("Reference").get;
+  def typeName="Ref";
 
 }

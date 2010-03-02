@@ -3,7 +3,7 @@ package ua.gradsoft.termware;
 /**
  * Base signature for primitive types
  */
-trait PrimitiveTermSignature extends TermSignature
+abstract class PrimitiveTermSignature(th:Theory) extends TermSignature
 {
 
   override def fixedName = None;
@@ -16,4 +16,14 @@ trait PrimitiveTermSignature extends TermSignature
   override def createTerm(name:Name, args: RandomAccessSeq[Term]) = None;
   override def createSpecial(args: Any*) = None;
 
+  /**
+   * name of class in type algebra.
+   * Must be overriden in subclass
+   **/
+  def typeName: String;
+
+  override def getType(t:Term):Term = termType;
+  lazy val termType = th.freeAtomSignature.createConstant(typeName).get;
+
+  val theory: Theory = th;
 }

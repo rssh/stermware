@@ -3,7 +3,7 @@ package ua.gradsoft.termware;
 /**
  * Signature for string
  */
-class StringTermSignature(th:Theory) extends PrimitiveTermSignature
+class StringTermSignature(th:Theory) extends PrimitiveTermSignature(th)
 {
 
   override def createConstant(arg:Any):Option[Term] = arg match {
@@ -11,10 +11,6 @@ class StringTermSignature(th:Theory) extends PrimitiveTermSignature
     case _ => None
   }
 
-  def getType(t:Term):Term = termType;
-
-  val theory: Theory = th;
-
-  lazy val termType = th.freeAtomSignature.createConstant("String").get;
+  override def typeName = "String";
 
 }

@@ -16,14 +16,37 @@ class TermWareParser(th:Theory, fname:String) extends TokenParsers
         primitiveTerm
   ;
 
-  def primitiveTerm:Parser[Term] = 
+  def primitiveTerm:Parser[Term] = (
      elem("Boolean", _.isInstanceOf[BooleanToken]) ^^ {
                                    x  => posAttributes(
                                             BooleanTerm(
                                              x.asInstanceOf[BooleanToken].v,
                                              theory.booleanSignature
                                             ), x.asInstanceOf[BooleanToken] )
-                               };
+                               }
+    |
+     elem("String", _.isInstanceOf[StringToken]) ^^ {
+                                 x  => posAttributes(
+                                          StringTerm(
+                                           x.asInstanceOf[StringToken].value,
+                                           theory.stringSignature
+                                            ), x.asInstanceOf[StringToken] )
+                               } 
+    |
+     elem("Char", _.isInstanceOf[CharToken]) ^^ {
+                                 x  => posAttributes(
+                                        theory.charSignature.createConstant(
+                                           x.asInstanceOf[CharToken].value
+                                            ), x.asInstanceOf[CharToken] )
+                               } 
+    |
+     elem("Double", _.isInstanceOf[ValueToken[Double]]) ^^ {
+                           x  => posAttributes(
+                                  theory.doubleSignature.createConstant(
+                                     x.asInstanceOf[ValueToken[Double]].value
+                                  ), x.asInstanceOf[Positional] )
+                         }
+    );
   
 
   def posAttributes(t:Term, x:Positional) = {

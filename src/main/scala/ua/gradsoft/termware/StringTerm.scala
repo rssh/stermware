@@ -19,9 +19,7 @@ case class StringTerm(v:String, s: StringTermSignature)
 
   def termClassIndex: Int = TermClassIndex.STRING;
 
-  lazy val name = signature.theory.symbolTable.getOrCreate(
-                                                    "\""+value+"\""
-                                                          );
+  lazy val name = new StringName[String](value,NameKindIndex.STRING.id);
 
   lazy val termHashCode = value.hashCode;
 

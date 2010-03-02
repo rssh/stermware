@@ -4,7 +4,7 @@ package ua.gradsoft.termware;
 /**
  * Signature for short
  */
-class ByteTermSignature(th:Theory) extends PrimitiveTermSignature
+class ByteTermSignature(th:Theory) extends PrimitiveTermSignature(th)
 {
 
   override def createConstant(arg:Any):Option[Term] = arg match {
@@ -12,11 +12,7 @@ class ByteTermSignature(th:Theory) extends PrimitiveTermSignature
     case _ => None
   }
 
-  def getType(t:Term):Term = termType;
-
-  val theory: Theory = th;
-
-  lazy val termType = th.freeAtomSignature.createConstant("Byte").get;
+  override def typeName = "Byte" ;
 
 }
 

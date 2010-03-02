@@ -1,14 +1,11 @@
 package ua.gradsoft.termware;
 
-class NilTermSignature(th:Theory) extends PrimitiveTermSignature
+class NilTermSignature(th:Theory) extends PrimitiveTermSignature(th)
 {
 
-  override def getType(t:Term):Term = nilType;
-  
   override def createConstant(arg:Any) = Some(nil);
+  override def typeName = "Nil";
 
-  val theory = th;
   val nil = new NilTerm(this);
-  lazy val nilType:Term = theory.atomSignature("Nil").createConstant().get;
 
 }

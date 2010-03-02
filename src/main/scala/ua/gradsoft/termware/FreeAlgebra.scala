@@ -24,6 +24,7 @@ trait FreeAlgebra extends Theory
   val shortSignature = new ShortTermSignature(this);
   val intSignature = new IntTermSignature(this);
   val longSignature = new LongTermSignature(this);
+  val doubleSignature = new DoubleTermSignature(this);
   val bigIntSignature = new BigIntTermSignature(this);
   val bigDecimalSignature = new BigDecimalTermSignature(this);
 

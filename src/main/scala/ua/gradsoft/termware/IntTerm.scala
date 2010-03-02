@@ -18,7 +18,6 @@ final case class IntName(v: Int) extends Name
  val value=v;
 }
 
-
 case class IntTerm(v:Int, s:IntTermSignature) 
                                extends NumberPrimitiveTerm[Int](v,s)
 {
@@ -63,7 +62,7 @@ case class IntTerm(v:Int, s:IntTermSignature)
   }
 
 
-  lazy val name = new LongName(value);
+  lazy val name = new IntName(value);
   lazy val termHashCode = value.toInt;
 }
 

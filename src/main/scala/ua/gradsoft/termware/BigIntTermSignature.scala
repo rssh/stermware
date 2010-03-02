@@ -4,7 +4,7 @@ package ua.gradsoft.termware;
 /**
  * Signature for big integer
  */
-class BigIntTermSignature(th:Theory) extends PrimitiveTermSignature
+class BigIntTermSignature(th:Theory) extends PrimitiveTermSignature(th)
 {
 
   override def createConstant(arg:Any):Option[Term] = arg match {
@@ -12,10 +12,6 @@ class BigIntTermSignature(th:Theory) extends PrimitiveTermSignature
     case _ => None
   }
 
-  def getType(t:Term):Term = termType;
-
-  val theory: Theory = th;
-
-  lazy val termType = th.freeAtomSignature.createConstant("BigInteger").get;
+  override def typeName = "BigInteger" ;
 
 }
