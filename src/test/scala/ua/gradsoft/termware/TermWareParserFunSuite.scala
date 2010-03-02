@@ -18,8 +18,8 @@ class TermWareParserFunSuite extends FunSuite
 
        true
      """));
-     //System.out.println("received:"+r);
-     //System.out.println("r.class:"+r.getClass());
+     System.out.println("received:"+r);
+     System.out.println("r.class:"+r.getClass());
      r match {
        case parser.Success(t,_) => {
                        assert(t.isInstanceOf[BooleanTerm]);

@@ -21,43 +21,50 @@ class TermWareParser(th:Theory, fname:String) extends TokenParsers
 
   def primitiveTerm:Parser[Term] = (
      elem("Boolean", _.asInstanceOf[T].tokenType==BOOLEAN ) ^^ {
-                         x  => posAttributes(
-                                    BooleanTerm(
-                                     x.asInstanceOf[ValueToken[Boolean]].v,
-                                     theory.booleanSignature
-                                    ), x.asInstanceOf[Positional] )
-                               }
+                    x => cConstant[Boolean](theory.booleanSignature,x);
+           }
     |
      elem("String", _.asInstanceOf[T].tokenType==STRING) ^^ {
-                        x  => posAttributes(
-                                    StringTerm(
-                                      x.asInstanceOf[ValueToken[String]].value,
-                                      theory.stringSignature
-                                    ), x.asInstanceOf[Positional] )
-                        } 
+                    x => cConstant[String](theory.stringSignature,x);
+           } 
     |
      elem("Char", _.asInstanceOf[T].tokenType==CHAR) ^^ {
-                                 x  => posAttributes(
-                                        theory.charSignature.createConstant(
-                                           x.asInstanceOf[CharToken].value
-                                            ), x.asInstanceOf[CharToken] )
-                               } 
+                    x => cConstant[Char](theory.charSignature,x);
+           } 
+    |
+     elem("Short", _.asInstanceOf[T].tokenType==SHORT) ^^ {
+                    x => cConstant[Short](theory.shortSignature,x);
+           } 
+    |
+     elem("Int", _.asInstanceOf[T].tokenType==INT) ^^ {
+                    x => cConstant[Int](theory.intSignature,x);
+           }
+     |
+     elem("Long", _.asInstanceOf[T].tokenType==LONG) ^^ {
+                    x => cConstant[Long](theory.longSignature,x);
+           }
     |
      elem("Double", _.asInstanceOf[T].tokenType==DOUBLE) ^^ {
-                           x  => posAttributes(
-                                  theory.doubleSignature.createConstant(
-                                     x.asInstanceOf[ValueToken[Double]].value
-                                  ), x.asInstanceOf[Positional] )
-                         }
+                    x => cConstant[Double](theory.doubleSignature,x);
+           }
     |
      elem("Float", _.asInstanceOf[T].tokenType==FLOAT) ^^ {
-                           x  => posAttributes(
-                                  theory.floatSignature.createConstant(
-                                     x.asInstanceOf[ValueToken[Float]].value
-                                  ), x.asInstanceOf[Positional] )
-                         }
+                    x => cConstant[Float](theory.floatSignature,x);
+           }
+    |
+     elem("BigInt", _.asInstanceOf[T].tokenType==BIG_INT) ^^ {
+                    x => cConstant[BigInt](theory.bigIntSignature,x);
+           }
+    |
+     elem("BigDecimal", _.asInstanceOf[T].tokenType==BIG_DECIMAL) ^^ {
+                    x => cConstant[BigDecimal](theory.bigDecimalSignature,x);
+           }
     );
   
+  def cConstant[T](s:TermSignature,x:Elem):Term =
+    posAttributes(s.createConstant(
+                         x.asInstanceOf[ValueToken[T]].value
+                  ).get, x.asInstanceOf[Positional]);
 
   def posAttributes(t:Term, x:Positional) = {
      t.setAttribute(POS,new PositionWithFname(x.pos,fileName));

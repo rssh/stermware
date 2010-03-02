@@ -63,7 +63,7 @@ class TermWareLexical extends Lexical
   );
 
   def charPrimitive:Parser[Token] = (
-   '\'' ~> charInternals <~ '\'' ^^ { x => CharToken(x); }
+   '\'' ~> charInternals <~ '\'' ^^ { x => ValueToken[Char](CHAR,x); }
   );
 
   def charInternals:Parser[Char] = (
@@ -138,18 +138,19 @@ class TermWareLexical extends Lexical
       val bi = new BigInt(new java.math.BigInteger(intPart.mkString(""),radix));
       if (suffix==None) {
         if (bi == bi.intValue) {
-           new IntToken(bi.intValue);
+           ValueToken[Int](INT,bi.intValue);
         } else if (bi == bi.longValue) {
-           new LongToken(bi.intValue);
+           ValueToken[Long](LONG,bi.longValue);
         } else {
-           new BigIntToken(bi);
+           ValueToken[BigInt](BIG_INT,bi);
         }
       } else {
         suffix.get.toUpper match {
-          case 'L' => new LongToken(bi.longValue);
-          case 'S' => new ShortToken(bi.shortValue);
-          case 'B' => new BigIntToken(bi);
-          case 'D' => new BigDecimalToken(new BigDecimal(
+          case 'L' => ValueToken[Long](LONG,bi.longValue);
+          case 'S' => ValueToken[Short](SHORT,bi.shortValue);
+          case 'B' => ValueToken[BigInt](BIG_INT,bi);
+          case 'D' => ValueToken[BigDecimal](BIG_DECIMAL,
+                          new BigDecimal(
                               new java.math.BigDecimal(bi.bigInteger)));
           case _   => TermWareErrorToken(
                           "Invalid integer number suffix:"+suffix.get);
@@ -169,7 +170,7 @@ class TermWareLexical extends Lexical
           suffix.get.toUpper match {
             case 'L' => ValueToken[Double](DOUBLE, bd.doubleValue);
             case 'S' => ValueToken[Float](FLOAT, bd.floatValue);
-            case 'D' => new BigDecimalToken( new BigDecimal(bd) );
+            case 'D' => ValueToken[BigDecimal](BIG_DECIMAL, new BigDecimal(bd));
             case _   => TermWareErrorToken("Invalid number suffix:"+suffix.get);
           } 
         } 

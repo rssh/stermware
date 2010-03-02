@@ -33,49 +33,6 @@ trait TermWareTokens extends Tokens
   }
 
 
-  case class CharToken(ch:Char) extends TermWareToken
-  {
-   def tokenType = TokenType.CHAR;
-   val value = ch;
-   def chars = value.toString;
-  }
-
-
-  case class IntToken(v:Int) extends TermWareToken
-  {
-   def tokenType = TokenType.INT;
-   val value = v;
-   def chars = value.toString;
-  }
-
-  case class LongToken(v:Long) extends TermWareToken
-  {
-   def tokenType = TokenType.LONG;
-   val value = v;
-   def chars = value.toString;
-  }
-
-  case class ShortToken(v:Short) extends TermWareToken
-  {
-   def tokenType = TokenType.SHORT;
-   val value = v;
-   def chars = value.toString;
-  }
-
-  case class BigIntToken(v:BigInt) extends TermWareToken
-  {
-   def tokenType = TokenType.BIG_INT;
-   val value = v;
-   def chars = value.toString;
-  }
-
-  case class BigDecimalToken(v:BigDecimal) extends TermWareToken
-  {
-   def tokenType = TokenType.BIG_DECIMAL;
-   val value = v;
-   def chars = value.toString;
-  }
-
 
   case class TermWareErrorToken(s:String) extends TermWareToken
   {
