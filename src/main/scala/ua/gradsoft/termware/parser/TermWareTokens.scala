@@ -11,71 +11,67 @@ import scala.util.parsing.input._;
 trait TermWareTokens extends Tokens
 {
 
-  trait TermWareToken extends Token with Positional
-  {}
-
-  case class ValueToken[T](v:T) extends TermWareToken
+  object TokenType extends Enumeration
   {
+   val BOOLEAN, STRING, CHAR,
+       INT, SHORT, LONG,
+       DOUBLE, FLOAT,
+       BIG_DECIMAL, BIG_INT,
+       DELIMITER, OPERATOR, ERROR = Value;
+  }
+
+  trait TermWareToken extends Token with Positional
+  {
+   def tokenType: TokenType.Value;
+  }
+
+  case class ValueToken[T](t:TokenType.Value, v:T) extends TermWareToken
+  {
+   val tokenType=t;
    val value=v;
    def chars=value.toString;
   }
 
-  /**
-   * boolean primitive
-   **/
-  case class BooleanToken(v:Boolean) extends TermWareToken
-  {
-   val value = v;
-   def chars = value.toString;
-   //override def setPos(newPos:Position)  =
-   //{ System.err.println("setPos:"+newPos.toString+", class="+newPos.getClass);
-   //   super.setPos(newPos);
-   //   this;
-   // }
-  }
-
-  case class StringToken(s:String) extends TermWareToken
-  {
-   val value = s;
-   def chars = value;
-  }
 
   case class CharToken(ch:Char) extends TermWareToken
   {
+   def tokenType = TokenType.CHAR;
    val value = ch;
    def chars = value.toString;
   }
 
-  abstract class NumberToken extends TermWareToken 
-  {
-  };
 
-  case class IntToken(v:Int) extends NumberToken
+  case class IntToken(v:Int) extends TermWareToken
   {
+   def tokenType = TokenType.INT;
    val value = v;
    def chars = value.toString;
   }
 
-  case class LongToken(v:Long) extends NumberToken
+  case class LongToken(v:Long) extends TermWareToken
   {
+   def tokenType = TokenType.LONG;
    val value = v;
    def chars = value.toString;
   }
 
-  case class ShortToken(v:Short) extends NumberToken
+  case class ShortToken(v:Short) extends TermWareToken
   {
+   def tokenType = TokenType.SHORT;
    val value = v;
    def chars = value.toString;
   }
 
-  case class BigIntToken(v:BigInt) extends NumberToken
+  case class BigIntToken(v:BigInt) extends TermWareToken
   {
+   def tokenType = TokenType.BIG_INT;
    val value = v;
    def chars = value.toString;
   }
 
-  case class BigDecimalToken(v:BigDecimal) extends NumberToken
+  case class BigDecimalToken(v:BigDecimal) extends TermWareToken
   {
+   def tokenType = TokenType.BIG_DECIMAL;
    val value = v;
    def chars = value.toString;
   }
@@ -83,6 +79,7 @@ trait TermWareTokens extends Tokens
 
   case class TermWareErrorToken(s:String) extends TermWareToken
   {
+   def tokenType = TokenType.ERROR;
    val chars=s;
   }
 
@@ -91,6 +88,7 @@ trait TermWareTokens extends Tokens
    **/
   case class D(v:String) extends TermWareToken
   {
+   def tokenType = TokenType.DELIMITER;
    val chars = v;
   }
 
@@ -99,6 +97,7 @@ trait TermWareTokens extends Tokens
    **/
   case class Op(v:String) extends TermWareToken
   {
+   def tokenType = TokenType.OPERATOR;
    val chars = v;
   }
 

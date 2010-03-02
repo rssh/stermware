@@ -7,7 +7,9 @@ import scala.util.parsing.input.CharArrayReader.EofCh
 class TermWareLexical extends Lexical
                           with TermWareTokens
 {
-  type Token = TermWareToken;
+
+  override type Token = TermWareToken;
+  import TokenType._;
 
   def token: Parser[Token] = positioned(
         primitive
@@ -26,15 +28,15 @@ class TermWareLexical extends Lexical
   );
 
   def booleanPrimitive:Parser[Token] = (
-       't'~'r'~'u'~'e'        ^^ { _ => BooleanToken(true); }
+       't'~'r'~'u'~'e'        ^^ { _ => ValueToken[Boolean](BOOLEAN,true); }
        |
-       'f'~'a'~'l'~'s'~'e'    ^^ { _ => BooleanToken(false); } 
+       'f'~'a'~'l'~'s'~'e'    ^^ { _ => ValueToken[Boolean](BOOLEAN,false); } 
   );
 
   def stringPrimitive: Parser[Token] = (
        '\"'~! rep(stringInternals) ~! '\"' ^^ { 
-                                 case x ~ y ~ z => StringToken(y mkString ""); 
-                               }
+                    case x ~ y ~ z => ValueToken[String](STRING,y mkString ""); 
+                 }
       |
        '\"' ~>  failure("Unclosed string literal")
   );
@@ -87,8 +89,9 @@ class TermWareLexical extends Lexical
   );
 
   def decimalNumberPrimitive:Parser[Token] = (
-      rep(decimalDigit) ~ opt('.' ~> rep(decimalDigit)) ~ opt(numberSuffix)
-              ^^ { case x ~ y ~ z  => createNumberToken(x,y,z,10); }
+      decimalDigit ~! rep(decimalDigit) 
+           ~ opt('.' ~> rep(decimalDigit)) ~ opt(numberSuffix)
+              ^^ { case x ~ y ~ z ~ w  => createNumberToken(x::y,z,w,10); }
   );
 
   def numberSuffix:Parser[Char] = (
@@ -161,11 +164,11 @@ class TermWareLexical extends Lexical
         val bi = new java.math.BigInteger(li);
         val bd = new java.math.BigDecimal(bi,scale);
         if (suffix==None) {
-          ValueToken[Double](bd.doubleValue);
+          ValueToken[Double](DOUBLE, bd.doubleValue);
         } else {
           suffix.get.toUpper match {
-            case 'L' => ValueToken[Double](bd.doubleValue);
-            case 'S' => ValueToken[Float](bd.floatValue);
+            case 'L' => ValueToken[Double](DOUBLE, bd.doubleValue);
+            case 'S' => ValueToken[Float](FLOAT, bd.floatValue);
             case 'D' => new BigDecimalToken( new BigDecimal(bd) );
             case _   => TermWareErrorToken("Invalid number suffix:"+suffix.get);
           } 
