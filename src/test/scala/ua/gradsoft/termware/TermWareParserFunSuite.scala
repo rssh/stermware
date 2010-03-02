@@ -11,9 +11,6 @@ class TermWareParserFunSuite extends FunSuite
 {
 
   test("parse boolean constant") {
-     val theory = TermWare.instance.freeTheory;
-     val POS = TermWare.instance.symbolTable.getOrCreate("POS");
-     val parser = new TermWareParser(theory,"inside"); 
      val r = parser.phrase(parser.term)(new parser.lexical.Scanner("""
 
        true
@@ -36,14 +33,11 @@ class TermWareParserFunSuite extends FunSuite
   }
 
   test("parse string constant with newline") {
-     val theory = TermWare.instance.freeTheory;
-     val POS = TermWare.instance.symbolTable.getOrCreate("POS");
-     val parser = new TermWareParser(theory,"inside-1"); 
      val r = parser.phrase(parser.term)(new parser.lexical.Scanner("""
          " string with newline \"
          "
      """));
-     System.out.println("received:"+r);
+     //System.out.println("received:"+r);
      r match {
        case parser.Success(t,_) => {
                        assert(t.isInstanceOf[StringTerm]);
@@ -54,5 +48,21 @@ class TermWareParserFunSuite extends FunSuite
        case _ => fail("string must be parsed to string constant");
      }
   }
+
+  test("parse int constant") {
+     val r = parser.phrase(parser.term)(new parser.lexical.Scanner("3456787"));
+     r match {
+       case parser.Success(t,_) => {
+                       assert(t.isInstanceOf[IntTerm]);
+                       val v = t.getInt.get;
+                       assert(v==3456787);
+                      }
+       case _ => fail("int must be parsed to constant");
+     }
+  }
+
+  val theory = TermWare.instance.freeTheory;
+  val POS = TermWare.instance.symbolTable.getOrCreate("POS");
+  val parser = new TermWareParser(theory,"inside-1"); 
 
 }
