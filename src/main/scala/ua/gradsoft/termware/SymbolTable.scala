@@ -46,6 +46,8 @@ class SymbolTable
   var byNames = new HashMap[String,SName];
   var byIndexes = new ArrayBuffer[SName];
 
+  lazy val NIL = getOrCreate("nil");
+  lazy val CONS = getOrCreate("cons");
   val TYPE = getOrCreate("TYPE");
   val ERROR = getOrCreate("ERROR");
   val ETA = getOrCreate("ETA");

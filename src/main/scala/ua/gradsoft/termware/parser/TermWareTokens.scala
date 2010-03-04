@@ -17,7 +17,10 @@ trait TermWareTokens extends Tokens
        INT, SHORT, LONG,
        DOUBLE, FLOAT,
        BIG_DECIMAL, BIG_INT,
-       DELIMITER, OPERATOR, ERROR = Value;
+       IDENTIFIER, KEYWORD,
+       DELIMITER, 
+       BINARY_OPERATOR,
+       ERROR = Value;
   }
 
   trait TermWareToken extends Token with Positional
@@ -50,12 +53,21 @@ trait TermWareTokens extends Tokens
   }
 
   /**
-   * operator
+   * binary operator
+   *@param v - string representation of operator (i. e. "+")
+   *@param p - priority
+   *@param fn - appropriative functional symbol (i. e. "plus")
+   *@param la - left associativity.
    **/
-  case class Op(v:String) extends TermWareToken
+  case class BinaryOperator(v:String, p:Int, fn:String, la:Boolean) extends TermWareToken
   {
-   def tokenType = TokenType.OPERATOR;
+   def tokenType = TokenType.BINARY_OPERATOR;
+   def isLeftAssoc = leftAssoc;
+   def isRightAssoc = (! leftAssoc);
    val chars = v;
+   val priority = p;
+   val functionName = fn;
+   val leftAssoc = la;
   }
 
 }

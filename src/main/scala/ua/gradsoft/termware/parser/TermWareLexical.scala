@@ -1,5 +1,6 @@
 package ua.gradsoft.termware.parser;
 
+import ua.gradsoft.termware._;
 import scala.util.parsing.combinator.lexical.Lexical;
 import scala.util.parsing.input.CharArrayReader.EofCh
 
@@ -14,7 +15,17 @@ class TermWareLexical extends Lexical
   def token: Parser[Token] = positioned(
         primitive
        |
+        identifier
+       |
         delimiter
+       |
+        binaryOperator
+  );
+
+  def identifier: Parser[Token] = (
+    letter ~ rep( letter | digit )  ^^ {
+             case  x ~ y => ValueToken[String](IDENTIFIER, (x::y) mkString "");
+           }
   );
 
   def primitive: Parser[Token] = (

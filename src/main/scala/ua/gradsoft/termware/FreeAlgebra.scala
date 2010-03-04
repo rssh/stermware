@@ -37,8 +37,12 @@ trait FreeAlgebra extends Theory
                                     symbolTable.getOrCreate("ARRAY"),
                                     this);
 
-  def funSignature(name:Name, args:RandomAccessSeq[Term]): TermSignature 
-                                                          = freeFunSignature;
+  def funSignature(name:Name): TermSignature 
+               = if (name==symbolTable.CONS)  {
+                    listSignature;
+                 } else {
+                    freeFunSignature;
+                 }
 
   val freeFunSignature = new FreeFunctionalTermSignature(this);
 

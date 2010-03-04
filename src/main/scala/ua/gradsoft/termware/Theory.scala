@@ -38,9 +38,9 @@ trait Theory extends TermWareInstance
  def atomSignature(name:String): TermSignature =
        atomSignature(symbolTable.getOrCreate(name));
 
- def funSignature(name:Name, args:RandomAccessSeq[Term]): TermSignature;
- def funSignature(name:String, args:RandomAccessSeq[Term]): TermSignature =
-       funSignature(symbolTable.getOrCreate(name), args);
+ def funSignature(name:Name): TermSignature;
+ def funSignature(name:String): TermSignature =
+       funSignature(symbolTable.getOrCreate(name));
 
  def arraySignature: TermSignature;
  def listSignature: TermSignature;
