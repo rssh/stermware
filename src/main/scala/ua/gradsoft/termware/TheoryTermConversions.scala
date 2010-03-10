@@ -132,4 +132,9 @@ trait TheoryTermConversions
    }
   }
 
+  def termFromList(th:Theory, l:List[Term]):Term = 
+      l.foldRight(th.nilSignature.createConstant(null).get)(
+        { th.funSignature("cons").createTerm("cons",_,_).get; }
+      );
+
 }

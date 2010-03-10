@@ -72,7 +72,7 @@ case class ListTerm(h:Term, t:Term, s:ListTermSignature)
     return tail.termCompare(t.subterm(1).get);
   }
 
-  lazy val name = signature.fixedName.get;
+  def name = signature.fixedName.get;
 
   lazy val termHashCode = name.hashCode+head.hashCode+tail.hashCode;
   

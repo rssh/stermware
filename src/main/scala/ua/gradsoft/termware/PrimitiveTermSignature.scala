@@ -6,7 +6,7 @@ package ua.gradsoft.termware;
 abstract class PrimitiveTermSignature(th:Theory) extends TermSignature
 {
 
-  override def fixedName = None;
+  override def fixedName:Option[Name] = None;
 
   override def fixedArity = Some(0);
 

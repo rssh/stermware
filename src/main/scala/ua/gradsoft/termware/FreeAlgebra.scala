@@ -1,6 +1,7 @@
 package ua.gradsoft.termware;
 
 import ua.gradsoft.termware.freeterms._;
+import ua.gradsoft.termware.parser.OperatorSyntax;
 
 trait FreeAlgebra extends Theory
 {
@@ -48,6 +49,20 @@ trait FreeAlgebra extends Theory
 
   val errorSignature = new ErrorTermSignature(this);
 
-
+  val operatorSyntax = new OperatorSyntax()
+                               .addBinary("||","or",true,2)
+                               .addBinary("&&","and",true,3)
+                               .addBinary("==","equal",true,4)
+                               .addBinary("!=","notEqual",true,4)
+                               .addBinary("<","less",true,5)
+                               .addBinary("<=","lessEq",true,5)
+                               .addBinary(">","greater",true,5)
+                               .addBinary(">=","greater",true,5)
+                               .addBinary("+","plus",true,6)
+                               .addBinary("-","minus",true,6)
+                               .addBinary("%","mod",true,6)
+                               .addBinary("*","multiply",true,7)
+                               .addBinary("/","divide",true,7)
+                               .addUnary("-","minus")
 
 }

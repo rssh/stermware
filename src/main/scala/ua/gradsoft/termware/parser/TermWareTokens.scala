@@ -5,6 +5,8 @@ import scala.util.parsing.combinator._;
 import scala.util.parsing.combinator.lexical._;
 import scala.util.parsing.input._;
 
+import ua.gradsoft.termware._;
+
 /**
  * tokens for termware language
  **/
@@ -19,7 +21,7 @@ trait TermWareTokens extends Tokens
        BIG_DECIMAL, BIG_INT,
        IDENTIFIER, KEYWORD,
        DELIMITER, 
-       BINARY_OPERATOR,
+       OPERATOR,
        ERROR = Value;
   }
 
@@ -59,15 +61,19 @@ trait TermWareTokens extends Tokens
    *@param fn - appropriative functional symbol (i. e. "plus")
    *@param la - left associativity.
    **/
-  case class BinaryOperator(v:String, p:Int, fn:String, la:Boolean) extends TermWareToken
+  case class OperatorToken(op2:BinaryOperator,op1:UnaryOperator) 
+                                              extends TermWareToken
   {
-   def tokenType = TokenType.BINARY_OPERATOR;
-   def isLeftAssoc = leftAssoc;
-   def isRightAssoc = (! leftAssoc);
+   def tokenType = TokenType.OPERATOR;
+   def chars = if (v2!=null) v2.sign else v1.sign;
+   val v2 = op2;
+   val v1 = op1;
+  }
+
+  case class KeywordToken(v:String) extends TermWareToken
+  {
+   def tokenType = TokenType.KEYWORD;
    val chars = v;
-   val priority = p;
-   val functionName = fn;
-   val leftAssoc = la;
   }
 
 }

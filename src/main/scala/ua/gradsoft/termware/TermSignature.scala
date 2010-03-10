@@ -47,7 +47,7 @@ trait TermSignature
      case x: RandomAccessSeq[Term] => createTerm(name,x)
      case _ => {
        val arr = new Array[Term](args.length);
-       for( i <- 0 to args.length) {
+       for( i <- 0 to args.length-1) {
           arr.update(i,args(i));
        }
        createTerm(name,arr);

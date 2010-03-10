@@ -4,23 +4,37 @@ import ua.gradsoft.termware._;
 import scala.util.parsing.combinator.lexical.Lexical;
 import scala.util.parsing.input.CharArrayReader.EofCh
 
+object TermWareLexical extends Enumeration
+{
+  type State = Value;
+  val NORMAL,  IN_SYNTAX = Value;
+}
 
-class TermWareLexical extends Lexical
+
+class TermWareLexical(s:OperatorSyntax) extends Lexical
                           with TermWareTokens
 {
 
   override type Token = TermWareToken;
   import TokenType._;
+  import TermWareLexical._;
 
-  def token: Parser[Token] = positioned(
+  def token1: Parser[Token] = positioned(
         primitive
-       |
-        identifier
        |
         delimiter
        |
-        binaryOperator
+        operator
+       |
+        keyword
+       |
+        identifier
   );
+
+  def token: Parser[Token] = 
+        token1 ^^ { 
+     (x) => { if (false) {System.out.println(x.tokenType+":"+x.chars); };  x }
+  }
 
   def identifier: Parser[Token] = (
     letter ~ rep( letter | digit )  ^^ {
@@ -39,9 +53,9 @@ class TermWareLexical extends Lexical
   );
 
   def booleanPrimitive:Parser[Token] = (
-       't'~'r'~'u'~'e'        ^^ { _ => ValueToken[Boolean](BOOLEAN,true); }
+       't'~'r'~'u'~'e'      ^^^ { ValueToken[Boolean](BOOLEAN,true); }
        |
-       'f'~'a'~'l'~'s'~'e'    ^^ { _ => ValueToken[Boolean](BOOLEAN,false); } 
+       'f'~'a'~'l'~'s'~'e'  ^^^ { ValueToken[Boolean](BOOLEAN,false); } 
   );
 
   def stringPrimitive: Parser[Token] = (
@@ -141,6 +155,89 @@ class TermWareLexical extends Lexical
      accept('0') | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
   );
 
+  private var operatorParsers:Parser[OperatorToken] = null;
+
+  def operator:Parser[Token]= {
+    if (operatorParsers==null) {
+        operatorParsers = buildOperatorParsers;
+    }
+    operatorParsers;
+  }
+
+  def clearOperators = {
+     operatorParsers = null;
+  }
+
+  private def buildOperatorParsers:Parser[OperatorToken] = {
+
+    def parseOpString(s:String):Parser[OperatorToken] = (
+      accept(s.toList) ^^ { x => OperatorToken(
+                                   syntax.getBinaries.getOrElse(s,null),
+                                   syntax.getUnaries.getOrElse(s,null)
+                                              );
+                          }
+    );
+
+    (syntax.getBinaries.keys ++ syntax.getUnaries.keys).toList.
+       removeDuplicates.
+          sortWith((x,y)=>x.length > y.length).
+             map(parseOpString(_)).reduceRight(_|_);
+    
+  }
+
+  def keyword:Parser[Token] = {
+    if (normalStateKeywordParser==null) {
+      normalStateKeywordParser=buildKeywordParser(normalStateKeywords);
+    }
+    if (syntaxStateKeywordParser==null) {
+      syntaxStateKeywordParser=buildKeywordParser(syntaxStateKeywords);
+    }
+    state match {
+      case NORMAL => normalStateKeywordParser;
+      case IN_SYNTAX => syntaxStateKeywordParser;
+    }
+  }
+
+  case class KeywordDef(s:String,ns:Option[TermWareLexical.State])
+  {
+    val keyword = s;
+    val nextState = ns;
+  };
+
+  private var normalStateKeywords: List[KeywordDef] = List(
+           KeywordDef("syntax:",Some(IN_SYNTAX)),
+           KeywordDef("if",None),
+           KeywordDef("else",None)
+  );
+  private var normalStateKeywordParser: Parser[KeywordToken] = null;
+
+  private var syntaxStateKeywords: List[KeywordDef] = List(
+           KeywordDef("unary",None),
+           KeywordDef("binary",None),
+           KeywordDef("operator",None),
+           KeywordDef("assoc",None),
+           KeywordDef("left",None),
+           KeywordDef("right",None),
+           KeywordDef("priority",None)
+  );
+  private var syntaxStateKeywordParser:Parser[KeywordToken] = null;
+
+  private def buildKeywordParser(keywords:List[KeywordDef]):Parser[KeywordToken]={
+     
+    def parseKeywordString(k:KeywordDef):Parser[KeywordToken] = (
+      accept(k.keyword.toList) ^^ { 
+                                   (x) => 
+                                     if (k.nextState!=None) {
+                                       state = k.nextState.get;
+                                     }
+                                     KeywordToken(k.keyword); 
+                                   }
+    );
+
+    keywords.sortWith((x,y)=>x.keyword.length > y.keyword.length).
+             map(parseKeywordString(_)).reduceRight(_|_);
+
+  }
 
   def createNumberToken(intPart:List[Char],fractPart:Option[List[Char]],
                         suffix:Option[Char], radix:Int):Token =
@@ -191,9 +288,21 @@ class TermWareLexical extends Lexical
                         
 
   def delimiter:Parser[Token]=(
-       '{'  ^^ { _ => D("{"); }
+       '{'  ^^^ { D("{"); }
       |
-       '}'  ^^ { _ => D("}"); }
+       '}'  ^^^ { D("}"); }
+      |
+       ','  ^^^ { D(","); }
+      |
+       '('  ^^^ { D("("); }
+      |
+       ')'  ^^^ { D(")"); }
+      |
+       ';'  ^^ { x => { if (state!=NORMAL) 
+                          state=NORMAL; 
+                        D(";"); 
+                      }
+                }
   );
   
   def whitespace: Parser[Any] = rep(
@@ -203,6 +312,9 @@ class TermWareLexical extends Lexical
   );
 
   def comment: Parser[Any] = '#' ~ rep(chrExcept('\n')) ;
+
+  val syntax = s;
+  private var state = TermWareLexical.NORMAL;
 
 }
 

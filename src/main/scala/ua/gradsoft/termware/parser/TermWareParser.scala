@@ -7,27 +7,128 @@ import ua.gradsoft.termware.parser._;
 
 class TermWareParser(th:Theory, fname:String) extends TokenParsers
                                     with TermWareTokens
-                                    with TermImplicitConversions
+                                    with TheoryTermConversions
 {
   override type Tokens = TermWareLexical;
-  override val lexical: TermWareLexical = new TermWareLexical;
+  override val lexical: TermWareLexical = 
+                              new TermWareLexical(th.operatorSyntax);
   type T = TermWareToken;
 
   import TokenType._;
 
   implicit def char2Delim(ch:Char):Parser[Token] = 
-    elem("delimiter", x => x==ch) ^^ { x => D(x.toString) };
+    elem("delimiter", (x:Elem)=>(
+                         x.isInstanceOf[D]
+                        &&
+                         x.asInstanceOf[D].chars==ch.toString
+                                )
+                       ) ^^ {  _.asInstanceOf[D];  }
 
-  def term:Parser[Term] = binaryExpression(20);
+  implicit def str2Keyword(s:String):Parser[Token] =
+    elem("keyword", (x:Elem) => (
+                         x.isInstanceOf[KeywordToken]
+                        &&
+                         x.asInstanceOf[KeywordToken].chars==s
+                       )) ^^ {  _.asInstanceOf[KeywordToken]; }
+
+
+  def statements:Parser[List[Term]] = rep(statement);
+
+  def statement:Parser[Term] = (
+     packagedef
+    |
+     syntaxdef
+    |
+     term <~ opt(';')
+  );
+
+  def packagedef:Parser[Term] = ("package" ~! term ~
+                       opt('{' ~> rep(statement) <~ '}')) ^^
+    { case x ~ y ~ z => createPackage(y,z); }
+
+  // syntax: plus as binary operator "+" (assoc right, priority 5) ;
+  // syntax: invert as unary operator "~" ;
+  def syntaxdef:Parser[Term] = 
+        "syntax:" ~! identifier ~ syntaxOperatorDef <~ ';'  ^^
+        {
+         case x ~ y ~ z => {
+            var retval:Term = null;
+            if (z.arity==2) {
+              val z2 = z.asInstanceOf[BinaryOperator];
+              lexical.syntax.addBinary(z.sign,y.name.getString,
+                                       z2.leftAssociative,z2.priority);
+              retval = th.funSignature("syntaxOperator").createTerm(
+                    "syntaxOperator",
+                    th.intSignature.createConstant(z.arity).get,
+                    th.stringSignature.createConstant(z.sign).get,
+                    th.stringSignature.createConstant(y.name.getString).get,
+                    th.booleanSignature.createConstant(z2.leftAssociative).get,
+                    th.intSignature.createConstant(z2.priority).get
+              ).get;
+            } else if (z.arity==1) {
+              lexical.syntax.addUnary(z.sign,y.name.getString);
+              retval = th.funSignature("syntaxOperator").createTerm(
+                    "syntaxOperator",
+                    th.intSignature.createConstant(z.arity).get,
+                    th.stringSignature.createConstant(z.sign).get,
+                    th.stringSignature.createConstant(y.name.getString).get
+              ).get;
+            } else {
+              throw new IllegalArgumentException("arity of operation must be 1 or 2");
+            }
+            lexical.clearOperators;
+            retval;
+         }
+      }
+
+
+  def syntaxOperatorDef:Parser[Operator] = (
+    ("binary" ~> "operator" ~> stringLiteral ~
+                                   opt(syntaxOperatorAttributes) ) ^^ {
+                   case x ~ y => {
+                     var leftAssoc = true;
+                     var priority = 5;
+                     if (y!=None) {
+                       y.get.foreach({
+                          (x:(String,Any)) => x._1 match {
+                             case "leftAssoc" => leftAssoc = (x._2=="left");
+                             case "priority" => priority = x._2.asInstanceOf[Term].getInt.get;
+                          }
+                       });
+                     }
+                     BinaryOperator(x.getString.get,"TMP",leftAssoc,priority);
+                   }
+                 }
+    |
+    ("unary" ~> "operator" ~> stringLiteral ) ^^ {
+                 (x:Term) => UnaryOperator(x.asInstanceOf[Term].getString.get,
+                                          "TMP");
+              }
+  );
+
+  def syntaxOperatorAttributes:Parser[List[(String,Any)]] = 
+   '(' ~> repsep(syntaxOperatorAttribute, ',') <~ ')';
+
+  def syntaxOperatorAttribute:Parser[(String,Any)] = (
+    "assoc" ~> ( "right" | "left" )
+       ^^ { _ match {
+              case KeywordToken("left") => ("leftAssoc", true);
+              case KeywordToken("right") => ("leftAssoc", false);
+          } }
+   |
+    "priority" ~> intLiteral ^^ { ("priority",_); }
+  );
+
+  def term:Parser[Term] = binaryExpression(0);
 
   def binaryExpression(p:Int):Parser[Term] = {
-      if (p==0) {
+      if (p>=OperatorSyntax.MAX_BINARY_PRIORITY) {
         (
-         unaryExpression0 ~ rep( binaryOperator(0)~unaryExpression0 )
+         unaryExpression ~ rep( binaryOperator(p)~unaryExpression )
               ^^ { case x ~ y => cBinaryExpression(x,y); }
         );
       } else {
-         val pn = p-1;
+         val pn = p+1;
          (
           binaryExpression(pn) ~ rep (binaryOperator(p) ~ binaryExpression(pn))
               ^^ { case x ~ y => cBinaryExpression(x,y); }
@@ -35,8 +136,12 @@ class TermWareParser(th:Theory, fname:String) extends TokenParsers
       }
   }
 
+  def unaryExpression:Parser[Term] = (
+     opt(unaryOperator) ~ unarySuffixExpression
+       ^^ { case x ~ y => cUnaryExpression(x,y); }
+  );
 
-  def unaryExpression0:Parser[Term] = (
+  def unarySuffixExpression:Parser[Term] = (
       primaryExpression ~ opt( '(' ~> repsep(term,',') <~ ')' )
                 ^^ { case x ~ y => cFunctional(x,y); }
   )
@@ -51,66 +156,82 @@ class TermWareParser(th:Theory, fname:String) extends TokenParsers
   );
 
 
-  def binaryOperator(priority:Int):Parser[BinaryOperator] =
+  def binaryOperator(priority:Int):Parser[OperatorToken] =
     elem("binary operation with priority "+priority,
+        (x:Elem) => ( 
+              checkTokenType(x,OPERATOR)
+             &&
+              x.asInstanceOf[OperatorToken].v2!=null
+             &&
+              x.asInstanceOf[OperatorToken].v2.priority==priority)
+        ) ^^ { _.asInstanceOf[OperatorToken]; }
+
+  def unaryOperator:Parser[OperatorToken] =
+    elem("unary operator",
         (x:Elem) => (
-              x.isInstanceOf[T]
+              checkTokenType(x,OPERATOR)
              &&
-              x.asInstanceOf[T].tokenType==BINARY_OPERATOR
-             &&
-              x.asInstanceOf[BinaryOperator].priority==priority)
-        ) ^^ { x => x.asInstanceOf[BinaryOperator]; }
+              x.asInstanceOf[OperatorToken].v1!=null)
+        ) ^^ { _.asInstanceOf[OperatorToken]; } 
              
 
   def primitiveTerm:Parser[Term] = (
-     elem("Boolean", _.asInstanceOf[T].tokenType==BOOLEAN ) ^^ {
+     elem("Boolean", checkTokenType(_,BOOLEAN)) ^^ {
                     x => cConstant[Boolean](theory.booleanSignature,x);
            }
     |
-     elem("String", _.asInstanceOf[T].tokenType==STRING) ^^ {
-                    x => cConstant[String](theory.stringSignature,x);
-           } 
+      stringLiteral
     |
-     elem("Char", _.asInstanceOf[T].tokenType==CHAR) ^^ {
+     elem("Char", checkTokenType(_,CHAR)) ^^ {
                     x => cConstant[Char](theory.charSignature,x);
            } 
     |
-     elem("Short", _.asInstanceOf[T].tokenType==SHORT) ^^ {
+     elem("Short", checkTokenType(_,SHORT)) ^^ {
                     x => cConstant[Short](theory.shortSignature,x);
            } 
     |
-     elem("Int", _.asInstanceOf[T].tokenType==INT) ^^ {
-                    x => cConstant[Int](theory.intSignature,x);
-           }
-     |
-     elem("Long", _.asInstanceOf[T].tokenType==LONG) ^^ {
+     intLiteral
+    |
+     elem("Long", checkTokenType(_,LONG)) ^^ {
                     x => cConstant[Long](theory.longSignature,x);
            }
     |
-     elem("Double", _.asInstanceOf[T].tokenType==DOUBLE) ^^ {
+     elem("Double", checkTokenType(_,DOUBLE)) ^^ {
                     x => cConstant[Double](theory.doubleSignature,x);
            }
     |
-     elem("Float", _.asInstanceOf[T].tokenType==FLOAT) ^^ {
+     elem("Float", checkTokenType(_,FLOAT)) ^^ {
                     x => cConstant[Float](theory.floatSignature,x);
            }
     |
-     elem("BigInt", _.asInstanceOf[T].tokenType==BIG_INT) ^^ {
+     elem("BigInt", checkTokenType(_,BIG_INT)) ^^ {
                     x => cConstant[BigInt](theory.bigIntSignature,x);
            }
     |
-     elem("BigDecimal", _.asInstanceOf[T].tokenType==BIG_DECIMAL) ^^ {
+     elem("BigDecimal", checkTokenType(_,BIG_DECIMAL)) ^^ {
                     x => cConstant[BigDecimal](theory.bigDecimalSignature,x);
            }
     );
 
+
+  def stringLiteral:Parser[Term] = 
+     elem("String", checkTokenType(_, STRING)) ^^ {
+                    x => cConstant[String](theory.stringSignature,x);
+           } ;
+
+  def intLiteral:Parser[Term] = 
+     elem("Int", checkTokenType(_,INT)) ^^ {
+                    x => cConstant[Int](theory.intSignature,x);
+           } ;
+
+
   def identifier:Parser[Term] = (
-     elem("Identifier", _.asInstanceOf[T].tokenType == IDENTIFIER) ^^ {
+     elem("Identifier", checkTokenType(_,IDENTIFIER)) ^^ {
         x => {
            val xx = x.asInstanceOf[ValueToken[String]];
            val xxn = theory.symbolTable.getOrCreate(xx.value);
            posAttributes(
-                theory.atomSignature(xxn).createConstant(xxn), xx);
+                theory.atomSignature(xxn).createConstant(xxn).get, xx);
         }
      }
   );
@@ -127,46 +248,74 @@ class TermWareParser(th:Theory, fname:String) extends TokenParsers
 
   def cFunctional1(x:Term, y:List[Term]):Term = {
     if (x.isAtom) {
-       th.funSignature(name).createTerm(name,y); 
+       th.funSignature(name).createTerm(x.name,y.toSeq:_*).get; 
     } else {
        def listToTerm(l:List[Term]):Term = {
-         if (l.isEmpty) th.nilSignature.createConstant(Nil)
+         if (l.isEmpty) th.nilSignature.createConstant(Nil).get
          else th.funSignature("cons").createTerm("cons",
-                                  l.first,listToTerm(l.drop(1)));
+                                  l.first,listToTerm(l.drop(1))).get;
        }
        val ly = listToTerm(y);
-       th.funSignature("apply").createTerm("apply",x,ly); 
+       th.funSignature("apply").createTerm("apply",x,ly).get; 
     }
   }
   
 
-  def cBinaryExpression(frs:Term, tail:List[~[BinaryOperator,Term]]):Term =
+  def cBinaryExpression(frs:Term, tail:List[~[OperatorToken,Term]]):Term =
   {
     if (tail.isEmpty) {
        return frs;
     }
-    val op = tail.head._1;
+    val opt = tail.head._1;
+    val op = opt.v2;
     val snd = tail.head._2;
-    val name = th.symbolTable.getOrCreate(op.functionName);
-    val retval =  
+    val name = th.symbolTable.getOrCreate(op.funName);
+    val retval:Term =  
        if (op.isRightAssoc) {
           val next = cBinaryExpression(snd,tail.drop(1));
           val par = RandomAccessSeq(frs,next);
-          th.funSignature(name).createTerm(name,par);
+          th.funSignature(name).createTerm(name,par).get;
        } else {
           // leftAssoc
           // x * y * z * w = ((x * y) * z) * w
           val par = RandomAccessSeq(frs,snd);
-          val next = th.funSignature(name).createTerm(name,par);
+          val next = th.funSignature(name).createTerm(name,par).get;
           cBinaryExpression(next,tail.drop(1));
        };
-    return posAttributes(retval,op);
+    return posAttributes(retval,opt);
+  }
+
+  def cUnaryExpression(frs:Option[OperatorToken],snd:Term):Term =
+  {
+    if (frs==None) snd;
+    else {
+      val op = frs.get.v1;
+      val name = th.symbolTable.getOrCreate(op.funName);
+      th.funSignature(name).createTerm(name, RandomAccessSeq(snd)).get;
+    }
+  }
+
+  def createPackage(name:Term, internals:Option[List[Term]]):Term =
+  {
+   if (internals==None) {
+      return theory.funSignature("_CurrentPackage").
+                            createTerm("_CurrentPackage", name).get;
+   } else {
+      return theory.funSignature("_Package").
+                            createTerm("_Package", name, 
+                                    termFromList(theory, internals.get)).get;
+   }
   }
 
   def posAttributes(t:Term, x:Positional) = {
-     t.setAttribute(POS,new PositionWithFname(x.pos,fileName));
+     t.setAttribute(POS,
+          theory.refSignature.createConstant(
+                            new PositionWithFname(x.pos,fileName)).get);
      t;
   }
+
+  def checkTokenType(t:Elem, tokenType: TokenType.Value):Boolean =
+           t.isInstanceOf[T] && t.asInstanceOf[T].tokenType == tokenType;
 
   val theory = th;
   val fileName = fname;

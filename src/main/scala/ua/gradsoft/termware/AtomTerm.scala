@@ -1,7 +1,7 @@
 package ua.gradsoft.termware;
 
 
-class AtomTerm(n:Name,s:AtomTermSignature) extends PrimitiveTerm(s)
+case class AtomTerm(n:Name,s:AtomTermSignature) extends PrimitiveTerm(s)
                                             with NonNumberTerm
 {
 

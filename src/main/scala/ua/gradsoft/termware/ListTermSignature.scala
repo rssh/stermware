@@ -28,7 +28,16 @@ class ListTermSignature(th:Theory)
     case 1 => new ListTerm(args(0),
                            theory.nilSignature.createConstant(null).get,
                            this)
-    case _ => new ListTerm(args(0), createTerm(name, args.drop(1)).get,this)
+    case 2 => {
+                if (isList(args(1))) {
+                  new ListTerm(args(0),args(1),this)
+                } else {
+                  new ListTerm(args(0), 
+                           this.createTerm(name, args.drop(1)).get,this)
+                }
+              }
+    case _ => new ListTerm(args(0), 
+                           this.createTerm(name, args.drop(1)).get,this)
   });
  
  def getType(t:Term):Term = {
@@ -51,6 +60,7 @@ class ListTermSignature(th:Theory)
    return typeOut;
  }
  
+ private def isList(t:Term) = t.isNil || (t.name==CONS && t.arity==2);
 
  val theory = th;
 

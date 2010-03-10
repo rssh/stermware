@@ -16,6 +16,7 @@ final class SName(value:String,index:Int) extends Name
         getKindIndex - that.getKindIndex
    ;
 
+ override def toString = getString;
 
  private val v = value;
  private val i = index;

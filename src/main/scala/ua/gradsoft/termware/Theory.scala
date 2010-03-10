@@ -1,5 +1,7 @@
 package ua.gradsoft.termware;
 
+import ua.gradsoft.termware.parser.OperatorSyntax;
+
 trait Theory extends TermWareInstance
 {
 
@@ -51,5 +53,7 @@ trait Theory extends TermWareInstance
  def refSignature: TermSignature;
 
  def errorSignature: ErrorTermSignature;
+
+ def operatorSyntax: OperatorSyntax;
 
 }

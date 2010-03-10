@@ -15,8 +15,8 @@ class TermWareParserFunSuite extends FunSuite
 
        true
      """));
-     System.out.println("received:"+r);
-     System.out.println("r.class:"+r.getClass());
+     //System.out.println("received:"+r);
+     //System.out.println("r.class:"+r.getClass());
      r match {
        case parser.Success(t,_) => {
                        assert(t.isInstanceOf[BooleanTerm]);
@@ -25,7 +25,7 @@ class TermWareParserFunSuite extends FunSuite
                        assert(!attr.isNil);
                        assert(attr.isRef);
                        val p = attr.getRef.get.asInstanceOf[PositionWithFname];
-                       System.out.println("p.line=:"+p.line);
+                       //System.out.println("p.line=:"+p.line);
                        assert(p.line>0);
                       }
        case _ => fail("'true' must be parsed to term");
@@ -60,6 +60,126 @@ class TermWareParserFunSuite extends FunSuite
        case _ => fail("int must be parsed to constant");
      }
   }
+
+  test("parse functional term") {
+     val r = parser.phrase(parser.term)(new parser.lexical.Scanner("f(1,2,3)"));
+     //System.err.println("received:"+r);
+     r match {
+       case parser.Success(t,_) => {
+                       assert(t.isInstanceOf[Term]);
+                       assert(t.arity==3);
+                       assert(t.name.getString=="f");
+                       val s1 = t.subterm(0).get;
+                       assert(s1.isInt);
+                       assert(s1.getInt.get==1);
+                       }
+       case _ => fail("functional term must be parsed");
+     }
+  }
+
+
+  test("parse left associative binary 1") {
+     val r = parser.phrase(parser.term)(new parser.lexical.Scanner(
+        "1-1-1-1+3*4"));
+     //System.err.println("received:"+r);
+     r match {
+       case parser.Success(t,_) => {
+                       assert(t.isInstanceOf[Term]);
+                       //1-1-1-1+3*4 = (((1-1)-1)-1)+(3*4))
+                       assert(t.arity==2);
+                       assert(t.name.getString=="plus");
+                       val t0 = t.subterm(0).get;
+                       assert(t0.arity==2);
+                       assert(t0.name.getString=="minus");
+                       val t00 = t0.subterm(0).get;
+                       val t01 = t0.subterm(1).get;
+                       assert(t01.isInt);
+                       val t000 = t00.subterm(0).get;
+                       val t0000 = t000.subterm(0).get;
+                       assert(t0000.isInt);
+                       val t0001 = t000.subterm(1).get;
+                       assert(t0001.isInt);
+                       val t1 = t.subterm(1).get;
+                       assert(t1.arity==2);
+       }
+       case _ => fail("+ term must be parsed");
+     }
+
+  }
+
+  test("parse left associative binary 2") {
+     val r = parser.phrase(parser.term)(new parser.lexical.Scanner(
+        "3*4+6"));
+     r match {
+       case parser.Success(rs,_) => {
+                 val t = rs.asInstanceOf[Term];
+                 assert(t.name.getString=="plus");
+       }
+       case _ => fail("this term must be parsed");
+     }
+  }
+
+  test("parse with unary op 1") {
+     val r = parser.phrase(parser.term)(new parser.lexical.Scanner("-1"));
+     r match {
+       case parser.Success(rs,_) => {
+                 val t = rs.asInstanceOf[Term];
+                 assert(t.name.getString=="minus");
+                 assert(t.arity==1);
+                        } 
+       case _ => fail("this term must be parsed");
+     }
+  }
+
+  test("parse new syntax definition for free right-associative") {
+     val r = parser.phrase(parser.statements)(new parser.lexical.Scanner("""
+       syntax: ncons binary operator "::" (assoc right, priority 10) ;
+       x :: y ;
+       x :: y :: z
+     """));
+     r match {
+       case parser.Success(rs,_) => {
+                 val lt = rs.asInstanceOf[List[Term]];
+                 assert(lt.length==3);
+                 val t1 = lt(1);
+                 assert(t1.name.getString=="ncons");
+                 val t2 = lt(2);
+                 assert(t2.name.getString=="ncons");
+                 val t21 = t2.subterm(1).get;
+                 assert(t21.name.getString=="ncons");
+                 val t210 = t21.subterm(0).get;
+                 assert(t210.name.getString=="y");
+             }
+       case _ => fail("this term must be parsed");
+     }
+  }
+
+  test("parse new syntax definition for list right assoc ") {
+     val r = parser.phrase(parser.statements)(new parser.lexical.Scanner("""
+       syntax: cons binary operator "::" (assoc right, priority 10) ;
+       x :: y ;
+       x :: y :: z
+     """));
+     r match {
+       case parser.Success(rs,_) => {
+                 val lt = rs.asInstanceOf[List[Term]];
+                 assert(lt.length==3);
+                 val t1 = lt(1);
+                 assert(t1.name.getString=="cons");
+                 val t2 = lt(2);
+                 //System.err.println("t2 is " + t2);
+                 assert(t2.name.getString=="cons");
+                 val t21 = t2.subterm(1).get;
+                 assert(t21.name.getString=="cons");
+                 val t210 = t21.subterm(0).get;
+                 //System.err.println("t210.name " + t210.name);
+                 assert(t210.name.getString=="y");
+             }
+       case _ => fail("this term must be parsed");
+     }
+  }
+
+
 
   val theory = TermWare.instance.freeTheory;
   val POS = TermWare.instance.symbolTable.getOrCreate("POS");
