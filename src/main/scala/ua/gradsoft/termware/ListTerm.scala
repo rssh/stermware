@@ -3,7 +3,7 @@ package ua.gradsoft.termware;
 import scala.collection.mutable.HashMap;
 import ua.gradsoft.termware.fn._;
 
-case class ListTerm(h:Term, t:Term, s:ListTermSignature) 
+class ListTerm(h:Term, t:Term, s:ListTermSignature) 
                                         extends FunctionalTerm(s)
 {
 
@@ -73,6 +73,18 @@ case class ListTerm(h:Term, t:Term, s:ListTermSignature)
   }
 
   def name = signature.fixedName.get;
+
+  override def toString = "[" + toStringI(this);
+
+  def toStringI(t:Term):String = t match {
+    case l:ListTerm => l.subterm(0).toString +
+                              (if (l.subterm(1).isNil) {
+                                 "]"
+                               } else {
+                                 "," +toStringI(l.subterm(1))
+                               });
+    case _ => t.toString
+  }
 
   lazy val termHashCode = name.hashCode+head.hashCode+tail.hashCode;
   
