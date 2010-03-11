@@ -10,40 +10,40 @@ trait NonNumberTerm
 
   def isByte:  Boolean = false;
 
-  def getByte: Option[Byte] = None;
+  def getByte: Byte = throwUOE;
 
   def isShort:  Boolean = false;
 
-  def getShort:  Option[Short] = None;
+  def getShort:  Short = throwUOE;
 
   def isInt:  Boolean = false;
 
-  def getInt: Option[Int] = None;
+  def getInt: Int = throwUOE;
 
   def isLong:  Boolean = false;
 
-  def getLong: Option[Long] = None;
+  def getLong: Long = throwUOE;
 
   def isBigInt: Boolean = false;
 
-  def getBigInt: Option[BigInt] = None;
+  def getBigInt: BigInt = throwUOE;
 
   def isBigDecimal: Boolean = false;
 
-  def getBigDecimal: Option[BigDecimal] = None;
+  def getBigDecimal: BigDecimal = throwUOE;
 
   def isFloat: Boolean = false;
 
-  def getFloat: Option[Float] = None;
+  def getFloat: Float = throwUOE;
 
   def isDouble: Boolean = false;
 
-  def getDouble: Option[Double] = None;
+  def getDouble: Double = throwUOE;
 
   def isNumber: Boolean = false ;
 
-  def getNumber: Option[Number] = None;
+  def getNumber: Number = throwUOE;
 
-  def getNumberKind: Option[Int] = None;
+  def getNumberKind: Int =  throwUOE;
 
 }

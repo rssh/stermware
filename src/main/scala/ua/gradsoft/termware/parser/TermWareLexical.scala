@@ -171,7 +171,7 @@ class TermWareLexical(s:OperatorSyntax) extends Lexical
   private def buildOperatorParsers:Parser[OperatorToken] = {
 
     def parseOpString(s:String):Parser[OperatorToken] = (
-      accept(s.toList) ^^ { x => OperatorToken(
+      accept(s.toList) ^^ { x => new OperatorToken(
                                    syntax.getBinaries.getOrElse(s,null),
                                    syntax.getUnaries.getOrElse(s,null)
                                               );

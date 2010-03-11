@@ -20,8 +20,8 @@ abstract class FunctionalTerm(s:TermSignature) extends Term
          val marker = vm.createAndPushMarker;
          vm.pushData(s);
          for(i<- 0 to arity) {
-           val st1 = subterm(i).get;
-           val st2 = t.subterm(i).get;
+           val st1 = subterm(i);
+           val st2 = t.subterm(i);
            vm.pushCommandsReverse(
               (vm:VM) => { 
                  val s = vm.popData.asInstanceOf[Substitution]; 
@@ -46,8 +46,9 @@ abstract class FunctionalTerm(s:TermSignature) extends Term
   def termSubstFn(s: PartialFunction[Term,Term]): (VM=>VM) = {
    (vm:VM) => {
        vm.pushCommand(signature.createTermFn(name,arity));
-       for(i<- 0 to arity-1) {
-         val st1 = subterm(arity-i-1).get;
+       var i=0;
+       while(i<arity) {
+         val st1 = subterm(arity-i-1);
          vm.pushCommand(st1.termSubstFn(s));
        }
        vm

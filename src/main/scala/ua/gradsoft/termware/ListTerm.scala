@@ -9,11 +9,11 @@ case class ListTerm(h:Term, t:Term, s:ListTermSignature)
 
   def arity: Int = 2;
 
-  def subterm(i:Int):Option[Term] = 
+  def subterm(i:Int):Term = 
     i match {
-      case 0 => Some(head)
-      case 1 => Some(tail)
-      case _ => None
+      case 0 => head
+      case 1 => tail
+      case _ => throw new IndexOutOfBoundsException();
     }
 
   def subterms:RandomAccessSeq[Term] = RandomAccessSeq[Term](head,tail);
@@ -23,8 +23,8 @@ case class ListTerm(h:Term, t:Term, s:ListTermSignature)
      if (patternName==t.patternName && t.arity==2) {
          val marker = vm.createAndPushMarker;
          vm.pushData(s);
-         val tfrs = t.subterm(0).get;
-         val tsnd = t.subterm(1).get;
+         val tfrs = t.subterm(0);
+         val tsnd = t.subterm(1);
          vm.pushCommandsReverse(
             (vm:VM) => { 
               val s = vm.popData.asInstanceOf[Substitution]; 
@@ -67,9 +67,9 @@ case class ListTerm(h:Term, t:Term, s:ListTermSignature)
     if (c!=0) return c;
     c = name.compareTo(t.name);
     if (c!=0) return c;
-    c = head.termCompare(t.subterm(0).get);
+    c = head.termCompare(t.subterm(0));
     if (c!=0) return c;
-    return tail.termCompare(t.subterm(1).get);
+    return tail.termCompare(t.subterm(1));
   }
 
   def name = signature.fixedName.get;

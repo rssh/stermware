@@ -11,8 +11,7 @@ class FreeTermWithFixedNameAnyArity(
 
   def arity: Int = subterms.length;
 
-  def subterm(i:Int):Option[Term] =
-    if (i<subterms.length) Some(subterms(i)) else None
+  def subterm(i:Int):Term = subterms(i);
 
   lazy val termHashCode = name.hashCode*7+subterms.
                               foldLeft(0)((x:Int,y:Term)=>x+y.termHashCode);

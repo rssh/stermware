@@ -22,23 +22,23 @@ class ListTermSignature(th:Theory)
 
  def fixedName:Option[Name] = Some(CONS);
  
- def createTerm(name:Name, args:RandomAccessSeq[Term]) : Option[Term] =  
-  Some(args.length match {
-    case 0 => theory.nilSignature.createConstant(null).get
+ def createTerm(name:Name, args:RandomAccessSeq[Term]) : Term =  
+  args.length match {
+    case 0 => theory.nilSignature.createConstant(null)
     case 1 => new ListTerm(args(0),
-                           theory.nilSignature.createConstant(null).get,
+                           theory.nilSignature.createConstant(null),
                            this)
     case 2 => {
                 if (isList(args(1))) {
                   new ListTerm(args(0),args(1),this)
                 } else {
                   new ListTerm(args(0), 
-                           this.createTerm(name, args.drop(1)).get,this)
+                           this.createTerm(name, args.drop(1)),this)
                 }
               }
     case _ => new ListTerm(args(0), 
-                           this.createTerm(name, args.drop(1)).get,this)
-  });
+                           this.createTerm(name, args.drop(1)),this)
+  };
  
  def getType(t:Term):Term = {
    t.getAttribute(theory.symbolTable.TYPE) match {
@@ -55,7 +55,7 @@ class ListTermSignature(th:Theory)
    val typeIn = theory.freeFunSignature.createTerm(
                    t.name,
                    t.subterms.map( x => x.signature.getType(x) )
-                ).get;
+                );
    val typeOut = theory.typeAlgebra.reduce(typeIn);
    return typeOut;
  }

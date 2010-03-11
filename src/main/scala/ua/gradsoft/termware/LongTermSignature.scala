@@ -7,9 +7,9 @@ package ua.gradsoft.termware;
 class LongTermSignature(th:Theory) extends PrimitiveTermSignature(th)
 {
 
-  override def createConstant(arg:Any):Option[Term] = arg match {
-    case x:Long => Some(LongTerm(x,this))
-    case _ => None
+  override def createConstant(arg:Any):Term = arg match {
+    case x:Long => LongTerm(x,this)
+    case _ => throwUOE
   }
 
   val typeName = "Long" ;

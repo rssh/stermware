@@ -38,11 +38,11 @@ trait TermSignature
    *  must be same, as getFixedName
    * @param args - arguments to create.
    * @return newly-created term if signature restrictions
-   *  allow one. Otherwise - none.
+   *  allow one. Otherwise - throw UnsupportedOperationException.
    */
-   def createTerm(name:Name, args: RandomAccessSeq[Term]): Option[Term];
+   def createTerm(name:Name, args: RandomAccessSeq[Term]): Term;
 
-   def createTerm(name:Name, args: Term*): Option[Term] = {
+   def createTerm(name:Name, args: Term*): Term = {
     args match {
      case x: RandomAccessSeq[Term] => createTerm(name,x)
      case _ => {
@@ -69,10 +69,10 @@ trait TermSignature
     }
    }
 
-   def createTerm(name:String, args: RandomAccessSeq[Term]):Option[Term] =
+   def createTerm(name:String, args: RandomAccessSeq[Term]):Term =
     createTerm(theory.symbolTable.getOrCreate(name),args);
 
-   def createTerm(name:String, args: Term*):Option[Term] =
+   def createTerm(name:String, args: Term*):Term =
     createTerm(theory.symbolTable.getOrCreate(name),args:_*);
 
    def createTermFn(name:String, arity: Int):VM=>VM =
@@ -82,12 +82,12 @@ trait TermSignature
    /**
     * get constant, defined by object
     */
-   def createConstant(arg:Any): Option[Term];
+   def createConstant(arg:Any): Term;
     
    /**
     * create special construct (names are difined in subclasses).
     */
-   def createSpecial(args: Any*): Option[Term];
+   def createSpecial(args: Any*): Term;
 
    /**
     * calculate type of term

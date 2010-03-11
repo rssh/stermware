@@ -31,28 +31,28 @@ class EtaTerm(v:Set[EtaXTerm], l:Term, r:Term, rs:Term, s:EtaTermSignature)
 
   override def subterm(index: Int) = 
     index match {
-      case 1 => Some(left)
-      case 2 => Some(right)
-      case 3 => Some(rest)
-      case _ => None
+      case 1 => left
+      case 2 => right
+      case 3 => rest
+      case _ => throwUOE
     }
 
   override def termUnifyFn(t:Term,s:Substitution) = 
     (vm: VM) => {
        if (t.isEta) {
          vm.pushCommandsReverse(
-            left.termUnifyFn(t.subterm(0).get,s),
+            left.termUnifyFn(t.subterm(0),s),
             (vm:VM) => {
                val b: Boolean = vm.popData.asInstanceOf[Boolean];
                if (b) {
                   val s1 = vm.popData.asInstanceOf[Substitution];
                   vm.pushCommandsReverse(
-                     right.termUnifyFn(t.subterm(1).get,s1),
+                     right.termUnifyFn(t.subterm(1),s1),
                      (vm:VM) => {
                        if (vm.popData.asInstanceOf[Boolean]) {
                          val s2 = vm.popData.asInstanceOf[Substitution];
                          vm.pushCommand(
-                            rest.termUnifyFn(t.subterm(2).get,s2)
+                            rest.termUnifyFn(t.subterm(2),s2)
                          );
                        } else {
                          vm.pushData(false);
@@ -124,11 +124,11 @@ class EtaTerm(v:Set[EtaXTerm], l:Term, r:Term, rs:Term, s:EtaTermSignature)
      if (c!=0) {
         return c;
      } else {
-        c = left.termCompare(t.subterm(0).get);
+        c = left.termCompare(t.subterm(0));
         if (c!=0) return c; 
-        c = right.termCompare(t.subterm(1).get);
+        c = right.termCompare(t.subterm(1));
         if (c!=0) return c; 
-        c = rs.termCompare(t.subterm(2).get);
+        c = rs.termCompare(t.subterm(2));
         return c;
      }
   }

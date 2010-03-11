@@ -21,12 +21,12 @@ case class CharTerm(v:Char, s: CharTermSignature) extends PrimitiveTerm(s)
 {
 
   override def isChar: Boolean = true;
-  override def getChar: Option[Char] = Some(value);
+  override def getChar: Char = value;
 
   def termCompare(t: Term):Int = {
     var c = termClassIndex - t.termClassIndex;
     if (c!=0) return 0;
-    return v.compare(t.getChar.get);
+    return v.compare(t.getChar);
   }
 
   def termClassIndex: Int = TermClassIndex.CHAR;

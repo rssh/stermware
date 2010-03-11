@@ -3,15 +3,24 @@ package ua.gradsoft.termware;
 import scala.collection.mutable.HashMap;
 import ua.gradsoft.termware.fn.FnNone;
 
-class ErrorTerm(s: ErrorTermSignature, m:String) extends Term
+class ErrorTerm(m:String, e:Exception, s: ErrorTermSignature) extends Term
                                           with SimpleSubst
                                           with SimpleUnifyWithoutVM
                                           with NonNumberTerm
 {
 
+  def this(e:Exception, s:ErrorTermSignature) = {
+    this(e.getMessage(),e,s);
+  }
+
+  def this(m:String, s:ErrorTermSignature) = {
+    this(m,null,s);
+  }
+
+
   def arity: Int = 0;
 
-  def subterm(i:Int): Option[Term] = None;
+  def subterm(i:Int): Term = throwUOE;
 
   def subterms: RandomAccessSeq[Term] = RandomAccessSeq.empty;
 
@@ -26,6 +35,12 @@ class ErrorTerm(s: ErrorTermSignature, m:String) extends Term
   def isEta: Boolean = false;
 
   def isError: Boolean = true;
+
+  override def isException: Boolean = true;
+
+  override def getException: Exception = exception;
+
+  override def getMessage: String = message;
 
   override def termSubstFn(s: PartialFunction[Term,Term]): (VM=>VM) 
    = FnNone;
@@ -42,12 +57,13 @@ class ErrorTerm(s: ErrorTermSignature, m:String) extends Term
    if (cl!=0) 
      return cl;
    else
-     return message.get.compareTo(t.message.get);
+     return message.compareTo(t.getMessage);
   }
 
   def termHashCode: Int = 7+message.hashCode;
 
-  override val message=Some(m);
+  val message=m;
+  val exception=e;
 
   val attributes = new HashMap[Name,Term](); 
 }

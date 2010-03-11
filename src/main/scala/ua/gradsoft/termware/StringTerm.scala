@@ -9,12 +9,12 @@ case class StringTerm(v:String, s: StringTermSignature)
 {
 
   override def isString: Boolean = true;
-  override def getString: Option[String] = Some(value);
+  override def getString: String = value;
 
   def termCompare(t: Term):Int = {
     var c = termClassIndex - t.termClassIndex;
     if (c!=0) return 0;
-    return v.compare(t.getString.get);
+    return v.compare(t.getString);
   }
 
   def termClassIndex: Int = TermClassIndex.STRING;

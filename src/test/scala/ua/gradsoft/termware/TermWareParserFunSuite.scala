@@ -20,11 +20,11 @@ class TermWareParserFunSuite extends FunSuite
      r match {
        case parser.Success(t,_) => {
                        assert(t.isInstanceOf[BooleanTerm]);
-                       assert(t.getBoolean.get);
+                       assert(t.getBoolean);
                        val attr = t.getAttribute(POS).get;
                        assert(!attr.isNil);
                        assert(attr.isRef);
-                       val p = attr.getRef.get.asInstanceOf[PositionWithFname];
+                       val p = attr.getRef.asInstanceOf[PositionWithFname];
                        //System.out.println("p.line=:"+p.line);
                        assert(p.line>0);
                       }
@@ -41,7 +41,7 @@ class TermWareParserFunSuite extends FunSuite
      r match {
        case parser.Success(t,_) => {
                        assert(t.isInstanceOf[StringTerm]);
-                       val s = t.getString.get;
+                       val s = t.getString;
                        val withNL = s.contains('\n');
                        assert(withNL);
                       }
@@ -54,7 +54,7 @@ class TermWareParserFunSuite extends FunSuite
      r match {
        case parser.Success(t,_) => {
                        assert(t.isInstanceOf[IntTerm]);
-                       val v = t.getInt.get;
+                       val v = t.getInt;
                        assert(v==3456787);
                       }
        case _ => fail("int must be parsed to constant");
@@ -69,9 +69,9 @@ class TermWareParserFunSuite extends FunSuite
                        assert(t.isInstanceOf[Term]);
                        assert(t.arity==3);
                        assert(t.name.getString=="f");
-                       val s1 = t.subterm(0).get;
+                       val s1 = t.subterm(0);
                        assert(s1.isInt);
-                       assert(s1.getInt.get==1);
+                       assert(s1.getInt==1);
                        }
        case _ => fail("functional term must be parsed");
      }
@@ -88,18 +88,18 @@ class TermWareParserFunSuite extends FunSuite
                        //1-1-1-1+3*4 = (((1-1)-1)-1)+(3*4))
                        assert(t.arity==2);
                        assert(t.name.getString=="plus");
-                       val t0 = t.subterm(0).get;
+                       val t0 = t.subterm(0);
                        assert(t0.arity==2);
                        assert(t0.name.getString=="minus");
-                       val t00 = t0.subterm(0).get;
-                       val t01 = t0.subterm(1).get;
+                       val t00 = t0.subterm(0);
+                       val t01 = t0.subterm(1);
                        assert(t01.isInt);
-                       val t000 = t00.subterm(0).get;
-                       val t0000 = t000.subterm(0).get;
+                       val t000 = t00.subterm(0);
+                       val t0000 = t000.subterm(0);
                        assert(t0000.isInt);
-                       val t0001 = t000.subterm(1).get;
+                       val t0001 = t000.subterm(1);
                        assert(t0001.isInt);
-                       val t1 = t.subterm(1).get;
+                       val t1 = t.subterm(1);
                        assert(t1.arity==2);
        }
        case _ => fail("+ term must be parsed");
@@ -145,9 +145,9 @@ class TermWareParserFunSuite extends FunSuite
                  assert(t1.name.getString=="ncons");
                  val t2 = lt(2);
                  assert(t2.name.getString=="ncons");
-                 val t21 = t2.subterm(1).get;
+                 val t21 = t2.subterm(1);
                  assert(t21.name.getString=="ncons");
-                 val t210 = t21.subterm(0).get;
+                 val t210 = t21.subterm(0);
                  assert(t210.name.getString=="y");
              }
        case _ => fail("this term must be parsed");
@@ -169,9 +169,9 @@ class TermWareParserFunSuite extends FunSuite
                  val t2 = lt(2);
                  //System.err.println("t2 is " + t2);
                  assert(t2.name.getString=="cons");
-                 val t21 = t2.subterm(1).get;
+                 val t21 = t2.subterm(1);
                  assert(t21.name.getString=="cons");
-                 val t210 = t21.subterm(0).get;
+                 val t210 = t21.subterm(0);
                  //System.err.println("t210.name " + t210.name);
                  assert(t210.name.getString=="y");
              }

@@ -8,15 +8,15 @@ case class BooleanTerm(v:Boolean, s: BooleanTermSignature)
 
   override def isBoolean: Boolean = true;
 
-  override def getBoolean: Option[Boolean] = Some(value);
+  override def getBoolean: Boolean = value;
 
   def termCompare(t: Term):Int = {
     var c = termClassIndex - t.termClassIndex;
     if (c!=0) return 0;
     if (value) {
-      return (if (t.getBoolean.get) 0 else 1);
+      return (if (t.getBoolean) 0 else 1);
     } else {
-      return (if (t.getBoolean.get) -1 else 0);
+      return (if (t.getBoolean) -1 else 0);
     }
   }
 

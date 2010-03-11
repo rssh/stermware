@@ -61,7 +61,7 @@ trait TermWareTokens extends Tokens
    *@param fn - appropriative functional symbol (i. e. "plus")
    *@param la - left associativity.
    **/
-  case class OperatorToken(op2:BinaryOperator,op1:UnaryOperator) 
+  class OperatorToken(op2:BinaryOperator,op1:UnaryOperator) 
                                               extends TermWareToken
   {
    def tokenType = TokenType.OPERATOR;

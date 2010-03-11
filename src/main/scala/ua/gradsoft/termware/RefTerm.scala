@@ -7,22 +7,22 @@ case class RefTerm(v:AnyRef, s: RefTermSignature) extends PrimitiveTerm(s)
 
   override def isRef: Boolean = true;
 
-  override def getRef: Option[AnyRef] = Some(value);
+  override def getRef: AnyRef = value;
 
   def termCompare(t: Term):Int = {
     var c = termClassIndex - t.termClassIndex;
     if (c!=0) return 0;
     if (value!=null) {
-      if (value eq t.getRef.get) {
+      if (value eq t.getRef) {
          return 0;
       }
-      c = value.hashCode - t.getRef.get.hashCode;
+      c = value.hashCode - t.getRef.hashCode;
       if (c!=0) return c;
       // equal hash codes with special names: near impossible, but can be specially constructed.
       // in such (very rare) case compare string representations.
       return value.toString.compare(t.getRef.toString);
     } else {
-      return if (t.getRef.get==null)  0 else -1 ;
+      return if (t.getRef==null)  0 else -1 ;
     }
   }
 

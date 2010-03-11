@@ -1,6 +1,7 @@
 package ua.gradsoft.termware;
 
 class ErrorTermSignature(th:Theory) extends TermSignature
+                                       with GeneralUtil
 {
 
   override def getType(t:Term):Term = typeTerm;
@@ -12,14 +13,15 @@ class ErrorTermSignature(th:Theory) extends TermSignature
   override def nameByIndex = None;
   override def indexByName = None;
 
-  override def createTerm(name:Name, args: RandomAccessSeq[Term]) = None;
-  override def createSpecial(args: Any*) = None;
+  override def createTerm(name:Name, args: RandomAccessSeq[Term]) = throwUOE;
+  override def createSpecial(args: Any*) = throwUOE;
 
   override def createConstant(arg:Any) = arg match {
-     case s: String => Some(new ErrorTerm(this, s))
-     case _ => None
+     case s: String => new ErrorTerm(s, this)
+     case e: Exception => new ErrorTerm(e, this)
+     case _ => throwUOE;
   };
 
-  lazy val typeTerm = theory.atomSignature(theory.symbolTable.ERROR).createConstant(theory.symbolTable.ERROR).get;
+  lazy val typeTerm = theory.atomSignature(theory.symbolTable.ERROR).createConstant(theory.symbolTable.ERROR);
   val theory = th;
 };

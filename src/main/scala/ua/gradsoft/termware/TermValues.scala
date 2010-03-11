@@ -5,7 +5,7 @@ import java.lang.Number;
 /**
  * API for access values, wrapped in terms.
  */
-trait TValue
+trait TValue extends GeneralUtil
 {
 
   /**
@@ -16,7 +16,7 @@ trait TValue
   /**
    * get boolean value if one is boolean.
    */
-  def getBoolean: Option[Boolean] = None;
+  def getBoolean: Boolean = throwUOE;
 
   /**
    * is this is byte ?
@@ -26,7 +26,7 @@ trait TValue
   /**
    * get byte value if one is byte.
    */
-  def getByte: Option[Byte];
+  def getByte: Byte;
 
   /**
    *  is this is short ?
@@ -36,7 +36,7 @@ trait TValue
   /**
    *  get short value.
    **/
-  def getShort:  Option[Short];
+  def getShort: Short;
 
   /**
    *  is this is integer ?
@@ -46,7 +46,7 @@ trait TValue
   /**
    * get int value
    **/
-  def getInt: Option[Int];
+  def getInt: Int;
 
   /**
    * is this is long ?
@@ -56,7 +56,7 @@ trait TValue
   /**
    * get long is one is long.
    **/
-  def getLong: Option[Long];
+  def getLong: Long;
 
   /**
    * if this is big integer
@@ -66,46 +66,48 @@ trait TValue
   /**
    * get BigInteger is one is big integer
    **/
-  def getBigInt: Option[BigInt];
+  def getBigInt: BigInt;
 
   /**
    * it this term can be represented as big decimal ?
    **/
   def isBigDecimal: Boolean;
 
-  def getBigDecimal: Option[BigDecimal];
+  def getBigDecimal: BigDecimal;
 
   def isFloat: Boolean;
 
-  def getFloat: Option[Float];
+  def getFloat: Float;
 
   def isDouble: Boolean;
 
-  def getDouble: Option[Double];
+  def getDouble: Double;
 
   /**
    * if this is number type ?
    **/
   def isNumber: Boolean ;
 
-  def getNumber: Option[Number];
+  def getNumber: Number;
 
-  def getNumberKind: Option[Int];
+  def getNumberKind: Int;
 
   def isChar:  Boolean = false;
 
-  def getChar: Option[Char] = None;
+  def getChar: Char = throwUOE;
 
   def isString:  Boolean = false;
 
-  def getString: Option[String] = None;
+  def getString: String = throwUOE;
 
   /**
    * is this a special exception object ?
    **/
   def isException: Boolean = false;
 
-  def getException: Option[Exception] = None;
+  def getException: Exception = throwUOE;
+
+  def getMessage: String = throwUOE;
 
   /**
    * is this is reference object ?
@@ -113,6 +115,6 @@ trait TValue
    **/
   def isRef: Boolean = false;
 
-  def getRef: Option[AnyRef] = None;
+  def getRef: AnyRef = None;
 
 }

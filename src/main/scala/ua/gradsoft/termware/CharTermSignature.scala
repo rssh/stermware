@@ -6,9 +6,9 @@ package ua.gradsoft.termware;
 class CharTermSignature(th:Theory) extends PrimitiveTermSignature(th)
 {
 
-  override def createConstant(arg:Any):Option[Term] = arg match {
-    case x:Char => Some(new CharTerm(x,this))
-    case _ => None
+  override def createConstant(arg:Any):Term = arg match {
+    case x:Char => new CharTerm(x,this)
+    case _ => throwUOE;
   }
 
   override def typeName = "Char" ;

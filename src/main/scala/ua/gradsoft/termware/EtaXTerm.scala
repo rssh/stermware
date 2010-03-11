@@ -26,23 +26,23 @@ class EtaXTerm(n: Name, l:Int, t: Term, o:EtaTerm, s:EtaXTermSignature)
    /**
     * None.
     **/
-   def subterm(i:Int) = None;
+   def subterm(i:Int) = throwUOE;
 
    /**
     * None
     **/
-   def subterm(name:Name) = None;
+   def subterm(name:Name) = throwUOE;
 
    /**
     * Seq.empty
     */
    def subterms = RandomAccessSeq.empty;
 
-   override def xOwner = if (owner==null) None else Some(owner);
+   override def xOwner = owner;
 
    override def termUnify(t:Term, s:Substitution) : (Boolean, Substitution) = {
       if (t.isX) {
-        if (t.xOwner.get == xOwner.get) {
+        if (t.xOwner eq xOwner) {
             return (t.xLabel == xLabel,s);
         } else {
             val pair = (this,t);
@@ -60,7 +60,7 @@ class EtaXTerm(n: Name, l:Int, t: Term, o:EtaTerm, s:EtaXTermSignature)
       if (c!=0) return c;
       c=vname.compareTo(t.name);
       if (c!=0) return c;
-      return owner.compareTo(t.xOwner.get);
+      return owner.compareTo(t.xOwner);
    }
 
    override def termSubst(s:PartialFunction[Term,Term]):Term = {

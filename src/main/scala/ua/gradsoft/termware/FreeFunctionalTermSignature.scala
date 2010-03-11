@@ -14,8 +14,8 @@ class FreeFunctionalTermSignature(th:Theory)
 
  def fixedName:Option[Name] = None;
  
- def createTerm(name:Name, args:RandomAccessSeq[Term]) : Option[Term] =  
-         Some(new FreeFunctionalTerm(name,args,this));
+ def createTerm(name:Name, args:RandomAccessSeq[Term]) : Term =  
+         new FreeFunctionalTerm(name,args,this);
  
  def getType(t:Term):Term = {
    t.getAttribute(theory.symbolTable.TYPE) match {
@@ -32,7 +32,7 @@ class FreeFunctionalTermSignature(th:Theory)
    val typeIn = theory.freeFunSignature.createTerm(
                    t.name,
                    t.subterms.map( x => x.signature.getType(x) )
-                ).get;
+                );
    val typeOut = theory.typeAlgebra.reduce(typeIn);
    return typeOut;
  }

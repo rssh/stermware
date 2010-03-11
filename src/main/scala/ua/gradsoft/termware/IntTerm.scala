@@ -24,41 +24,41 @@ case class IntTerm(v:Int, s:IntTermSignature)
 
   override def isByte: Boolean =
            (value.toByte.toInt == value);
-  override def getByte: Option[Byte] =
-      if (isByte) Some(value.toByte) else None;
+  override def getByte: Byte =
+      if (isByte) value.toByte else throwUOE;
 
   override def isShort: Boolean =
            (value.toShort.toInt == value);
-  override def getShort: Option[Short] =
-      if (isShort) Some(value.toShort) else None;
+  override def getShort: Short =
+      if (isShort) value.toShort else throwUOE;
 
   override def isInt: Boolean = true;
-  override def getInt: Option[Int] = Some(value);
+  override def getInt: Int = value;
 
   override def isLong: Boolean = true;
-  override def getLong: Option[Long] = Some(value.toLong);
+  override def getLong: Long = value.toLong;
 
   override def isFloat: Boolean = true;
-  override def getFloat: Option[Float] = Some(value.toFloat);
+  override def getFloat: Float = value.toFloat;
 
   override def isDouble: Boolean = true;
-  override def getDouble: Option[Double] = Some(value.toDouble);
+  override def getDouble: Double = value.toDouble;
 
   override def isBigInt:  Boolean = true;
-  override def getBigInt: Option[BigInt] =
-     Some(new BigInt(java.math.BigInteger.valueOf(value)));
+  override def getBigInt: BigInt =
+     new BigInt(java.math.BigInteger.valueOf(value));
 
   override def isBigDecimal:  Boolean = true;
-  override def getBigDecimal: Option[BigDecimal] =
-     Some(new BigDecimal(new java.math.BigDecimal(value)));
+  override def getBigDecimal: BigDecimal =
+     new BigDecimal(new java.math.BigDecimal(value));
 
-  override def getNumber: Option[Number] = Some(new java.lang.Integer(value));
-  override def getNumberKind: Option[Int] = Some(NumberKind.INT.id);
+  override def getNumber: Number = new java.lang.Integer(value);
+  override def getNumberKind: Int = NumberKind.INT.id;
 
   def termCompare(t: Term):Int = {
     var c = termClassIndex - t.termClassIndex;
     if (c!=0) return 0;
-    return (value - t.getInt.get);
+    return (value - t.getInt);
   }
 
 

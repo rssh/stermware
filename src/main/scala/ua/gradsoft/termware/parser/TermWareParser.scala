@@ -59,20 +59,20 @@ class TermWareParser(th:Theory, fname:String) extends TokenParsers
                                        z2.leftAssociative,z2.priority);
               retval = th.funSignature("syntaxOperator").createTerm(
                     "syntaxOperator",
-                    th.intSignature.createConstant(z.arity).get,
-                    th.stringSignature.createConstant(z.sign).get,
-                    th.stringSignature.createConstant(y.name.getString).get,
-                    th.booleanSignature.createConstant(z2.leftAssociative).get,
-                    th.intSignature.createConstant(z2.priority).get
-              ).get;
+                    th.intSignature.createConstant(z.arity),
+                    th.stringSignature.createConstant(z.sign),
+                    th.stringSignature.createConstant(y.name.getString),
+                    th.booleanSignature.createConstant(z2.leftAssociative),
+                    th.intSignature.createConstant(z2.priority)
+              );
             } else if (z.arity==1) {
               lexical.syntax.addUnary(z.sign,y.name.getString);
               retval = th.funSignature("syntaxOperator").createTerm(
                     "syntaxOperator",
-                    th.intSignature.createConstant(z.arity).get,
-                    th.stringSignature.createConstant(z.sign).get,
-                    th.stringSignature.createConstant(y.name.getString).get
-              ).get;
+                    th.intSignature.createConstant(z.arity),
+                    th.stringSignature.createConstant(z.sign),
+                    th.stringSignature.createConstant(y.name.getString)
+              );
             } else {
               throw new IllegalArgumentException("arity of operation must be 1 or 2");
             }
@@ -92,16 +92,16 @@ class TermWareParser(th:Theory, fname:String) extends TokenParsers
                        y.get.foreach({
                           (x:(String,Any)) => x._1 match {
                              case "leftAssoc" => leftAssoc = (x._2=="left");
-                             case "priority" => priority = x._2.asInstanceOf[Term].getInt.get;
+                             case "priority" => priority = x._2.asInstanceOf[Term].getInt;
                           }
                        });
                      }
-                     BinaryOperator(x.getString.get,"TMP",leftAssoc,priority);
+                     BinaryOperator(x.getString,"TMP",leftAssoc,priority);
                    }
                  }
     |
     ("unary" ~> "operator" ~> stringLiteral ) ^^ {
-                 (x:Term) => UnaryOperator(x.asInstanceOf[Term].getString.get,
+                 (x:Term) => UnaryOperator(x.asInstanceOf[Term].getString,
                                           "TMP");
               }
   );
@@ -119,7 +119,107 @@ class TermWareParser(th:Theory, fname:String) extends TokenParsers
     "priority" ~> intLiteral ^^ { ("priority",_); }
   );
 
-  def term:Parser[Term] = binaryExpression(0);
+  def term:Parser[Term] = (
+    ifElseTerm
+    |
+    letTerm
+    |
+    withTerm
+    |
+    binaryExpression(0) ~ ( opt(ruleTail) | opt(whereTail) ) ^^
+     {
+       case x ~ y => if (y==None) {
+                       x;
+                     } else {
+                        //TODO: define apply/unapply for term
+                      val n = y.get.name;
+                       if (n==simpleRuleTailName) {
+                           theory.createFunTerm(ruleName,x,y.get.subterm(0))
+                       } else if (n==conditionalRuleTailName) {
+                           theory.createFunTerm(conditionalRuleName,x, 
+                                                  y.get.subterm(0))
+                       } else if (n==whereTailName) {
+                           theory.createFunTerm(whereName,x,y.get.subterm(0))
+                       } else {
+                           throw new IllegalArgumentException("impossible tail");
+                      }
+                     }
+     }
+  )
+
+  def ifElseTerm:Parser[Term] = (
+    "if" ~> '(' ~> term ~ (')' ~> term <~ "else") ~ term ^^ {
+      case x ~ y ~ z => theory.createFunTerm(ifElseName,x,y,z); 
+    }
+  );
+
+  def letTerm: Parser[Term] = (
+    "let" ~> '(' ~> repsep(assign,',') ~ ( ')' ~> term ) ^^ {
+          case x ~ y => if (x.isEmpty) y 
+                          else {
+                             val tx = termFromList(theory,x);
+                             th.funSignature("let").createTerm("let",tx,y);
+                          }
+        }
+  );
+
+  def whereTail: Parser[Term] = (
+     "where" ~> ( 
+                  repsep(assign,',') 
+                 |
+                 '(' ~> repsep(assign,',') <~ ')' 
+                )   ^^  {
+                  x => th.createFunTerm(whereTailName,termFromList(theory,x));
+                }
+  );
+
+  def assign: Parser[Term] = {
+     identifier ~ ( OP("->") ~> term ) ^^ {
+         case x ~ y =>  th.funSignature("assign").createTerm("assign",x,y);
+       }
+  }
+
+  def ruleTail:Parser[Term] = (
+      conditionalRuleTail
+     |
+      simpleRuleTail
+  );
+
+  def simpleRuleTail:Parser[Term] = (
+     OP("->") ~> term  ^^  { cSimpleRuleTail(_); }
+  );
+
+  def OP(s:String): Parser[Token] = (
+     elem("->", (x:Elem)=>(
+                         x.isInstanceOf[OperatorToken]
+                        &&
+                         x.asInstanceOf[OperatorToken].chars==s
+                                )
+                       ) ^^ {  _.asInstanceOf[OperatorToken];  }
+  );
+
+
+  def conditionalRuleTail:Parser[Term] = (
+     rep1sep( conditionalRuleBranch , OP("|") ) ~ opt(OP("!->") ~> term ) ^^ {
+       case x ~ y => {
+          val last:Term =
+             if (y==None) {
+                 th.nilSignature.createConstant(null); 
+             } else {
+                 y.get
+             };
+          theory.createFunTerm(conditionalRuleTailName, 
+                                            termFromList(theory,x),last);
+       }
+     }
+  );
+
+  def conditionalRuleBranch:Parser[Term] = (
+       ('[' ~> term <~ ']') ~ OP("->") ~! term  ^^ {
+           case x ~ y ~ z => theory.createFunTerm(
+                                        conditionalRuleBranchName,x,z);
+        }
+  );
 
   def binaryExpression(p:Int):Parser[Term] = {
       if (p>=OperatorSyntax.MAX_BINARY_PRIORITY) {
@@ -153,8 +253,25 @@ class TermWareParser(th:Theory, fname:String) extends TokenParsers
         identifier 
        |
         '(' ~> term <~ ')'
+       |
+        '[' ~> repsep(term,',') <~ ']' ^^ { 
+            (x):List[Term] => termFromList(theory,x); 
+        }
   );
 
+  def withTerm:Parser[Term] = (
+       ("with" | '$' ) ~> '(' ~> repsep( vardef , ',' ) ~ ( ')' ~> term ) ^^ {
+          case x ~ y => theory.createFunTerm(etaName,termFromList(theory,x),y);
+       }
+  );
+
+  def vardef:Parser[Term] = (
+        identifier ~ opt(':' ~> term) ^^ {
+           case x ~ y  => { val typeTerm = if (y==None) typeTop else y.get;
+                            theory.createFunTerm("vardef", x, typeTerm);
+                          } 
+        }
+  );
 
   def binaryOperator(priority:Int):Parser[OperatorToken] =
     elem("binary operation with priority "+priority,
@@ -231,7 +348,7 @@ class TermWareParser(th:Theory, fname:String) extends TokenParsers
            val xx = x.asInstanceOf[ValueToken[String]];
            val xxn = theory.symbolTable.getOrCreate(xx.value);
            posAttributes(
-                theory.atomSignature(xxn).createConstant(xxn).get, xx);
+                theory.atomSignature(xxn).createConstant(xxn), xx);
         }
      }
   );
@@ -239,7 +356,7 @@ class TermWareParser(th:Theory, fname:String) extends TokenParsers
   def cConstant[T](s:TermSignature,x:Elem):Term =
     posAttributes(s.createConstant(
                          x.asInstanceOf[ValueToken[T]].value
-                  ).get, x.asInstanceOf[Positional]);
+                  ), x.asInstanceOf[Positional]);
 
   def cFunctional(x:Term, y:Option[List[Term]]):Term = y match {
     case Some(l) => cFunctional1(x,l);
@@ -248,15 +365,15 @@ class TermWareParser(th:Theory, fname:String) extends TokenParsers
 
   def cFunctional1(x:Term, y:List[Term]):Term = {
     if (x.isAtom) {
-       th.funSignature(name).createTerm(x.name,y.toSeq:_*).get; 
+       th.funSignature(name).createTerm(x.name,y.toSeq:_*); 
     } else {
        def listToTerm(l:List[Term]):Term = {
-         if (l.isEmpty) th.nilSignature.createConstant(Nil).get
+         if (l.isEmpty) th.nilSignature.createConstant(Nil)
          else th.funSignature("cons").createTerm("cons",
-                                  l.first,listToTerm(l.drop(1))).get;
+                                  l.first,listToTerm(l.drop(1)));
        }
        val ly = listToTerm(y);
-       th.funSignature("apply").createTerm("apply",x,ly).get; 
+       th.funSignature("apply").createTerm("apply",x,ly); 
     }
   }
   
@@ -274,12 +391,12 @@ class TermWareParser(th:Theory, fname:String) extends TokenParsers
        if (op.isRightAssoc) {
           val next = cBinaryExpression(snd,tail.drop(1));
           val par = RandomAccessSeq(frs,next);
-          th.funSignature(name).createTerm(name,par).get;
+          theory.createFunTerm(name,par:_*);
        } else {
           // leftAssoc
           // x * y * z * w = ((x * y) * z) * w
           val par = RandomAccessSeq(frs,snd);
-          val next = th.funSignature(name).createTerm(name,par).get;
+          val next = th.funSignature(name).createTerm(name,par);
           cBinaryExpression(next,tail.drop(1));
        };
     return posAttributes(retval,opt);
@@ -290,32 +407,50 @@ class TermWareParser(th:Theory, fname:String) extends TokenParsers
     if (frs==None) snd;
     else {
       val op = frs.get.v1;
-      val name = th.symbolTable.getOrCreate(op.funName);
-      th.funSignature(name).createTerm(name, RandomAccessSeq(snd)).get;
+      val name = theory.symbolTable.getOrCreate(op.funName);
+      theory.funSignature(name).createTerm(name, RandomAccessSeq(snd));
     }
   }
+
+  def cSimpleRuleTail(t:Term) = theory.createFunTerm("ruleTail",t);
+  
+  def cSimpleConditionalTail(conds:Term, last:Term) = 
+                    theory.createFunTerm("condRuleTail",conds,last);
 
   def createPackage(name:Term, internals:Option[List[Term]]):Term =
   {
    if (internals==None) {
       return theory.funSignature("_CurrentPackage").
-                            createTerm("_CurrentPackage", name).get;
+                            createTerm("_CurrentPackage", name);
    } else {
       return theory.funSignature("_Package").
                             createTerm("_Package", name, 
-                                    termFromList(theory, internals.get)).get;
+                                    termFromList(theory, internals.get));
    }
   }
 
   def posAttributes(t:Term, x:Positional) = {
      t.setAttribute(POS,
           theory.refSignature.createConstant(
-                            new PositionWithFname(x.pos,fileName)).get);
+                            new PositionWithFname(x.pos,fileName)));
      t;
   }
 
   def checkTokenType(t:Elem, tokenType: TokenType.Value):Boolean =
            t.isInstanceOf[T] && t.asInstanceOf[T].tokenType == tokenType;
+
+  lazy val typeTop = theory.typeAlgebra.top;
+
+  lazy val ifElseName = theory.symbolTable.getOrCreate("ifElse");
+  lazy val etaName = theory.symbolTable.getOrCreate("eta");
+  lazy val ruleName = theory.symbolTable.getOrCreate("rule");
+  lazy val simpleRuleTailName = theory.symbolTable.getOrCreate("ruleTail");
+  lazy val conditionalRuleName = theory.symbolTable.getOrCreate("conditionalRule");
+  lazy val conditionalRuleTailName = theory.symbolTable.getOrCreate("conditionalRuleTail");
+  lazy val conditionalRuleBranchName = theory.symbolTable.getOrCreate("conditionalRuleBranchName");
+  lazy val whereName = theory.symbolTable.getOrCreate("where");
+  lazy val whereTailName = theory.symbolTable.getOrCreate("whereTail");
+
 
   val theory = th;
   val fileName = fname;

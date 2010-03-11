@@ -56,4 +56,10 @@ trait Theory extends TermWareInstance
 
  def operatorSyntax: OperatorSyntax;
 
+ def createFunTerm(name:Name, args:Term*):Term
+              = funSignature(name).createTerm(name,args:_*);
+
+ def createFunTerm(name:String, args:Term*):Term 
+              = createFunTerm(symbolTable.getOrCreate(name),args:_*);
+
 }

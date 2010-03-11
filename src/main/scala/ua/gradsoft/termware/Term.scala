@@ -5,11 +5,12 @@ package ua.gradsoft.termware;
 trait Term extends TValue 
         with Ordered[Term]
         with TermAttributed
+        with GeneralUtil
 {
 
   def arity: Int;
 
-  def subterm(i:Int): Option[Term];
+  def subterm(i:Int): Term;
 
   def subterms: RandomAccessSeq[Term];
 
@@ -24,7 +25,7 @@ trait Term extends TValue
 
   def isX: Boolean = false;
 
-  def xOwner: Option[Term] = None; 
+  def xOwner: Term =  throwUOE;
 
   def xLabel: Int = 0;
 
@@ -35,8 +36,6 @@ trait Term extends TValue
   def isEta: Boolean;
 
   def isError: Boolean;
-
-  def message: Option[String] = None;
 
   def termSubstFn(s: PartialFunction[Term,Term]): (VM=>VM) ;
 

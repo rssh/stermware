@@ -6,6 +6,7 @@ import ua.gradsoft.termware.util.TermOrdering;
 
 
 class EtaTermSignature(th:Theory) extends TermSignature
+                                    with GeneralUtil
 {
 
   override def fixedName = Some(theory.symbolTable.ETA);
@@ -15,42 +16,42 @@ class EtaTermSignature(th:Theory) extends TermSignature
   override def nameByIndex = None;
   override def indexByName = None;
 
-  override def createTerm(name:Name, args:RandomAccessSeq[Term]):Option[Term] = {
+  override def createTerm(name:Name, args:RandomAccessSeq[Term]):Term = {
     if (args.length!=3) {
-       return None;
+       throwUOE;
     }
     val v:Set[EtaXTerm]=collectEtaX(args:_*);
-    return Some(new EtaTerm(v,args(0),args(1),args(2), this));
+    return new EtaTerm(v,args(0),args(1),args(2), this);
   }
 
   /**
    * v:Set[EtaXTerm], l:Term, r:Term, rs:Term
    **/
-  override def createSpecial(args: Any*):Option[Term] = {
+  override def createSpecial(args: Any*):Term = {
     val v:Set[EtaXTerm]=args(0) match {
                      case x:Set[EtaXTerm] => x
                      case _               => null
     };
-    if (v==null) return None;
+    if (v==null) throwUOE;
     val l:Term = args(1) match {
                case t:Term => t
                case _      => null
     };
-    if (l==null) return None;
+    if (l==null) throwUOE;
     val r:Term = args(2) match {
                case t:Term => t
                case _      => null
     };
-    if (r==null) return None;
+    if (r==null) throwUOE;
     val rs:Term = args(3) match {
                case t:Term => t
                case _      => null
     };
-    if (rs==null) return None;
-    return Some(new EtaTerm(v,l,r,rs,this));
+    if (rs==null) throwUOE;
+    return new EtaTerm(v,l,r,rs,this);
   }
 
-  override def createConstant(arg:Any) = None; 
+  override def createConstant(arg:Any) = throwUOE; 
 
 
   def getTypeFn(t:Term):VM=>VM = {
@@ -71,9 +72,9 @@ class EtaTermSignature(th:Theory) extends TermSignature
 
   def calculateTypeFn(t:Term):VM=>VM = {
      vm:VM => {
-       val left = t.subterm(0).get;
-       val right = t.subterm(1).get;
-       val rest = t.subterm(2).get;
+       val left = t.subterm(0);
+       val right = t.subterm(1);
+       val rest = t.subterm(2);
        vm.pushCommandsReverse(
           left.signature.getTypeFn,
           ToData2,
@@ -100,19 +101,19 @@ class EtaTermSignature(th:Theory) extends TermSignature
   }
 
   def calculateType(t:Term):Term = {
-     val left = t.subterm(0).get;
+     val left = t.subterm(0);
      val leftType = left.signature.getType(left);
-     val right = t.subterm(1).get;
+     val right = t.subterm(1);
      val rightType = right.signature.getType(right);
-     val rest = t.subterm(2).get;
+     val rest = t.subterm(2);
      val restType = rest.signature.getType(rest);
      val etaTypeIn = theory.freeFunSignature.createTerm(
                              "OR",
                              theory.freeFunSignature.createTerm("ARROW",
                                                               leftType,
-                                                              rightType).get,
+                                                              rightType),
                              restType);
-     return theory.typeAlgebra.reduce(etaTypeIn.get);
+     return theory.typeAlgebra.reduce(etaTypeIn);
   }
   
   implicit def toTermOrdering[A<:Term] = new TermOrdering[A];
@@ -122,9 +123,7 @@ class EtaTermSignature(th:Theory) extends TermSignature
      for(st <- t.subterms) {
        st match {
          case x: EtaXTerm => {
-           if (x.xOwner==None) {
-              r=r+x;
-           }else if (x.xOwner.get==null) {
+           if (x.xOwner eq null) {
               r=r+x;
            }else{
               /* do nothing */

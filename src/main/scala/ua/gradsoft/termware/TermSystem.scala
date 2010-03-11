@@ -13,7 +13,7 @@ trait TermSystem
     vm.runByMarker(marker);
     vm.popData match {
        case r: Term => r
-       case _ => theory.errorSignature.createSpecial("term expected",vm).get
+       case _ => theory.errorSignature.createSpecial("term expected",vm)
    }
   }
 

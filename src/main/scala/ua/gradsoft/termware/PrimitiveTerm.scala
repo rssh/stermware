@@ -12,9 +12,9 @@ abstract class PrimitiveTerm(s:TermSignature) extends Term
 
   def arity: Int = 0;
 
-  def subterm(i:Int) = None;
+  def subterm(i:Int) = throwUOE;
 
-  def subterm(name:Name) = None;
+  def subterm(name:Name) = throwUOE;
 
   def subterms = RandomAccessSeq.empty;
 
@@ -28,7 +28,7 @@ abstract class PrimitiveTerm(s:TermSignature) extends Term
 
   override def isError = false;
 
-  override def message = None;
+  override def getMessage = throwUOE;
 
   def termSubst(s:PartialFunction[Term,Term]):Term = 
     if (s.isDefinedAt(this)) s.apply(this) else this;

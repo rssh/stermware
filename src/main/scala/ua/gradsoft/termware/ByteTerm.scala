@@ -9,38 +9,38 @@ case class ByteTerm(v:Byte, s:ByteTermSignature)
 {
 
   override def isByte: Boolean = true;
-  override def getByte: Option[Byte] = Some(value);
+  override def getByte: Byte = value;
 
   override def isShort: Boolean = true;
-  override def getShort: Option[Short] = Some(value.toShort);
+  override def getShort: Short = value.toShort;
 
   override def isInt: Boolean = true;
-  override def getInt: Option[Int] = Some(value.toInt);
+  override def getInt: Int = value.toInt;
 
   override def isLong: Boolean = true;
-  override def getLong: Option[Long] = Some(value.toLong);
+  override def getLong: Long = value.toLong;
 
   override def isFloat: Boolean = true;
-  override def getFloat: Option[Float] = Some(value.toFloat);
+  override def getFloat: Float = value.toFloat;
 
   override def isDouble: Boolean = true;
-  override def getDouble: Option[Double] = Some(value.toDouble);
+  override def getDouble: Double = value.toDouble;
 
   override def isBigInt: Boolean = true;
-  override def getBigInt: Option[BigInt] =
-    Some(new BigInt(java.math.BigInteger.valueOf(value.toLong)));
+  override def getBigInt: BigInt =
+    new BigInt(java.math.BigInteger.valueOf(value.toLong));
 
   override def isBigDecimal: Boolean = true;
-  override def getBigDecimal: Option[BigDecimal] =
-     Some(new BigDecimal(new java.math.BigDecimal(value.toInt)));
+  override def getBigDecimal: BigDecimal =
+     new BigDecimal(new java.math.BigDecimal(value.toInt));
 
-  override def getNumber: Option[Number] = Some(new java.lang.Byte(value));
-  override def getNumberKind: Option[Int] = Some(NumberKind.BYTE.id);
+  override def getNumber: Number = new java.lang.Byte(value);
+  override def getNumberKind: Int = NumberKind.BYTE.id;
 
   def termCompare(t: Term):Int = {
     var c = termClassIndex - t.termClassIndex;
     if (c!=0) return 0;
-    return (value - t.getByte.get).toInt;
+    return (value - t.getByte).toInt;
   }
 
 

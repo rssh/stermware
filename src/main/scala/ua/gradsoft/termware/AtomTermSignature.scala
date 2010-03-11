@@ -1,6 +1,7 @@
 package ua.gradsoft.termware;
 
 class AtomTermSignature(th:Theory, tn:Name) extends TermSignature
+                                               with GeneralUtil
 {
 
   override def fixedName = None;
@@ -10,16 +11,16 @@ class AtomTermSignature(th:Theory, tn:Name) extends TermSignature
   override def nameByIndex = None;
   override def indexByName = None;
 
-  override def createTerm(name:Name, args: RandomAccessSeq[Term]) = None;
-  override def createSpecial(args: Any*) = None;
+  override def createTerm(name:Name, args: RandomAccessSeq[Term]) = throwUOE;
+  override def createSpecial(args: Any*) = throwUOE;
 
 
   def createConstant(arg:Any) = arg match {
-     case x: String => Some(new AtomTerm(
+     case x: String => new AtomTerm(
                           TermWare.instance.symbolTable.getOrCreate(x),
-                          this))
-     case x: Name => Some(new AtomTerm(x,this))
-     case _ => None
+                          this)
+     case x: Name => new AtomTerm(x,this)
+     case _ => throwUOE
   };
 
   /**
