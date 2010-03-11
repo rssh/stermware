@@ -50,6 +50,8 @@ trait FreeAlgebra extends Theory
   val errorSignature = new ErrorTermSignature(this);
 
   val operatorSyntax = new OperatorSyntax()
+                               .addBinary("<-","assign",true,1)
+                               .addBinary("->","rule",false,1)
                                .addBinary("||","or",true,2)
                                .addBinary("&&","and",true,3)
                                .addBinary("==","equal",true,4)

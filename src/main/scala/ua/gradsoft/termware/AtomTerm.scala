@@ -19,6 +19,8 @@ case class AtomTerm(n:Name,s:AtomTermSignature) extends PrimitiveTerm(s)
 
   def termHashCode: Int = 1+name.hashCode;
 
+  override def toString = name.toString;
+
   val name = n;
 }
 

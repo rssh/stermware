@@ -73,6 +73,7 @@ abstract class FunctionalTerm(s:TermSignature) extends Term
     return c; 
   }
 
+  override def toString = name.toString+"("+subterms.mkString(",")+")";
   
   val signature=s;
   lazy val attributes = new HashMap[Name,Term]();

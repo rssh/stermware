@@ -179,6 +179,24 @@ class TermWareParserFunSuite extends FunSuite
      }
   }
 
+  test("parse let expression ") {
+     val r = parser.phrase(parser.statements)(new parser.lexical.Scanner("""
+       let ( x <- 1, y <- 2) f(x,y)
+     """));
+     System.err.println("received:"+r);
+     r match {
+       case parser.Success(rs,_) => {
+                 val lt = rs.asInstanceOf[List[Term]];
+                 val t = lt(0);
+                 assert(t.name.getString == "let");
+                 val t0 = t.subterm(0);
+                 assert(t0.name.getString == "cons");
+                 val t00 = t0.subterm(0);
+                 assert(t00.name.getString == "assign");
+              }
+       case _ => fail("let term must be parsed");
+     }
+  }
 
 
   val theory = TermWare.instance.freeTheory;

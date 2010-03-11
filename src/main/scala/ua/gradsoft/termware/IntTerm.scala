@@ -61,6 +61,7 @@ case class IntTerm(v:Int, s:IntTermSignature)
     return (value - t.getInt);
   }
 
+  override def toString = value.toString;
 
   lazy val name = new IntName(value);
   lazy val termHashCode = value.toInt;

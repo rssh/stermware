@@ -207,7 +207,10 @@ class TermWareLexical(s:OperatorSyntax) extends Lexical
   private var normalStateKeywords: List[KeywordDef] = List(
            KeywordDef("syntax:",Some(IN_SYNTAX)),
            KeywordDef("if",None),
-           KeywordDef("else",None)
+           KeywordDef("else",None),
+           KeywordDef("let",None),
+           KeywordDef("where",None),
+           KeywordDef("whith",None)
   );
   private var normalStateKeywordParser: Parser[KeywordToken] = null;
 

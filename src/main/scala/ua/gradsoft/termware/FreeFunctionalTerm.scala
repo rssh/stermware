@@ -14,6 +14,9 @@ case class FreeFunctionalTerm(n:Name,ts:RandomAccessSeq[Term],
   
   lazy val termHashCode = name.hashCode+subterms.
                               foldLeft(0)((x:Int,y:Term)=>x+y.termHashCode);
+
+  override def toString = name.toString+"("+subterms.mkString(",")+")";
+
   
   val name=n;
   val subterms=ts;

@@ -174,7 +174,7 @@ class TermWareParser(th:Theory, fname:String) extends TokenParsers
   );
 
   def assign: Parser[Term] = {
-     identifier ~ ( OP("->") ~> term ) ^^ {
+     identifier ~ ( OP("<-") ~> term ) ^^ {
          case x ~ y =>  th.funSignature("assign").createTerm("assign",x,y);
        }
   }
