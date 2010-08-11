@@ -27,7 +27,7 @@ class EtaTerm(v:Set[EtaXTerm], l:Term, r:Term, rs:Term, s:EtaTermSignature)
 
   override def arity = 3;
 
-  override def subterms = RandomAccessSeq(left, right, rest);
+  override def subterms = IndexedSeq(left, right, rest);
 
   override def subterm(index: Int) = 
     index match {

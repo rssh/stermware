@@ -40,11 +40,11 @@ trait TermSignature
    * @return newly-created term if signature restrictions
    *  allow one. Otherwise - throw UnsupportedOperationException.
    */
-   def createTerm(name:Name, args: RandomAccessSeq[Term]): Term;
+   def createTerm(name:Name, args: IndexedSeq[Term]): Term;
 
    def createTerm(name:Name, args: Term*): Term = {
     args match {
-     case x: RandomAccessSeq[Term] => createTerm(name,x)
+     case x: IndexedSeq[Term] => createTerm(name,x)
      case _ => {
        val arr = new Array[Term](args.length);
        for( i <- 0 to args.length-1) {
@@ -69,7 +69,7 @@ trait TermSignature
     }
    }
 
-   def createTerm(name:String, args: RandomAccessSeq[Term]):Term =
+   def createTerm(name:String, args: IndexedSeq[Term]):Term =
     createTerm(theory.symbolTable.getOrCreate(name),args);
 
    def createTerm(name:String, args: Term*):Term =

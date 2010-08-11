@@ -16,7 +16,7 @@ abstract class PrimitiveTerm(s:TermSignature) extends Term
 
   def subterm(name:Name) = throwUOE;
 
-  def subterms = RandomAccessSeq.empty;
+  def subterms = IndexedSeq.empty;
 
   override def isX = false;
 

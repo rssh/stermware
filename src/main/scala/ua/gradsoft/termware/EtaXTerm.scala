@@ -36,7 +36,7 @@ class EtaXTerm(n: Name, l:Int, t: Term, o:EtaTerm, s:EtaXTermSignature)
    /**
     * Seq.empty
     */
-   def subterms = RandomAccessSeq.empty;
+   def subterms = IndexedSeq.empty;
 
    override def xOwner = owner;
 

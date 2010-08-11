@@ -13,7 +13,7 @@ trait TermAttributed
          = attributes.update(name,value);
 
    def resetAttribute(name:Name):Option[Term]
-        = attributes.removeKey(name);
+        = attributes.remove(name);
 
    def attributes:Map[Name,Term];
 }

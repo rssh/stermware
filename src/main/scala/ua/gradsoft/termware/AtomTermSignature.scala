@@ -11,7 +11,7 @@ class AtomTermSignature(th:Theory, tn:Name) extends TermSignature
   override def nameByIndex = None;
   override def indexByName = None;
 
-  override def createTerm(name:Name, args: RandomAccessSeq[Term]) = throwUOE;
+  override def createTerm(name:Name, args: IndexedSeq[Term]) = throwUOE;
   override def createSpecial(args: Any*) = throwUOE;
 
 

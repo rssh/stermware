@@ -3,7 +3,7 @@ package ua.gradsoft.termware.freeterms;
 import ua.gradsoft.termware._;
 
 class FreeTermWithFixedNameAnyArity(
-                         ts:RandomAccessSeq[Term],
+                         ts:IndexedSeq[Term],
                          s:TermSignature) extends FunctionalTerm(s)
                                         with
                                           FixedNameTerm

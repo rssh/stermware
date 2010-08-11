@@ -14,7 +14,7 @@ class FreeFunctionalTermSignature(th:Theory)
 
  def fixedName:Option[Name] = None;
  
- def createTerm(name:Name, args:RandomAccessSeq[Term]) : Term =  
+ def createTerm(name:Name, args:IndexedSeq[Term]) : Term =  
          new FreeFunctionalTerm(name,args,this);
  
  def getType(t:Term):Term = {

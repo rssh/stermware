@@ -3,9 +3,9 @@ package ua.gradsoft.termware;
 import scala.collection.mutable.HashMap;
 import ua.gradsoft.termware.fn._;
 
-case class FreeFunctionalTerm(n:Name,ts:RandomAccessSeq[Term],
-                                 s:FunctionalTermSignature) 
-                                        extends FunctionalTerm(s)
+case class FreeFunctionalTerm(n:Name,ts:IndexedSeq[Term],
+                               s:FunctionalTermSignature) 
+                                     extends FunctionalTerm(s)
 {
 
   def arity: Int = subterms.length;
@@ -17,7 +17,6 @@ case class FreeFunctionalTerm(n:Name,ts:RandomAccessSeq[Term],
 
   override def toString = name.toString+"("+subterms.mkString(",")+")";
 
-  
   val name=n;
   val subterms=ts;
 

@@ -1,6 +1,6 @@
 package ua.gradsoft.termware;
 
-import scala.collection.immutable._;
+import scala.collection.immutable.TreeSet;
 import ua.gradsoft.termware.fn._;
 import ua.gradsoft.termware.util.TermOrdering;
 
@@ -16,7 +16,7 @@ class EtaTermSignature(th:Theory) extends TermSignature
   override def nameByIndex = None;
   override def indexByName = None;
 
-  override def createTerm(name:Name, args:RandomAccessSeq[Term]):Term = {
+  override def createTerm(name:Name, args: IndexedSeq[Term]):Term = {
     if (args.length!=3) {
        throwUOE;
     }
@@ -27,7 +27,8 @@ class EtaTermSignature(th:Theory) extends TermSignature
   /**
    * v:Set[EtaXTerm], l:Term, r:Term, rs:Term
    **/
-  override def createSpecial(args: Any*):Term = {
+  override def createSpecial(args: Any*):Term = 
+  {
     val v:Set[EtaXTerm]=args(0) match {
                      case x:Set[EtaXTerm] => x
                      case _               => null
@@ -52,7 +53,6 @@ class EtaTermSignature(th:Theory) extends TermSignature
   }
 
   override def createConstant(arg:Any) = throwUOE; 
-
 
   def getTypeFn(t:Term):VM=>VM = {
     var retval=t.getAttribute(theory.symbolTable.TYPE);
@@ -116,10 +116,9 @@ class EtaTermSignature(th:Theory) extends TermSignature
      return theory.typeAlgebra.reduce(etaTypeIn);
   }
   
-  implicit def toTermOrdering[A<:Term] = new TermOrdering[A];
 
   private def collectEtaX(t:Term):Set[EtaXTerm] = {
-     var r = TreeSet.empty[EtaXTerm];
+     var r = TreeSet.empty[EtaXTerm](etaXTermOrdering);
      for(st <- t.subterms) {
        st match {
          case x: EtaXTerm => {
@@ -140,14 +139,15 @@ class EtaTermSignature(th:Theory) extends TermSignature
 
 
   private def collectEtaX(terms:Term*):Set[EtaXTerm] = {
-     var r = TreeSet.empty[EtaXTerm];
+     var r = TreeSet.empty[EtaXTerm](etaXTermOrdering);
      for(t <- terms) yield {
        r++=collectEtaX(t);
      }
      return r;
   }
 
-
   val theory=th;
+
+  lazy val etaXTermOrdering=new TermOrdering[EtaXTerm]();
 }
 

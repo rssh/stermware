@@ -179,7 +179,7 @@ class TermWareLexical(s:OperatorSyntax) extends Lexical
     );
 
     (syntax.getBinaries.keys ++ syntax.getUnaries.keys).toList.
-       removeDuplicates.
+       distinct.
           sortWith((x,y)=>x.length > y.length).
              map(parseOpString(_)).reduceRight(_|_);
     

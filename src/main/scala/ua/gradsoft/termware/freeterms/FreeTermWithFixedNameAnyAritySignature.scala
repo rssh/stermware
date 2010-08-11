@@ -9,7 +9,7 @@ class FreeTermWithFixedNameAnyAritySignature(n:Name,
                                               with AnyAritySignature
 {
 
- def createTerm(name:Name, args:RandomAccessSeq[Term]) : Term =
+ def createTerm(name:Name, args:IndexedSeq[Term]) : Term =
               new FreeTermWithFixedNameAnyArity(args,this);
 
  def getType(t:Term):Term = {
@@ -32,8 +32,7 @@ class FreeTermWithFixedNameAnyAritySignature(n:Name,
    return typeOut;
  }
 
- val name = n;
-
- val theory = th;
+ val name=n;
+ val theory=th;
 
 }

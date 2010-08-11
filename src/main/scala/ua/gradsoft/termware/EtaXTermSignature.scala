@@ -13,7 +13,7 @@ class EtaXTermSignature(th:Theory) extends TermSignature
   override def nameByIndex = None;
   override def indexByName = None;
 
-  override def createTerm(name:Name, args:RandomAccessSeq[Term]):Term = throwUOE;
+  override def createTerm(name:Name, args:IndexedSeq[Term]):Term = throwUOE;
 
   /**
    * n:Name, i:Int, t:Term, (type)

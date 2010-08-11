@@ -12,7 +12,7 @@ trait Term extends TValue
 
   def subterm(i:Int): Term;
 
-  def subterms: RandomAccessSeq[Term];
+  def subterms: IndexedSeq[Term];
 
   def name: Name;
 

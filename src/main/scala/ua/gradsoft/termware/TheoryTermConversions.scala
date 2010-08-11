@@ -83,7 +83,7 @@ trait TheoryTermConversions
          } else {
           val consName = th.listSignature.fixedName.get;
           return th.listSignature.createTerm(consName, 
-                                            termFromAnyRef(th,x.first), 
+                                            termFromAnyRef(th,x.head), 
                                             termFromAnyRef(th,x.drop(1)));
          }
       }

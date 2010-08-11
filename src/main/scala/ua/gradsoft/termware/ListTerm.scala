@@ -16,7 +16,7 @@ class ListTerm(h:Term, t:Term, s:ListTermSignature)
       case _ => throw new IndexOutOfBoundsException();
     }
 
-  def subterms:RandomAccessSeq[Term] = RandomAccessSeq[Term](head,tail);
+  def subterms:IndexedSeq[Term] = IndexedSeq[Term](head,tail);
 
   override def termUnifyFn(t:Term, s: Substitution): (VM=>VM) =
    (vm:VM) => {

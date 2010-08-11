@@ -364,12 +364,12 @@ class TermWareParser(th:Theory, fname:String) extends TokenParsers
 
   def cFunctional1(x:Term, y:List[Term]):Term = {
     if (x.isAtom) {
-       th.funSignature(name).createTerm(x.name,y.toSeq:_*); 
+       th.funSignature(x.name).createTerm(x.name,y.toSeq:_*); 
     } else {
        def listToTerm(l:List[Term]):Term = {
          if (l.isEmpty) th.nilSignature.createConstant(Nil)
          else th.funSignature("cons").createTerm("cons",
-                                  l.first,listToTerm(l.drop(1)));
+                                  l.head,listToTerm(l.drop(1)));
        }
        val ly = listToTerm(y);
        th.funSignature("apply").createTerm("apply",x,ly); 
@@ -389,12 +389,12 @@ class TermWareParser(th:Theory, fname:String) extends TokenParsers
     val retval:Term =  
        if (op.isRightAssoc) {
           val next = cBinaryExpression(snd,tail.drop(1));
-          val par = RandomAccessSeq(frs,next);
+          val par = IndexedSeq(frs,next);
           theory.createFunTerm(name,par:_*);
        } else {
           // leftAssoc
           // x * y * z * w = ((x * y) * z) * w
-          val par = RandomAccessSeq(frs,snd);
+          val par = IndexedSeq(frs,snd);
           val next = th.funSignature(name).createTerm(name,par);
           cBinaryExpression(next,tail.drop(1));
        };
@@ -407,7 +407,7 @@ class TermWareParser(th:Theory, fname:String) extends TokenParsers
     else {
       val op = frs.get.v1;
       val name = theory.symbolTable.getOrCreate(op.funName);
-      theory.funSignature(name).createTerm(name, RandomAccessSeq(snd));
+      theory.funSignature(name).createTerm(name, IndexedSeq(snd));
     }
   }
 

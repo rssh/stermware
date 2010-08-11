@@ -2,7 +2,7 @@ package ua.gradsoft.termware.fn;
 
 import ua.gradsoft.termware.VM;
 
-case class FnPopData extends Function1[VM,VM]
+case class FnPopData() extends Function1[VM,VM]
 {
   def apply(vm:VM):VM = {
     val a = vm.popData;
@@ -10,7 +10,7 @@ case class FnPopData extends Function1[VM,VM]
   }
 };
 
-object FnPopData extends FnPopData
+object FnPopData extends FnPopData()
 {
 };
 

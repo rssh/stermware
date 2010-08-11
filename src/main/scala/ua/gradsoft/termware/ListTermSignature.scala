@@ -22,7 +22,7 @@ class ListTermSignature(th:Theory)
 
  def fixedName:Option[Name] = Some(CONS);
  
- def createTerm(name:Name, args:RandomAccessSeq[Term]) : Term =  
+ def createTerm(name:Name, args:IndexedSeq[Term]) : Term =  
   args.length match {
     case 0 => theory.nilSignature.createConstant(null)
     case 1 => new ListTerm(args(0),

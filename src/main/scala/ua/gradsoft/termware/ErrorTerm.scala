@@ -22,7 +22,7 @@ class ErrorTerm(m:String, e:Exception, s: ErrorTermSignature) extends Term
 
   def subterm(i:Int): Term = throwUOE;
 
-  def subterms: RandomAccessSeq[Term] = RandomAccessSeq.empty;
+  def subterms: IndexedSeq[Term] = IndexedSeq.empty;
 
   def name: Name = signature.theory.symbolTable.ERROR;
 
