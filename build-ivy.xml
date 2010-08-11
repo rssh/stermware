@@ -62,17 +62,17 @@
  </target>
 
 
- <target name="retrieve-for-jar" depends="resolve-ivy" >
+ <target name="retrieve-for-jar" depends="resolve-ivy" unless="offline" >
    <ivy:retrieve conf="jar" 
                  pattern="lib/[artifact]-[revision].[ext]" />
  </target>
 
- <target name="retrieve-for-build" depends="declare-ivy" >
+ <target name="retrieve-for-build" depends="declare-ivy" unless="offline" >
    <ivy:retrieve conf="build" 
-                 pattern="lib/build/[artifact].[ext]" />
+                 pattern="lib/build/[artifact].[ext]" unless="offline" />
  </target>
  
- <target name="retrieve-for-test" depends="declare-ivy" >
+ <target name="retrieve-for-test" depends="declare-ivy" unless="offline" >
    <ivy:retrieve conf="test" 
                  pattern="lib/[artifact]-[revision].[ext]" />
  </target>

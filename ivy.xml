@@ -23,7 +23,7 @@
                conf="src->default" transitive="false" />
    -->
    <dependency org="org.scalatest" name="scalatest" 
-               rev="1.0.1-for-scala-2.8.0.Beta1-SNAPSHOT" 
+               rev="1.2" 
                conf="test->default" />
  </dependencies>
 </ivy-module>

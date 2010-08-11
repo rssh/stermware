@@ -4,7 +4,7 @@ object TermMatchingKind extends Enumeration
 {
   type TermMatchingKind = Value;
 
-  val ByNameAndArity, ByName, ByArity, ByPrimitiveType = Value;
+  val ByNameAndArity, ByName, ByArity, ByAny = Value;
 }
 
 

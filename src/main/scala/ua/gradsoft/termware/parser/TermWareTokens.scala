@@ -7,14 +7,8 @@ import scala.util.parsing.input._;
 
 import ua.gradsoft.termware._;
 
-/**
- * tokens for termware language
- **/
-trait TermWareTokens extends Tokens
+object TermWareTokenType extends Enumeration
 {
-
-  object TokenType extends Enumeration
-  {
    val BOOLEAN, STRING, CHAR,
        INT, SHORT, LONG,
        DOUBLE, FLOAT,
@@ -23,14 +17,22 @@ trait TermWareTokens extends Tokens
        DELIMITER, 
        OPERATOR,
        ERROR = Value;
-  }
+}
+
+/**
+ * tokens for termware language
+ **/
+trait TermWareTokens extends Tokens
+{
+
+  val TokenType = TermWareTokenType;
 
   trait TermWareToken extends Token with Positional
   {
    def tokenType: TokenType.Value;
   }
 
-  case class ValueToken[T](t:TokenType.Value, v:T) extends TermWareToken
+  case class ValueToken[T](t:TermWareTokenType.Value, v:T) extends TermWareToken
   {
    val tokenType=t;
    val value=v;

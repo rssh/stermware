@@ -35,7 +35,8 @@
 
  <target name="clean-all" depends="clean">
   <delete>
-   <fileset dir="doc/api"   includes="**/*" />
+   <fileset dir="doc"   includes="api/**/*" />
+   <fileset dir="lib"   includes="**/*" />
   </delete>
  </target>
 
@@ -48,7 +49,7 @@
    </taskdef>
  </target>
 
- <target name="define-scalatest">
+ <target name="define-scalatest" depends="retrieve-for-test" >
    <taskdef name="scalatest" classname="org.scalatest.tools.ScalaTestAntTask">
     <classpath>
      <path refid="test.path" />
@@ -62,6 +63,7 @@
   <scalac srcdir="src/main/scala" 
           destdir="build/main"
           classpathref="build.path" 
+          deprecation="yes" 
           >
     <include name="**/*.scala" />
   </scalac>

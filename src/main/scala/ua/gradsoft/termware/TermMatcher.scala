@@ -4,7 +4,6 @@ import TermMatchingKind._;
 
 /**
  * TermMatcher
- *   usd
  **/
 trait TermMatcher
 {
@@ -12,10 +11,24 @@ trait TermMatcher
   def matchingKind: TermMatchingKind;
 
   /**
-   * quick check: is exists sence start unfication process 
-   * with term <code> t </code>
+   * target pattern name.  
+   *   Used only if matching is by name and arity or by-name.
    **/
-  def preMatch(t:Term): Boolean
+  def patternName: Name;
+ 
+  /**
+   * target arity (defined if possible)
+   **/
+  def arity: Int;
+
+  /**
+   * check, if this matcher match term t with phase 2 (i.e. when name and
+   * arity are known to match, we must check typing and so-on).
+   **/
+  def matchPhase2(t:Term, s: Substitution, vm: VM):(Boolean,Substitution)
+
+  
+  def isQuickFalse: Boolean;
 
 }
 

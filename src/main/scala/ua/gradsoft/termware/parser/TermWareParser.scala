@@ -12,7 +12,6 @@ class TermWareParser(th:Theory, fname:String) extends TokenParsers
   override type Tokens = TermWareLexical;
   override val lexical: TermWareLexical = 
                               new TermWareLexical(th.operatorSyntax);
-  type T = TermWareToken;
 
   import TokenType._;
 
@@ -437,7 +436,10 @@ class TermWareParser(th:Theory, fname:String) extends TokenParsers
   }
 
   def checkTokenType(t:Elem, tokenType: TokenType.Value):Boolean =
-           t.isInstanceOf[T] && t.asInstanceOf[T].tokenType == tokenType;
+      t match {
+         case x: lexical.Token => x.tokenType == tokenType
+         case _ => false;
+      };
 
   lazy val typeTop = theory.typeAlgebra.top;
 

@@ -17,7 +17,7 @@ trait Term extends TValue
   def name: Name;
 
   def patternName: Name = name;
-  //def matcher: termMatched
+  //def createMatcher: TermMatcher
 
   def signature: TermSignature;
 
