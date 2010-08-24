@@ -33,7 +33,7 @@ class TermWareLexical(s:OperatorSyntax) extends Lexical
 
   def token: Parser[Token] = 
         token1 ^^ { 
-     (x) => { if (false) {System.out.println(x.tokenType+":"+x.chars); };  x }
+     (x) => { if (true) {System.out.println(x.tokenType+":"+x.chars); };  x }
   }
 
   def identifier: Parser[Token] = (
@@ -98,7 +98,7 @@ class TermWareLexical(s:OperatorSyntax) extends Lexical
   );
 
   def numberPrimitive:Parser[Token] = (
-     '0' ~! nonDecimalNumberPrimitive  ^^ { case x ~ y => y }
+     '0' ~ nonDecimalNumberPrimitive  ^^ { case x ~ y => y }
      |
       decimalNumberPrimitive
   );
