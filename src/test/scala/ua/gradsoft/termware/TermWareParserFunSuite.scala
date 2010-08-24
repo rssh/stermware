@@ -15,8 +15,8 @@ class TermWareParserFunSuite extends FunSuite
 
        true
      """));
-     System.out.println("received:"+r);
-     System.out.println("r.class:"+r.getClass());
+     //System.out.println("received:"+r);
+     //System.out.println("r.class:"+r.getClass());
      r match {
        case parser.Success(t,_) => {
                        assert(t.isInstanceOf[BooleanTerm]);
@@ -77,6 +77,23 @@ class TermWareParserFunSuite extends FunSuite
      }
   }
 
+  test("parse complex functional term") {
+     val r = parser.phrase(parser.term)(new parser.lexical.Scanner("""
+            f(f1(g(0),x),f2(g2(1)),z)
+     """));
+     //System.err.println("received:"+r);
+     r match {
+       case parser.Success(t,_) => {
+                       assert(t.isInstanceOf[Term]);
+                       assert(t.arity==3);
+                       assert(t.name.getString=="f");
+                       val s1 = t.subterm(0);
+                       assert(s1.arity==2);
+                       assert(s1.name.getString=="f1");
+                       }
+       case _ => fail("complex functional term must be parsed");
+     }
+  }
 
   test("parse left associative binary 1") {
      val r = parser.phrase(parser.term)(new parser.lexical.Scanner(
@@ -183,7 +200,7 @@ class TermWareParserFunSuite extends FunSuite
      val r = parser.phrase(parser.statements)(new parser.lexical.Scanner("""
        let ( x <- 1, y <- 2) f(x,y)
      """));
-     System.err.println("received:"+r);
+     //System.err.println("received:"+r);
      r match {
        case parser.Success(rs,_) => {
                  val lt = rs.asInstanceOf[List[Term]];

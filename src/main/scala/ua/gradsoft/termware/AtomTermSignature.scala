@@ -1,6 +1,7 @@
 package ua.gradsoft.termware;
 
-class AtomTermSignature(th:Theory, tn:Name) extends TermSignature
+class AtomTermSignature(override val theory:Theory, tn:Name) 
+                                              extends TermSignature
                                                with GeneralUtil
 {
 
@@ -27,8 +28,6 @@ class AtomTermSignature(th:Theory, tn:Name) extends TermSignature
    * type of atom is atom itself.
    **/
   override def getType(t:Term):Term = t;
-
-  val theory: Theory = th;
 
 }
 

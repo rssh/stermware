@@ -13,9 +13,9 @@ object ZipIndex
       var cup:Option[Term]=None;
       var ct:Option[Term]=Some(t);
       var cti=0;
-      val bitCount=zi.bitCount;
-      while(bitIndex < bitCount) {
-        if (zi.testBit(bitIndex)) {
+      val bitLength=zi.bitLength;
+      while(bitIndex < bitLength) {
+        if (zi.testBit(bitLength-bitIndex-1)) {
            // right
            if (cup==None) {
               return (None,None,cti+1)
