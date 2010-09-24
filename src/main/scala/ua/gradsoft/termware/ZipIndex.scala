@@ -44,9 +44,41 @@ object ZipIndex
     }
   }
 
+/*
   //precondition: up[i]=t.
-  def down(up:Term, t:Term, i:Int) = (t, t.subterm(0), 0)
+  def down(up:Option[Term], st:Option[Term], i:Int) = 
+    if (st==None) (None,None,0)
+    else if (st.get.arity>0) (st, Some(st.get.subterm(0)), 0)
+    else (st,None,0);
 
-  def right(up:Term, t:Term, i:Int) = (t, t.subterm(i+1), i+1)
+  def down(upl:List[Term], tl:List[Term], i:Int):(List[Term],List[Term],Int)={
+    var rupl=List[Term]();
+    var rtl=List[Term]();
+    for(t <- tl) {
+      if (t.arity>0) {
+        rupl+=t;
+        rtl+=t.subterm(0);
+      }
+    }
+    return (rupl,rtl,0);
+  }
+
+  def right(up:Opt[Term], st:Opt[Term], i:Int) = 
+     if (up==None) (None,None,i+1)
+     else if (up.get.arity>=i) (up,None,i+1)
+     else (up, Some(up.get.subterm(i+1)), i+1);
+
+  def right(upl:List[Term], cl:List[Term], i:Int):(List[Term],List[Term],Int)={
+    var rupl=upl;
+    var rtl=List[Term]();
+    val ni=i+1;
+    for(up <- upl) {
+      if (up.arity > ni) {
+         rtl+=up.suberm(ni);
+      }
+    }
+    return (rupl, rtl, ni);
+  }
+*/
 
 }

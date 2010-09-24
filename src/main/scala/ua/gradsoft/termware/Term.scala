@@ -10,14 +10,15 @@ trait Term extends TValue
 
   def arity: Int;
 
+  def patternArity: Option[Int] = Some(arity);
+
   def subterm(i:Int): Term;
 
   def subterms: IndexedSeq[Term];
 
   def name: Name;
 
-  def patternName: Name = name;
-  //def createMatcher: TermMatcher
+  def patternName: Option[Name] = Some(name);
 
   def signature: TermSignature;
 

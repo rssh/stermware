@@ -8,6 +8,13 @@ trait TermCondition
    * without futer evaluation
    **/
   def isQuickFalse: Boolean
+
+
+  /**
+   * can we quickly say, that this condition is evaluated to true
+   * without future evaluation
+   **/
+  def isQuickTrue:  Boolean;
   
   /**
    * return function which eval condition and leave result on data stack.

@@ -1,6 +1,8 @@
 package ua.gradsoft.termware;
 
+import scala.collection.Set;
 import scala.collection.mutable.ArrayBuffer;
+import scala.collection.immutable.TreeMap;
 
 object MatchingNet
 {
@@ -12,13 +14,20 @@ trait MatchingCondition
   def check(t:Term,s:Substitution,vm:VM):(Boolean,Substitution) 
 }
 
+object TrueMatchingCondition extends MatchingCondition
+{
+  def check(t:Term,s:Substitution,vm:VM):(Boolean,Substitution) = (true,s);
+}
+
 trait MatchingNetConstants
 {
   val ZI_DOWN = 0;
   val ZI_RIGHT = 1;
   val ZI_FINAL = 2;
 
+  val T = TrueMatchingCondition;
 }
+
 
 class MatchingNet(val theory:Theory)
                          extends MatchingNetConstants
@@ -26,21 +35,38 @@ class MatchingNet(val theory:Theory)
 
   class Node(
     val condition:MatchingCondition,
-    val nextState:Int,
-    val zipIndexStep:Int
+    val zipIndexStep:Int,
+    val nextOutState:Int,
+    val stateIndexOnFail: Int,
+    val zipIndexOnFail: BigInt
   ) {
+
+       def this(condition:MatchingCondition,
+                zipIndexStep:Int,
+                nextOutState:OutState,
+                nextFailState:OutState,
+                zipIndexOnFail:BigInt) = 
+         this(condition,zipIndexStep,nextOutState.index, nextFailState.index,
+              zipIndexOnFail);
+    
        def check(t:Term,s:Substitution,vm:VM):(Boolean,Substitution)
              =condition.check(t,s,vm);
 
        def isFinal:Boolean = (zipIndexStep==ZI_FINAL);
   }
 
+
   class NodeChooser(
-    val fnfa: Map[Int,Map[Name,List[Node]]],
-    val fnaa: Map[Name,List[Node]],
-    val anfa: Map[Int,List[Node]],
-    val anaa: List[Node]
+    var fnfa: Map[Int,Map[Name,List[Node]]],
+    var fnaa: Map[Name,List[Node]],
+    var anfa: Map[Int,List[Node]],
+    var anaa: List[Node]
   ) {
+
+      def this() = this(Map[Int,Map[Name,List[Node]]](),
+                    Map[Name,List[Node]](),
+                    Map[Int,List[Node]](),
+                    List[Node]());
 
       def find(n:Name,a:Int):List[Node]={
          var r=findFNFA(n,a);
@@ -59,29 +85,91 @@ class MatchingNet(val theory:Theory)
         }
       }
 
+      def addFNFA(n:Name,a:Int,nd:Node)= {
+        var byName = fnfa.getOrElse(a,Map[Name,List[Node]]());
+        var l = byName.getOrElse(n,List[Node]());
+        l=nd :: l;
+        byName += n->l ;
+        fnfa += a -> byName;
+      }
+
+      def addFNAA(n:Name,nd:Node)= {
+        var l = fnaa.getOrElse(n,List[Node]());
+        l = nd :: l;
+        fnaa += n -> l ;
+      }
+
+      def addANFA(a:Int,nd:Node)= {
+        var l = anfa.getOrElse(a,List[Node]());
+        l = nd :: l;
+        anfa += a -> l ;
+      }
+
+      def addANAA(nd:Node)= {
+        anaa = nd::anaa ;
+      }
+
+
   }
 
-  class State(
+  class OutState(
     val index: Int,
-    val choosers: Map[BigInt,NodeChooser],
-    val rules: List[TermRule],
-    val stateIndexOnFail: Int,
-    val zipIndexOnFail: BigInt
+    val ruleIndexes: Set[Int]
   )
   {
-
     def getNodes(zi:BigInt,n:Name,a:Int):List[Node]={
        choosers.get(zi) match {
          case None => List.empty;
          case Some(x)  => x.find(n,a);
        }
     }
+
+    def rules:List[TermRule] = {
+       for(i <- ruleIndexes.toList) yield allRules(i);
+    }
   
+    def addFNFA(zi:BigInt,name:Name,arity:Int,node:Node) = {
+       val nc = getNodeChooser(zi);
+       nc.addFNFA(name,arity,node);
+    }
+
+    def addFNAA(zi:BigInt,name:Name,node:Node) = {
+      val nc = getNodeChooser(zi);
+      nc.addFNAA(name,node);
+    }
+
+    def addANFA(zi:BigInt,arity:Int,node:Node) = {
+      val nc = getNodeChooser(zi);
+      nc.addANFA(arity,node);
+    }
+
+    def addANAA(zi:BigInt,node:Node) = {
+      val nc = getNodeChooser(zi);
+      nc.addANAA(node);
+    }
+
+    def getNodeChooser(zi:BigInt):NodeChooser = {
+      val optNc = choosers.get(zi);
+      val retval = if (optNc==None) {
+                       val nc = new NodeChooser();
+                       choosers += zi -> nc;
+                       nc;
+                   } else {
+                       optNc.get;
+                   }
+      return retval;
+    }
+
+    def withCondition:Boolean = {
+      ruleIndexes.find(allRules(_).withCondition) != None ;
+    }
+
+    var choosers = TreeMap[BigInt,NodeChooser](); 
   }
 
 
-
-  val states = new ArrayBuffer[State];
+  val outStates = new ArrayBuffer[OutState];
+  val allRules = new ArrayBuffer[TermRule];
 
   case class Failure(val t:Term, val m:String, val prev:Option[Failure])
   case class Success(val s:STMSubstitution, val rules:List[TermRule])
@@ -95,16 +183,18 @@ class MatchingNet(val theory:Theory)
     var cti=0;
     var quit:Boolean=false;
     var cs = STMSubstitution.empty;
-    var state=states(csi);
+    var outState=outStates(csi);
     while(!quit) {
-       var nodes=state.getNodes(czi,ct.name,ct.arity); 
+       var nodes=outState.getNodes(czi,ct.name,ct.arity); 
        var test = false;
+       var lastNode:Option[Node] = None;
        while(!nodes.isEmpty && !test) {
          var node = nodes.head;
+         lastNode = Some(node);
          nodes=nodes.tail;
          var (test,s:STMSubstitution) = node.check(ct,cs,vm);
          if (test) {
-           csi=node.nextState;
+           csi=node.nextOutState;
            cs=s;
            node.zipIndexStep match {
               case ZI_DOWN => {
@@ -138,7 +228,7 @@ class MatchingNet(val theory:Theory)
                               }
                              }
               case ZI_FINAL => {
-                                 return Right(Success(cs,state.rules));
+                                 return Right(Success(cs,outState.rules));
                                }
               case _ => { throw new TermWareException(
                                  "internal error: invalid zipIndexStep"); 
@@ -147,20 +237,196 @@ class MatchingNet(val theory:Theory)
         }
        }
        if (!test) {
-         csi=state.stateIndexOnFail;
-         czi=state.zipIndexOnFail;
+        if (lastNode!=None) {
+         var node = lastNode.get;
+         csi=node.stateIndexOnFail;
+         czi=node.zipIndexOnFail;
          var(ctup,oct,cti)=ZipIndex(t,czi);
          if (oct==None) {
            return Left(Failure(t,"invalid zipIndex on fail",None));
          }else{
            ct=oct.get;
          }
+        } else {
+         // lastNode = None.
+         return Left(Failure(t,"empty node sequence",None));
+        }
        }
        cs = cs withIndex czi;
-       state=states(csi);
+       outState=outStates(csi);
     }
-    return Right(Success(cs,state.rules));
+    return Right(Success(cs,outState.rules));
   }
 
+  class NodeCollect
+  {
+    var fnfa = Map[Int,Map[Name,Set[Int]]]();
+    var fnaa = Map[Name,Set[Int]]();
+    var anfa = Map[Int,Set[Int]]();
+    var anaa = Set[Int]();
+  }
+
+  def build(zi: BigInt, 
+            prevOutState: OutState,
+            failOutState: OutState, 
+            failZi      : BigInt,
+            upRuleParts: Map[Int,Term], 
+            cRuleParts: Map[Int,Term], 
+            hi: Int
+            ):Unit = {
+    val nc = createNodeCollect(zi,cRuleParts); 
+    for((arity,byName)<-nc.fnfa) {
+     for((name,ruleIndexes) <- byName) {
+       val nextOwnState = getOrCreateOutState(ruleIndexes);
+       var (nextFailState:OutState,nextFailZi:BigInt) = buildFailState(zi,
+                                          prevOutState,nextOwnState,
+                                          failOutState, failZi,
+                                          upRuleParts, cRuleParts, hi);
+       if (arity == 0) {
+         val n = new Node(T,ZI_FINAL,nextOwnState,nextFailState,nextFailZi);
+         prevOutState.addFNFA(zi,name,arity,n);
+       }else{
+         var n = new Node(T,ZI_DOWN,nextOwnState,nextFailState,nextFailZi);
+         prevOutState.addFNFA(zi,name,arity,n);
+         var curOwnState = nextOwnState;
+         var rZi=zi*2;
+         val rUp=cRuleParts.filter(a=>ruleIndexes(a._1));
+         var i=0;
+         var endLoop=false;
+         while(i<arity && !endLoop) {
+            val rightRules:Map[Int,Term] = collectChilds(rUp,i);
+            if (!rightRules.isEmpty) {
+              val rightIndexes = rightRules.keySet;
+              val rightState = getOrCreateOutState(rightIndexes);
+              val ziDirection = if (i==arity-1)  ZI_FINAL else ZI_RIGHT;
+              rZi=rZi*2+1;
+              var (nextFailState1:OutState, nextFailZi1:BigInt) = 
+                                        buildFailState(rZi,
+                                           curOwnState, rightState,
+                                           nextFailState, nextFailZi,
+                                           rUp, rightRules, i); 
+              nextFailState=nextFailState1;
+              nextFailZi=nextFailZi1;
+              var node = new Node(T,ziDirection,rightState, 
+                                           nextFailState, nextFailZi);
+              prevOutState.addFNFA(rZi,name,i,node);
+              build(rZi,nextOwnState,nextFailState,nextFailZi, 
+                                           rUp,rightRules,i);
+            }else{
+              endLoop=true;
+            }
+            i=i+1;
+         }
+       }
+     }
+    }
+    for( (name,ruleIndexes) <- nc.fnaa) {
+       var nextOutState = getOrCreateOutState(ruleIndexes);
+       var (nextFailState:OutState, nextFailZi:BigInt) = buildFailState(zi,
+                                          prevOutState,nextOutState,
+                                          failOutState,failZi,
+                                          upRuleParts, cRuleParts, hi);
+       val n = new Node(T,ZI_FINAL,nextOutState,nextFailState,nextFailZi);
+       prevOutState.addFNAA(zi,name,n);
+    }
+    for( (arity,ruleIndexes) <- nc.anfa) {
+       var nextOutState = getOrCreateOutState(ruleIndexes);
+       var (nextFailState:OutState, nextFailZi:BigInt) = buildFailState(zi,
+                                          prevOutState,nextOutState,
+                                          failOutState,failZi,
+                                          upRuleParts, cRuleParts, hi);
+       val n = new Node(T,ZI_FINAL,nextOutState,nextFailState,nextFailZi);
+       prevOutState.addANFA(zi,arity,n);
+    }
+    if (!nc.anaa.isEmpty) {
+       var nextOutState = getOrCreateOutState(nc.anaa);
+       var (nextFailState:OutState, nextFailZi:BigInt) = buildFailState(zi,
+                                          prevOutState,nextOutState,
+                                          failOutState,failZi,
+                                          upRuleParts, cRuleParts, hi);
+       val n = new Node(T,ZI_FINAL,nextOutState,nextFailState,nextFailZi);
+       prevOutState.addANAA(zi,n);
+    }
+   }
+
+
+   def buildFailState(zi:BigInt,
+            prevState:OutState,nextState:OutState,
+            prevFailState:OutState,prevFailZi:BigInt,
+            upRuleParts: Map[Int,Term], 
+            cRuleParts: Map[Int,Term], 
+            hi:Int
+            ):(OutState,BigInt) = {
+      val newFailRuleIndexes = nextState.ruleIndexes -- nextState.ruleIndexes;
+      if (newFailRuleIndexes.isEmpty || !nextState.withCondition) {
+         (prevFailState,prevFailZi);
+      } else {
+         val newFailState = getOrCreateOutState(newFailRuleIndexes);
+         build(zi,newFailState, prevFailState, prevFailZi, 
+               upRuleParts, cRuleParts, hi);
+         (newFailState,zi);
+      }
+   }
+   
+  
+   def createNodeCollect(zi:BigInt,cRuleParts:Map[Int,Term])
+                                                :NodeCollect = {
+     val retval = new NodeCollect();
+     for( (ruleIndex, term) <- cRuleParts ) {
+       // term is exactly ziIndex.
+       if (term.patternName != None) {
+        val patternName = term.patternName.get;
+        if (term.patternArity != None) {
+          val patternArity = term.patternArity.get;
+          var byName = retval.fnfa.getOrElse(patternArity,
+                                             TreeMap[Name,Set[Int]]());
+          val s = byName.getOrElse(patternName,Set())+ruleIndex;
+          byName += patternName -> s ;
+          retval.fnfa += patternArity -> byName;
+        } else {
+          // term.patternArity = None
+          var byName = retval.fnaa;
+          var s=byName.getOrElse(patternName,Set())+ruleIndex;
+          retval.fnaa += patternName -> s;
+        }
+       } else {
+        // term.patternName = None
+        if (term.patternArity != None) {
+          val patternArity = term.patternArity.get;
+          val s = retval.anfa.getOrElse(patternArity,Set[Int]())+ruleIndex;
+          retval.anfa += patternArity -> s;
+        } else {
+          retval.anaa += ruleIndex;
+        }
+       }
+     }
+     
+     return retval;  
+   }
+     
+   /**
+    * collect i=th childs of appropriative rule patterns
+    **/
+   def collectChilds(rUp:Map[Int,Term],i:Int):Map[Int,Term] = {
+      var retval=Map[Int,Term]();
+      for((ri,t)<-rUp) {
+        if (i<t.arity) {
+          retval += ri->t.subterm(i);
+        }
+      }
+      return retval;
+   }
+
+   def getOrCreateOutState(ri:Set[Int]):OutState = 
+   {
+     var optRetval = outStates.find(_.ruleIndexes==ri);
+     if (optRetval != None) {
+       optRetval.get;
+     } else {
+       var retval = new OutState(outStates.length,ri);
+       outStates.append(retval);
+       return retval;
+     } 
+   }
 
 }
