@@ -34,20 +34,28 @@ class MatchingNet(val theory:Theory)
 {
 
   class Node(
+    val zi: BigInt,
     val condition:MatchingCondition,
     val zipIndexStep:Int,
     val nextOutState:Int,
+    val nextAutoState:Int,
     val stateIndexOnFail: Int,
-    val zipIndexOnFail: BigInt
+    val zipIndexOnFail: BigInt,
+    val autoStateOnFail: Int
   ) {
 
-       def this(condition:MatchingCondition,
+       def this(zi:BigInt,
+                condition:MatchingCondition,
                 zipIndexStep:Int,
                 nextOutState:OutState,
                 nextFailState:OutState,
                 zipIndexOnFail:BigInt) = 
-         this(condition,zipIndexStep,nextOutState.index, nextFailState.index,
-              zipIndexOnFail);
+         this(zi,condition,zipIndexStep,
+                 nextOutState.index, 
+                 getAutoStateIndex(nextOutState,zi),
+                 nextFailState.index,
+                 zipIndexOnFail,
+                 getAutoStateIndex(nextFailState,zi));
     
        def check(t:Term,s:Substitution,vm:VM):(Boolean,Substitution)
              =condition.check(t,s,vm);
@@ -60,7 +68,8 @@ class MatchingNet(val theory:Theory)
     var fnfa: Map[Int,Map[Name,List[Node]]],
     var fnaa: Map[Name,List[Node]],
     var anfa: Map[Int,List[Node]],
-    var anaa: List[Node]
+    var anaa: List[Node],
+    var stateIndex: Int = -1
   ) {
 
       def this() = this(Map[Int,Map[Name,List[Node]]](),
@@ -167,12 +176,27 @@ class MatchingNet(val theory:Theory)
     var choosers = TreeMap[BigInt,NodeChooser](); 
   }
 
+  case class AutoState(val outState:OutState, 
+                       val zi:BigInt, 
+                       val nc: NodeChooser);
+
+  def getAutoStateIndex(outState:OutState, zi:BigInt):Int = {
+    val nc = outState.getNodeChooser(zi);
+    if (nc.stateIndex == -1) {
+       val state = new AutoState(outState,zi,nc);
+       nc.stateIndex=autoStates.length;
+       autoStates.append(state); 
+    }
+    nc.stateIndex;
+  }
+
 
   val outStates = new ArrayBuffer[OutState];
+  val autoStates = new ArrayBuffer[AutoState];
   val allRules = new ArrayBuffer[TermRule];
 
   case class Failure(val t:Term, val m:String, val prev:Option[Failure])
-  case class Success(val s:STMSubstitution, val rules:List[TermRule])
+  case class Success(val s:STMSubstitution, val node:Node)
 
 
   def doMatch(t:Term,vm:VM):Either[Failure,Success]={
@@ -183,9 +207,11 @@ class MatchingNet(val theory:Theory)
     var cti=0;
     var quit:Boolean=false;
     var cs = STMSubstitution.empty;
-    var outState=outStates(csi);
+    //var outState=outStates(csi);
+    var autoState=autoStates(csi);
     while(!quit) {
-       var nodes=outState.getNodes(czi,ct.name,ct.arity); 
+       //var nodes=outState.getNodes(czi,ct.name,ct.arity); 
+       var nodes=autoState.nc.find(ct.name,ct.arity); 
        var test = false;
        var lastNode:Option[Node] = None;
        while(!nodes.isEmpty && !test) {
@@ -194,7 +220,8 @@ class MatchingNet(val theory:Theory)
          nodes=nodes.tail;
          var (test,s:STMSubstitution) = node.check(ct,cs,vm);
          if (test) {
-           csi=node.nextOutState;
+           //csi=node.nextOutState;
+           csi=node.nextAutoState;
            cs=s;
            node.zipIndexStep match {
               case ZI_DOWN => {
@@ -228,7 +255,7 @@ class MatchingNet(val theory:Theory)
                               }
                              }
               case ZI_FINAL => {
-                                 return Right(Success(cs,outState.rules));
+                                 return Right(Success(cs,node));
                                }
               case _ => { throw new TermWareException(
                                  "internal error: invalid zipIndexStep"); 
@@ -239,8 +266,9 @@ class MatchingNet(val theory:Theory)
        if (!test) {
         if (lastNode!=None) {
          var node = lastNode.get;
-         csi=node.stateIndexOnFail;
+         //csi=node.stateIndexOnFail;
          czi=node.zipIndexOnFail;
+         csi=node.autoStateOnFail;
          var(ctup,oct,cti)=ZipIndex(t,czi);
          if (oct==None) {
            return Left(Failure(t,"invalid zipIndex on fail",None));
@@ -253,9 +281,10 @@ class MatchingNet(val theory:Theory)
         }
        }
        cs = cs withIndex czi;
-       outState=outStates(csi);
+       //outState=outStates(csi);
+       autoState = autoStates(csi);
     }
-    return Right(Success(cs,outState.rules));
+    return Left(Failure(t,"Impossible: behind constant loop",None));
   }
 
   class NodeCollect
@@ -283,10 +312,10 @@ class MatchingNet(val theory:Theory)
                                           failOutState, failZi,
                                           upRuleParts, cRuleParts, hi);
        if (arity == 0) {
-         val n = new Node(T,ZI_FINAL,nextOwnState,nextFailState,nextFailZi);
+         val n = new Node(zi,T,ZI_FINAL,nextOwnState,nextFailState,nextFailZi);
          prevOutState.addFNFA(zi,name,arity,n);
        }else{
-         var n = new Node(T,ZI_DOWN,nextOwnState,nextFailState,nextFailZi);
+         var n = new Node(zi,T,ZI_DOWN,nextOwnState,nextFailState,nextFailZi);
          prevOutState.addFNFA(zi,name,arity,n);
          var curOwnState = nextOwnState;
          var rZi=zi*2;
@@ -307,7 +336,7 @@ class MatchingNet(val theory:Theory)
                                            rUp, rightRules, i); 
               nextFailState=nextFailState1;
               nextFailZi=nextFailZi1;
-              var node = new Node(T,ziDirection,rightState, 
+              var node = new Node(rZi,T,ziDirection,rightState, 
                                            nextFailState, nextFailZi);
               prevOutState.addFNFA(rZi,name,i,node);
               build(rZi,nextOwnState,nextFailState,nextFailZi, 
@@ -326,7 +355,7 @@ class MatchingNet(val theory:Theory)
                                           prevOutState,nextOutState,
                                           failOutState,failZi,
                                           upRuleParts, cRuleParts, hi);
-       val n = new Node(T,ZI_FINAL,nextOutState,nextFailState,nextFailZi);
+       val n = new Node(zi,T,ZI_FINAL,nextOutState,nextFailState,nextFailZi);
        prevOutState.addFNAA(zi,name,n);
     }
     for( (arity,ruleIndexes) <- nc.anfa) {
@@ -335,7 +364,7 @@ class MatchingNet(val theory:Theory)
                                           prevOutState,nextOutState,
                                           failOutState,failZi,
                                           upRuleParts, cRuleParts, hi);
-       val n = new Node(T,ZI_FINAL,nextOutState,nextFailState,nextFailZi);
+       val n = new Node(zi,T,ZI_FINAL,nextOutState,nextFailState,nextFailZi);
        prevOutState.addANFA(zi,arity,n);
     }
     if (!nc.anaa.isEmpty) {
@@ -344,7 +373,7 @@ class MatchingNet(val theory:Theory)
                                           prevOutState,nextOutState,
                                           failOutState,failZi,
                                           upRuleParts, cRuleParts, hi);
-       val n = new Node(T,ZI_FINAL,nextOutState,nextFailState,nextFailZi);
+       val n = new Node(zi,T,ZI_FINAL,nextOutState,nextFailState,nextFailZi);
        prevOutState.addANAA(zi,n);
     }
    }
