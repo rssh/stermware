@@ -1,6 +1,5 @@
 package ua.gradsoft.termware;
 
-import ua.gradsoft.termware.vm._;
 
 trait SimpleSubst extends Term
 {
