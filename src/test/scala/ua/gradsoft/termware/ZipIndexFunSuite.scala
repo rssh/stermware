@@ -19,15 +19,15 @@ class SipIndexFuite extends FunSuite {
      val t:Term = r.get;
      val r1 = ZipIndex(t,BigInt(1*2*2));
      System.out.println("1*2*2:"+r1._2.get.name);
-     assert(r1._2.get.name.getString=="g");
+     assert(r1._2.get.name.string=="g");
      val r2 = ZipIndex(t,BigInt(1*2*2+1));
-     assert(r2._2.get.name.getString=="f2");
+     assert(r2._2.get.name.string=="f2");
      val r3 = ZipIndex(t,BigInt(1*2*2*2+1));
-     assert(r3._2.get.name.getString=="x");
+     assert(r3._2.get.name.string=="x");
      val r4 = ZipIndex(t,BigInt(1*2+1));
      assert(r4._2==None);
      val r5 = ZipIndex(t,BigInt(1*2*2+1)*2+1);
-     assert(r5._2.get.name.getString=="z");
+     assert(r5._2.get.name.string=="z");
   }
 
   val theory = TermWare.instance.freeTheory;

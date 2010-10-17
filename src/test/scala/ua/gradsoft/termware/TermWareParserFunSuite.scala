@@ -68,7 +68,7 @@ class TermWareParserFunSuite extends FunSuite
        case parser.Success(t,_) => {
                        assert(t.isInstanceOf[Term]);
                        assert(t.arity==3);
-                       assert(t.name.getString=="f");
+                       assert(t.name.string=="f");
                        val s1 = t.subterm(0);
                        assert(s1.isInt);
                        assert(s1.getInt==1);
@@ -86,10 +86,10 @@ class TermWareParserFunSuite extends FunSuite
        case parser.Success(t,_) => {
                        assert(t.isInstanceOf[Term]);
                        assert(t.arity==3);
-                       assert(t.name.getString=="f");
+                       assert(t.name.string=="f");
                        val s1 = t.subterm(0);
                        assert(s1.arity==2);
-                       assert(s1.name.getString=="f1");
+                       assert(s1.name.string=="f1");
                        }
        case _ => fail("complex functional term must be parsed");
      }
@@ -104,10 +104,10 @@ class TermWareParserFunSuite extends FunSuite
                        assert(t.isInstanceOf[Term]);
                        //1-1-1-1+3*4 = (((1-1)-1)-1)+(3*4))
                        assert(t.arity==2);
-                       assert(t.name.getString=="plus");
+                       assert(t.name.string=="plus");
                        val t0 = t.subterm(0);
                        assert(t0.arity==2);
-                       assert(t0.name.getString=="minus");
+                       assert(t0.name.string=="minus");
                        val t00 = t0.subterm(0);
                        val t01 = t0.subterm(1);
                        assert(t01.isInt);
@@ -130,7 +130,7 @@ class TermWareParserFunSuite extends FunSuite
      r match {
        case parser.Success(rs,_) => {
                  val t = rs.asInstanceOf[Term];
-                 assert(t.name.getString=="plus");
+                 assert(t.name.string=="plus");
        }
        case _ => fail("this term must be parsed");
      }
@@ -141,7 +141,7 @@ class TermWareParserFunSuite extends FunSuite
      r match {
        case parser.Success(rs,_) => {
                  val t = rs.asInstanceOf[Term];
-                 assert(t.name.getString=="minus");
+                 assert(t.name.string=="minus");
                  assert(t.arity==1);
                         } 
        case _ => fail("this term must be parsed");
@@ -159,13 +159,13 @@ class TermWareParserFunSuite extends FunSuite
                  val lt = rs.asInstanceOf[List[Term]];
                  assert(lt.length==3);
                  val t1 = lt(1);
-                 assert(t1.name.getString=="ncons");
+                 assert(t1.name.string=="ncons");
                  val t2 = lt(2);
-                 assert(t2.name.getString=="ncons");
+                 assert(t2.name.string=="ncons");
                  val t21 = t2.subterm(1);
-                 assert(t21.name.getString=="ncons");
+                 assert(t21.name.string=="ncons");
                  val t210 = t21.subterm(0);
-                 assert(t210.name.getString=="y");
+                 assert(t210.name.string=="y");
              }
        case _ => fail("this term must be parsed");
      }
@@ -182,15 +182,15 @@ class TermWareParserFunSuite extends FunSuite
                  val lt = rs.asInstanceOf[List[Term]];
                  assert(lt.length==3);
                  val t1 = lt(1);
-                 assert(t1.name.getString=="cons");
+                 assert(t1.name.string=="cons");
                  val t2 = lt(2);
                  //System.err.println("t2 is " + t2);
-                 assert(t2.name.getString=="cons");
+                 assert(t2.name.string=="cons");
                  val t21 = t2.subterm(1);
-                 assert(t21.name.getString=="cons");
+                 assert(t21.name.string=="cons");
                  val t210 = t21.subterm(0);
                  //System.err.println("t210.name " + t210.name);
-                 assert(t210.name.getString=="y");
+                 assert(t210.name.string=="y");
              }
        case _ => fail("this term must be parsed");
      }
@@ -205,11 +205,11 @@ class TermWareParserFunSuite extends FunSuite
        case parser.Success(rs,_) => {
                  val lt = rs.asInstanceOf[List[Term]];
                  val t = lt(0);
-                 assert(t.name.getString == "let");
+                 assert(t.name.string == "let");
                  val t0 = t.subterm(0);
-                 assert(t0.name.getString == "cons");
+                 assert(t0.name.string == "cons");
                  val t00 = t0.subterm(0);
-                 assert(t00.name.getString == "assign");
+                 assert(t00.name.string == "assign");
               }
        case _ => fail("let term must be parsed");
      }

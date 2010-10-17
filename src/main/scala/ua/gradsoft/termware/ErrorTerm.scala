@@ -1,7 +1,9 @@
 package ua.gradsoft.termware;
 
 import scala.collection.mutable.HashMap;
+import java.io.PrintWriter;
 import ua.gradsoft.termware.fn.FnNone;
+
 
 class ErrorTerm(m:String, e:Exception, s: ErrorTermSignature) extends Term
                                           with SimpleSubst
@@ -62,8 +64,11 @@ class ErrorTerm(m:String, e:Exception, s: ErrorTermSignature) extends Term
 
   def termHashCode: Int = 7+message.hashCode;
 
+  override def print(out: PrintWriter) = { out.format("Error(%s)",message); }
+
   val message=m;
   val exception=e;
 
   val attributes = new HashMap[Name,Term](); 
+
 }

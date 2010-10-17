@@ -4,6 +4,7 @@ import scala.collection.Set;
 import scala.collection.immutable.Map;
 import scala.collection.immutable.TreeMap;
 import scala.collection.mutable.HashMap;
+import java.io.PrintWriter;
 import ua.gradsoft.termware.fn._;
 import ua.gradsoft.termware.util._;
 
@@ -133,6 +134,27 @@ class EtaTerm(v:Set[EtaXTerm], l:Term, r:Term, rs:Term, s:EtaTermSignature)
      }
   }
 
+  override def print(out:PrintWriter):Unit = {
+    out.print("var (");
+    var frs = true;
+    for(x <- vars) {
+       if (!frs) {
+          out.print(", ");
+       }else{
+          frs=false;
+       }
+       x.print(out);
+    }
+    out.print("):");
+    left.print(out);
+    out.print("->");
+    right.print(out);
+    if (rest.name!=ID) {
+      out.print("|");
+      rest.print(out);
+    }
+  }
+
   var attributes=new HashMap[Name,Term]();
 
   //private def newVars(vn:Set[AtomTerm]):Map[Term,Term]=
@@ -153,5 +175,7 @@ class EtaTerm(v:Set[EtaXTerm], l:Term, r:Term, rs:Term, s:EtaTermSignature)
   for(x <- v) x.setOwner(this);
        
   private lazy val hash: Int = left.hashCode+right.hashCode+rest.hashCode;
+
+  lazy val ID = signature.theory.symbolTable.getOrCreate("id");
 
 }

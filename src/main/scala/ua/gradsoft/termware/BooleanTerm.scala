@@ -1,19 +1,20 @@
 package ua.gradsoft.termware;
 
+import java.io.PrintWriter;
 
-case class BooleanTerm(v:Boolean, s: BooleanTermSignature) 
+class BooleanTerm(v:Boolean, s: BooleanTermSignature) 
                                           extends PrimitiveTerm(s)
                                             with NonNumberTerm
 {
 
   override def isBoolean: Boolean = true;
 
-  override def getBoolean: Boolean = value;
+  override def getBoolean: Boolean = v;
 
   def termCompare(t: Term):Int = {
     var c = termClassIndex - t.termClassIndex;
     if (c!=0) return 0;
-    if (value) {
+    if (v) {
       return (if (t.getBoolean) 0 else 1);
     } else {
       return (if (t.getBoolean) -1 else 0);
@@ -23,11 +24,17 @@ case class BooleanTerm(v:Boolean, s: BooleanTermSignature)
   def termClassIndex: Int = TermClassIndex.BOOLEAN;
 
   lazy val name = signature.theory.symbolTable.getOrCreate(
-                                        if (value) "true" else "false" 
+                                        if (v) "true" else "false" 
                                                           );
 
   lazy val termHashCode = name.hashCode;
 
-  val value = v;
+  override def  print(out:PrintWriter): Unit = out.print(v);
+}
+
+object BooleanTerm
+{
+  def apply(v:Boolean, s: BooleanTermSignature):BooleanTerm =
+                                                new BooleanTerm(v,s);
 }
 

@@ -1,7 +1,8 @@
 package ua.gradsoft.termware;
 
+import java.io.PrintWriter;
 
-case class AtomTerm(n:Name,s:AtomTermSignature) extends PrimitiveTerm(s)
+case class AtomTerm(val name:Name,s:AtomTermSignature) extends PrimitiveTerm(s)
                                             with NonNumberTerm
 {
 
@@ -21,6 +22,7 @@ case class AtomTerm(n:Name,s:AtomTermSignature) extends PrimitiveTerm(s)
 
   override def toString = name.toString;
 
-  val name = n;
+  override def print(out:PrintWriter): Unit = out.print(name.string); 
+
 }
 

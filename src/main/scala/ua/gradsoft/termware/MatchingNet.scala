@@ -295,6 +295,28 @@ class MatchingNet(val theory:Theory)
     var anaa = Set[Int]();
   }
 
+  
+  def build(rules:List[TermRule]):Unit={
+    val zi = BigInt(1);
+    var upR = Map[Int,Term](); 
+    var cR = Map[Int,Term](); 
+    var allS = Set[Int]();
+    var noneS = Set[Int]();
+    rules.foreach(
+      r=>{
+        val nRule = allRules.length;
+        allRules.append(r);
+        val pattern = r.pattern;
+        cR += nRule -> pattern; 
+        allS += nRule;
+      }
+    );
+    val allOutState = getOrCreateOutState(allS);
+    val noneOutState = getOrCreateOutState(noneS);
+    // TODO: add to none fail node.
+    build(zi,allOutState,noneOutState,zi,upR,cR,0);
+  }
+
   def build(zi: BigInt, 
             prevOutState: OutState,
             failOutState: OutState, 

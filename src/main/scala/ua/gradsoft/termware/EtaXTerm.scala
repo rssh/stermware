@@ -1,6 +1,7 @@
 package ua.gradsoft.termware;
 
 import scala.collection.mutable.HashMap;
+import java.io.PrintWriter;
 
 /**
  * class represent variable, bound in eta-term.
@@ -76,9 +77,13 @@ class EtaXTerm(n: Name, l:Int, t: Term, o:EtaTerm, s:EtaXTermSignature)
 
    override def termHashCode: Int = n.hashCode+xLabel+owner.hashCode*31;
 
+   override def print(out:PrintWriter):Unit = { out.print(name.string); }
+
    private[termware] def setOwner(o:EtaTerm): Unit = {
      owner=o;
    }
+
+   
 
    private[termware] val vname: Name = n;
    override val xLabel: Int = l;

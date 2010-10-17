@@ -1,6 +1,7 @@
 package ua.gradsoft.termware;
 
 import scala.collection.mutable.HashMap;
+import java.io.PrintWriter;
 import ua.gradsoft.termware.fn._;
 
 abstract class FunctionalTerm(s:TermSignature) extends Term
@@ -72,6 +73,22 @@ abstract class FunctionalTerm(s:TermSignature) extends Term
     }
     return c; 
   }
+
+  override def print(out:PrintWriter):Unit = {
+     out.print(name.string);
+     out.print("(");
+     var frs = true;
+     for(t<-subterms) {
+        if (frs) {
+          frs=false;
+        }else{
+          out.print(", ");
+        }
+        t.print(out);
+     }
+     out.print(")");
+  }
+
 
   override def toString = name.toString+"("+subterms.mkString(",")+")";
   

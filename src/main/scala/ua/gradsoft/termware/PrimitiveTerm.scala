@@ -1,6 +1,7 @@
 package ua.gradsoft.termware;
 
 import scala.collection.mutable.HashMap;
+import java.io.PrintWriter;
 
 /**
  * trait for primitive terms.
@@ -45,6 +46,7 @@ abstract class PrimitiveTerm(s:TermSignature) extends Term
          (false, s)
    ;
 
+  override def print(out:PrintWriter):Unit = out.print(toString);
 
   val signature = s;
   lazy val attributes = new HashMap[Name,Term]();

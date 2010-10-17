@@ -4,18 +4,17 @@ import java.lang.Number;
 
 final case class IntName(v: Int) extends Name
 {
- def getKindIndex: Int = NameKindIndex.INT.id;
- def getIndex: Int = value;
- def getString: String = value.toString;
+ def kindIndex: Int = NameKindIndex.INT.id;
+ def index: Int = v;
+ def string: String = v.toString;
 
  override def compare(that: Name):Int =
-   if (getKindIndex == that.getKindIndex)
-        value - that.getIndex;
+   if (kindIndex == that.kindIndex)
+        v - that.index;
    else
-        getKindIndex - that.getKindIndex
+        kindIndex - that.kindIndex
    ;
 
- val value=v;
 }
 
 case class IntTerm(v:Int, s:IntTermSignature) 

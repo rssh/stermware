@@ -1,27 +1,28 @@
 package ua.gradsoft.termware;
 
+import java.io.PrintWriter;
+
 case class CharName(v:Char) extends Name
 {
- def getKindIndex: Int = NameKindIndex.CHAR.id;
- def getIndex: Int = 0;
- def getString: String = value.toString;
+ def kindIndex: Int = NameKindIndex.CHAR.id;
+ def index: Int = 0;
+ def string: String = v.toString;
 
  override def compare(that: Name):Int =
-   if (getKindIndex == that.getKindIndex)
-        getString.compareTo(that.getString);
+   if (kindIndex == that.kindIndex)
+        string.compareTo(that.string);
    else
-        getKindIndex - that.getKindIndex
+        kindIndex - that.kindIndex
    ;
 
- val value=v;
 }
 
-case class CharTerm(v:Char, s: CharTermSignature) extends PrimitiveTerm(s)
+class CharTerm(v:Char, s: CharTermSignature) extends PrimitiveTerm(s)
                                                   with NonNumberTerm
 {
 
   override def isChar: Boolean = true;
-  override def getChar: Char = value;
+  override def getChar: Char = v;
 
   def termCompare(t: Term):Int = {
     var c = termClassIndex - t.termClassIndex;
@@ -31,9 +32,15 @@ case class CharTerm(v:Char, s: CharTermSignature) extends PrimitiveTerm(s)
 
   def termClassIndex: Int = TermClassIndex.CHAR;
 
-  lazy val name = new CharName(value);
-  lazy val termHashCode = value.hashCode;
+  lazy val name = new CharName(v);
+  lazy val termHashCode = v.hashCode;
 
-  val value = v;
+  override def print(out:PrintWriter):Unit = { out.print(v); }
+
+}
+
+object CharTerm
+{
+   def apply(v:Char, s: CharTermSignature):CharTerm = new CharTerm(v,s);
 }
 

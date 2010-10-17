@@ -19,10 +19,10 @@ class TermWareParserInt1FunSuite extends FunSuite
        case parser.Success(t,_) => {
                        assert(t.isInstanceOf[Term]);
                        assert(t.arity==2);
-                       assert(t.name.getString=="f1");
+                       assert(t.name.string=="f1");
                        val s1 = t.subterm(0);
                        assert(s1.arity==1);
-                       assert(s1.name.getString=="g");
+                       assert(s1.name.string=="g");
                        }
        case _ => fail("f1(g(0),x) must be parsed");
      }
@@ -37,7 +37,7 @@ class TermWareParserInt1FunSuite extends FunSuite
        case parser.Success(t,_) => {
                        assert(t.isInstanceOf[Term]);
                        assert(t.arity==1);
-                       assert(t.name.getString=="g");
+                       assert(t.name.string=="g");
                        }
        case _ => fail("g(0) must be parsed");
      }

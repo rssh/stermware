@@ -1,5 +1,8 @@
 package ua.gradsoft.termware;
 
+import java.io.PrintWriter;
+import java.io.OutputStream;
+import java.io.StringWriter;
 
 @serializable
 trait Term extends TValue 
@@ -68,6 +71,22 @@ trait Term extends TValue
   def termHashCode: Int; 
 
   override def hashCode = termHashCode;
+
+  def print(out: PrintWriter): Unit ;
+
+  def print(out: OutputStream = System.out): Unit = {
+    val writer = new PrintWriter(out);
+    print(writer);
+    writer.flush();
+  }
+
+  def sprint: String = {
+    val sw = new StringWriter();
+    val pw = new PrintWriter(sw);
+    print(pw);
+    pw.flush();
+    return sw.toString
+  }
 
 }
 

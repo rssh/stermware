@@ -15,7 +15,7 @@ abstract class PrimitiveTermSignature(th:Theory) extends TermSignature
   override def indexByName = None;
 
   override def createTerm(name:Name, args: IndexedSeq[Term]) = throwUOE;
-  override def createSpecial(args: Any*) = throwUOE;
+  override def createSpecial(args: Any*):Term = throwUOE;
 
   /**
    * name of class in type algebra.

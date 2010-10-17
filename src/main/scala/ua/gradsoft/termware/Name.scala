@@ -8,8 +8,8 @@ object NameKindIndex extends Enumeration
 
 trait Name extends Ordered[Name]
 {
- def getKindIndex:  Int;
- def getIndex: Int;
- def getString: String;
+ def kindIndex:  Int;
+ def index: Int;
+ def string: String;
 }
 

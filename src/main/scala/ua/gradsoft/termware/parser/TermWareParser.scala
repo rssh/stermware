@@ -54,23 +54,23 @@ class TermWareParser(th:Theory, fname:String) extends TokenParsers
             var retval:Term = null;
             if (z.arity==2) {
               val z2 = z.asInstanceOf[BinaryOperator];
-              lexical.syntax.addBinary(z.sign,y.name.getString,
+              lexical.syntax.addBinary(z.sign,y.name.string,
                                        z2.leftAssociative,z2.priority);
               retval = th.funSignature("syntaxOperator").createTerm(
                     "syntaxOperator",
                     th.intSignature.createConstant(z.arity),
                     th.stringSignature.createConstant(z.sign),
-                    th.stringSignature.createConstant(y.name.getString),
+                    th.stringSignature.createConstant(y.name.string),
                     th.booleanSignature.createConstant(z2.leftAssociative),
                     th.intSignature.createConstant(z2.priority)
               );
             } else if (z.arity==1) {
-              lexical.syntax.addUnary(z.sign,y.name.getString);
+              lexical.syntax.addUnary(z.sign,y.name.string);
               retval = th.funSignature("syntaxOperator").createTerm(
                     "syntaxOperator",
                     th.intSignature.createConstant(z.arity),
                     th.stringSignature.createConstant(z.sign),
-                    th.stringSignature.createConstant(y.name.getString)
+                    th.stringSignature.createConstant(y.name.string)
               );
             } else {
               throw new IllegalArgumentException("arity of operation must be 1 or 2");

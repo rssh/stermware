@@ -3,23 +3,21 @@ package ua.gradsoft.termware;
 import scala.collection.mutable.HashMap;
 import scala.collection.mutable.ArrayBuffer;
 
-final class SName(value:String,index:Int) extends Name
+final class SName(val v:String,val i:Int) extends Name
 {
- def getKindIndex: Int = NameKindIndex.SNAME.id;
- def getIndex: Int = i;
- def getString: String = v;
+ def kindIndex: Int = NameKindIndex.SNAME.id;
+ def index: Int = i;
+ def string: String = v;
 
  override def compare(that: Name):Int =
-   if (getKindIndex == that.getKindIndex)
-        getIndex - that.getIndex
+   if (kindIndex == that.kindIndex)
+        index - that.index
    else
-        getKindIndex - that.getKindIndex
+        kindIndex - that.kindIndex
    ;
 
- override def toString = getString;
+ override def toString = string;
 
- private val v = value;
- private val i = index;
 }
 
 

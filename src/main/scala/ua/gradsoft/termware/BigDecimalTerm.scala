@@ -1,7 +1,8 @@
 package ua.gradsoft.termware;
 
+import java.io.PrintWriter;
 
-case class BigDecimalTerm(v:BigDecimal, s:BigDecimalTermSignature) 
+class BigDecimalTerm(v:BigDecimal, s:BigDecimalTermSignature) 
                              extends NumberPrimitiveTerm[BigDecimal](v,s)
 {
 
@@ -58,5 +59,15 @@ case class BigDecimalTerm(v:BigDecimal, s:BigDecimalTermSignature)
             new StringName[BigDecimal](value,NameKindIndex.BIG_DECIMAL.id);
 
   lazy val termHashCode = value.hashCode;
+
+  override def print(out:PrintWriter):Unit = { out.print(value); }
+
+
+}
+
+object BigDecimalTerm
+{
+  def apply(v:BigDecimal, s:BigDecimalTermSignature):BigDecimalTerm
+                                                 = new BigDecimalTerm(v,s);
 }
 
