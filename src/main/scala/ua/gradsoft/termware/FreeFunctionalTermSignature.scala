@@ -17,7 +17,7 @@ class FreeFunctionalTermSignature(th:Theory)
  def createTerm(name:Name, args:IndexedSeq[Term]) : Term =  
          new FreeFunctionalTerm(name,args,this);
  
- def getType(t:Term):Term = {
+ def termType(t:Term):Term = {
    t.getAttribute(theory.symbolTable.TYPE) match {
       case Some(x) =>  x
       case None   => {
@@ -31,7 +31,7 @@ class FreeFunctionalTermSignature(th:Theory)
  def calculateType(t:Term):Term = {
    val typeIn = theory.freeFunSignature.createTerm(
                    t.name,
-                   t.subterms.map( x => x.signature.getType(x) )
+                   t.subterms.map{ _.termType }
                 );
    val typeOut = theory.typeAlgebra.reduce(typeIn);
    return typeOut;

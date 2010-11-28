@@ -12,7 +12,9 @@ case class AtomTerm(val name:Name,s:AtomTermSignature) extends PrimitiveTerm(s)
   
   def termClassIndex=TermClassIndex.ATOM;
 
-  def termCompare(t:Term):Int = {
+  def fixTermEq(t:Term) = t.isAtom && name.compareTo(t.name)==0;
+
+  def fixTermCompare(t:Term):Int = {
     val cl = termClassIndex - t.termClassIndex;
     if (cl != 0) return cl;
     return name.compareTo(t.name); 

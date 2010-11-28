@@ -11,9 +11,28 @@ case class CallContext(val nesting: Int=0)
   /**
    * generate new context with increased level of nesting.
    **/
-  def withCall:CallContext = CallContext(nesting+1);
+  def next:CallContext = CallContext(nesting+1);
 
-  def stackBehindLimit: Boolean = { nesting >= CallCC.MAX_NESTING; }
+  /**
+   * call block in next level of nesting
+   **/
+  @inline
+  def withCall[Y](block:CallContext=>ComputationBounds[Y]):
+                                             ComputationBounds[Y] = 
+        { 
+          if (nesting > CallCC.MAX_NESTING) {
+            throw new CallCCException(
+                    Call{ (ctx:CallContext) => ctx.withCall(block) })(this);
+          } else {
+            block(this.next); 
+          }
+        }
+
+  /**
+   * true, when level of nesting is require to thrw new exception.
+   **/
+  @inline
+  def stackBehindLimit:Boolean = (nesting > CallCC.MAX_NESTING);
 
 }
 

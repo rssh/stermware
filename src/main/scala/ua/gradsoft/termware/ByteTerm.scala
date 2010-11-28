@@ -37,9 +37,11 @@ case class ByteTerm(v:Byte, s:ByteTermSignature)
   override def getNumber: Number = new java.lang.Byte(value);
   override def getNumberKind: Int = NumberKind.BYTE.id;
 
-  def termCompare(t: Term):Int = {
+  def fixTermEq(t: Term):Boolean = t.isByte && t.getByte == value;
+
+  def fixTermCompare(t: Term):Int = {
     var c = termClassIndex - t.termClassIndex;
-    if (c!=0) return 0;
+    if (c!=0) return c;
     return (value - t.getByte).toInt;
   }
 

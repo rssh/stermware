@@ -47,9 +47,11 @@ case class FloatTerm(v:Float, s:FloatTermSignature)
   override def getNumber: Number = new java.lang.Float(value);
   override def getNumberKind: Int = NumberKind.FLOAT.id;
 
-  def termCompare(t: Term):Int = {
+  def fixTermEq(t:Term):Boolean = t.isFloat && t.getFloat == value ;
+
+  def fixTermCompare(t: Term):Int = {
     var c = termClassIndex - t.termClassIndex;
-    if (c!=0) return 0;
+    if (c!=0) return c;
     return (value - t.getFloat).toInt;
   }
 

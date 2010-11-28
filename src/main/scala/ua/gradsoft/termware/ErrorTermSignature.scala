@@ -4,7 +4,7 @@ class ErrorTermSignature(th:Theory) extends TermSignature
                                        with GeneralUtil
 {
 
-  override def getType(t:Term):Term = typeTerm;
+  override def termType(t:Term):Term = typeTerm;
 
   override def fixedName = Some(theory.symbolTable.ERROR);
 

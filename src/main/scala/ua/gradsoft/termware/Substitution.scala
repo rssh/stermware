@@ -2,10 +2,13 @@ package ua.gradsoft.termware;
 
 import scala.collection.immutable.TreeMap;
 
+import ua.gradsoft.termware.flow._;
+
 
 trait Substitution extends PartialFunction[Term,Term]
 {
-  def +(kv:(Term,Term)): (Boolean,Substitution) ;
+  def +(kv:(Term,Term))(implicit ctx:CallContext)
+                               : ComputationBounds[(Boolean,Substitution)] ;
 }
 
 object SimpleSubstitution
@@ -16,12 +19,13 @@ object SimpleSubstitution
 class SimpleSubstitution(val v: Map[Term,Term]) extends Substitution
 {
 
-  def +(kv:(Term,Term)): (Boolean,Substitution) = {
+  def +(kv:(Term,Term))(implicit ctx:CallContext): 
+                            ComputationBounds[(Boolean,Substitution)] = {
     val r = v.get(kv._1);
     if (r==None) 
-       (true,new SimpleSubstitution(v+kv))
+       Done(true,new SimpleSubstitution(v+kv))
      else 
-       r.get.termUnify(kv._2,new SimpleSubstitution(v+kv));
+       r.get.unify(kv._2,new SimpleSubstitution(v+kv));
   } 
 
   override def isDefinedAt(t:Term) = v.isDefinedAt(t);
@@ -50,13 +54,14 @@ class STMSubstitution(val v: Map[Term,Pair[BigInt,Term]],
              this;
   }
                     
-  def +(kv:(Term,Term)): (Boolean,Substitution) = {
+  def +(kv:(Term,Term))(implicit ctx:CallContext):
+                              ComputationBounds[(Boolean,Substitution)] = {
     val r = v.get(kv._1);
     val zkv = kv._1->Pair(lastZipIndex,kv._2);
     if (r==None) 
-       (true,new STMSubstitution(v+zkv,lastZipIndex))
+       Done((true,new STMSubstitution(v+zkv,lastZipIndex)));
     else 
-       r.get._2.termUnify(kv._2,new STMSubstitution(v+zkv,lastZipIndex));
+       r.get._2.unify(kv._2,new STMSubstitution(v+zkv,lastZipIndex));
   }
 
   override def isDefinedAt(t:Term) = v.isDefinedAt(t);

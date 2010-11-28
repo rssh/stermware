@@ -1,5 +1,7 @@
 package ua.gradsoft.termware;
 
+import ua.gradsoft.termware.flow._;
+
 import java.io.PrintWriter;
 import java.io.OutputStream;
 import java.io.StringWriter;
@@ -27,6 +29,8 @@ trait Term extends TValue
 
   def theory: Theory = signature.theory;
 
+  final def termType = signature.termType(this);
+
   def isX: Boolean = false;
 
   def xOwner: Term =  throwUOE;
@@ -41,32 +45,43 @@ trait Term extends TValue
 
   def isError: Boolean;
 
-  def termSubstFn(s: PartialFunction[Term,Term]): (VM=>VM) ;
+  def subst(s: PartialFunction[Term,Term])(implicit ctx:CallContext): 
+                                                     ComputationBounds[Term];
 
-  def termSubst(s: PartialFunction[Term,Term], vm: VM):Term;
+  def fixSubst(s: PartialFunction[Term,Term]): Term;
 
-  def termSubst(s: PartialFunction[Term,Term]): Term;
+  def unify(t:Term, s: Substitution)(implicit ctx:CallContext):
+                                  ComputationBounds[(Boolean,Substitution)];
 
-  /**
-   * leave on stack result of unification.
-   * (on top is true or false, later - substitution)
-   * i.e.
-   * after termUnifyFn(t,s) ; 
-   *   (vm.popData , vm.popData) = termUnify(t,s)
-   **/
-  def termUnifyFn(t:Term, s: Substitution): (VM=>VM) ;
+  def onUnify[T](t:Term, s:Substitution)
+         (cont:((Boolean,Substitution),CallContext)=>ComputationBounds[T])
+         (implicit ctx:CallContext) =
+  {
+     val f = Call{ (ctx:CallContext) => unify(t,s)(ctx); };
+     CallCC.compose(f,cont);
+  };
 
-  def termUnify(t:Term, s:Substitution, vm: VM): (Boolean, Substitution);
-
-  def termUnify(t:Term, s:Substitution): (Boolean, Substitution);
+  def fixUnify(t:Term, s:Substitution): (Boolean, Substitution);
 
   def termClassIndex: Int; 
 
-  def termCompare(t:Term): Int; 
+  def fixTermCompare(t:Term): Int; 
 
-  override def compare(that:Term):Int = termCompare(that);
+  def termCompare(t:Term)(implicit ctx:CallContext):ComputationBounds[Int]
 
-  def termEq(t:Term): Boolean = (termCompare(t)==0);
+  def onTermCompare[T](t:Term)
+                      (cont:(Int,CallContext) => ComputationBounds[T]) 
+                      (implicit ctx:CallContext) : ComputationBounds[T] =
+     CallCC.compose(termCompare(t),cont);
+
+  override def compare(that:Term):Int = fixTermCompare(that);
+
+  def termEq(t:Term)(implicit ctx:CallContext): ComputationBounds[Boolean] = {
+    CallCC.compose(termCompare(t),
+                   { (x:Int) => Done(x==0) });
+  }
+
+  def fixTermEq(t:Term): Boolean;
 
   def termHashCode: Int; 
 

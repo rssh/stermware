@@ -11,9 +11,11 @@ class BooleanTerm(v:Boolean, s: BooleanTermSignature)
 
   override def getBoolean: Boolean = v;
 
-  def termCompare(t: Term):Int = {
+  def fixTermEq(t:Term) = t.isBoolean && t.getBoolean == v ;
+
+  def fixTermCompare(t: Term):Int = {
     var c = termClassIndex - t.termClassIndex;
-    if (c!=0) return 0;
+    if (c!=0) return c;
     if (v) {
       return (if (t.getBoolean) 0 else 1);
     } else {

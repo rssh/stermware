@@ -33,7 +33,7 @@ case class Call[A](
   def isDone: Boolean = false;
   def result: Option[A] = None;
   def step(ctx:CallContext) = {
-      thunk(ctx.withCall);
+      thunk(ctx);
   }
 }
 
@@ -45,13 +45,19 @@ case class ContCall[A,B](
   def isDone: Boolean = false;
   def result: Option[B] = None;
   def step(ctx:CallContext): ComputationBounds[B]={
-        val s = thunk(ctx.withCall);
-        if (s.isDone) {
+        val s = try {
+                 thunk(ctx);
+                } catch {
+                  case ex: CallCCException[A] =>
+                        throw new CallCCException(Call{
+                                (ctx:CallContext) => step(ctx) })(ex.ctx);
+                }
+          if (s.isDone) {
             val a = s.result.get;
-            cont(a,ctx.withCall);
-        }else{
-             CallCC.compose(s,cont,ctx.withCall);
-        }
+            cont(a,ctx);
+          }else{
+            CallCC.compose(s,cont)(ctx);
+          }
   }
 }
 

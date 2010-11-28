@@ -40,7 +40,7 @@ class ListTermSignature(th:Theory)
                            this.createTerm(name, args.drop(1)),this)
   };
  
- def getType(t:Term):Term = {
+ def termType(t:Term):Term = {
    t.getAttribute(theory.symbolTable.TYPE) match {
       case Some(x) =>  x
       case None   => {
@@ -54,7 +54,7 @@ class ListTermSignature(th:Theory)
  def calculateType(t:Term):Term = {
    val typeIn = theory.freeFunSignature.createTerm(
                    t.name,
-                   t.subterms.map( x => x.signature.getType(x) )
+                   t.subterms.map( _.termType )
                 );
    val typeOut = theory.typeAlgebra.reduce(typeIn);
    return typeOut;

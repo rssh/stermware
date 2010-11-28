@@ -1,14 +1,13 @@
 package ua.gradsoft.termware;
 
+import ua.gradsoft.termware.flow._;
+
 trait SimpleUnify extends Term
 {
 
-  override def termUnifyFn(t:Term, s: Substitution): VM => VM
-    =  ( vm : VM ) => { 
-        val v = termUnify(t,s,vm); 
-        vm.pushData(v._2); 
-        vm.pushData(v._1); 
-        vm; 
-  }
+  override def unify(t:Term, s: Substitution)
+                    (implicit ctx:CallContext)
+                               :ComputationBounds[(Boolean,Substitution)]
+    =  Done(fixUnify(t,s))
 
 }

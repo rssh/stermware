@@ -7,12 +7,14 @@ import scala.collection.mutable.HashMap;
 import java.io.PrintWriter;
 import ua.gradsoft.termware.fn._;
 import ua.gradsoft.termware.util._;
+import ua.gradsoft.termware.flow._;
 
 
 class EtaTerm(v:Set[EtaXTerm], l:Term, r:Term, rs:Term, s:EtaTermSignature)  
                              extends EtaXOwner
                                          with ComplexUnify
                                          with ComplexSubst
+                                         with ComplexCompare
                                          with NonNumberTerm
 {
 
@@ -32,50 +34,52 @@ class EtaTerm(v:Set[EtaXTerm], l:Term, r:Term, rs:Term, s:EtaTermSignature)
 
   override def subterm(index: Int) = 
     index match {
-      case 1 => left
-      case 2 => right
-      case 3 => rest
+      case 0 => left
+      case 1 => right
+      case 2 => rest
       case _ => throwUOE
     }
 
-  override def termUnifyFn(t:Term,s:Substitution) = 
-    (vm: VM) => {
-       if (t.isEta) {
-         vm.pushCommandsReverse(
-            left.termUnifyFn(t.subterm(0),s),
-            (vm:VM) => {
-               val b: Boolean = vm.popData.asInstanceOf[Boolean];
-               if (b) {
-                  val s1 = vm.popData.asInstanceOf[Substitution];
-                  vm.pushCommandsReverse(
-                     right.termUnifyFn(t.subterm(1),s1),
-                     (vm:VM) => {
-                       if (vm.popData.asInstanceOf[Boolean]) {
-                         val s2 = vm.popData.asInstanceOf[Substitution];
-                         vm.pushCommand(
-                            rest.termUnifyFn(t.subterm(2),s2)
-                         );
-                       } else {
-                         vm.pushData(false);
-                       };
-                       vm;
-                     }
-                  );
-               } else {
-                  vm.pushData(false);
-               }
-               vm;
-            }
-         );
-       }else{
-         vm.pushData(false);
-       };
-       vm;
+  override def unify(t:Term,s:Substitution)(implicit ctx:CallContext)
+                               :ComputationBounds[(Boolean,Substitution)]=
+  {
+    if (t.isEta) {
+      ctx.withCall{
+       (ctx:CallContext) => implicit val ictx = ctx;
+       val tLeft = t.subterms(0);
+       left.onUnify(tLeft,s){
+         (rs:(Boolean,Substitution), ctx: CallContext) =>
+           implicit val ictx = ctx;
+           val (r,s) = (rs._1, rs._2);
+           if(r) {
+             val tRight = t.subterms(1);
+             right.onUnify(tRight,s){
+               (rs:(Boolean,Substitution),ctx:CallContext) =>
+                 implicit val ictx = ctx;
+                 val r = rs._1;
+                 val s = rs._2;
+                 if(r) {
+                   val tRest = t.subterms(2);
+                   rest.unify(tRest,s);
+                 } else {
+                   Done((false,s));
+                 }
+             }
+           } else {
+             Done((false,s));
+           } 
+       }
+      }
+    }else{
+       Done((false,s));
     }
+  }
 
-
-  override def termSubstFn(s:PartialFunction[Term,Term]):VM=>VM = 
-    (vm:VM) => {
+  override def subst(s:PartialFunction[Term,Term])
+                    (implicit ctx: CallContext) :
+                                                  ComputationBounds[Term] = 
+    ctx.withCall { 
+       (ctx:CallContext) => implicit val ictx = ctx;
        val s1 = new PartialFunction[Term,Term]{
 
                   def isDefinedAt(t:Term):Boolean =
@@ -100,37 +104,41 @@ class EtaTerm(v:Set[EtaXTerm], l:Term, r:Term, rs:Term, s:EtaTermSignature)
                      }
                   
                 }.orElse(s);
-       vm.pushCommandsReverse(
-          rest.termSubstFn(s1),
-          right.termSubstFn(s1),
-          left.termSubstFn(s1),
-          (vm:VM) => {
-              val nLeft = vm.popData.asInstanceOf[Term];
-              val nRight = vm.popData.asInstanceOf[Term];
-              val nRest = vm.popData.asInstanceOf[Term];
-              val retval=new EtaTerm(vars,nLeft,nRight,nLeft,signature);
-              vm.pushData(retval);
-              vm
-          }
+       val substituted = CallCC.tuple(
+               Call{ (ctx:CallContext)=>left.subst(s1)(ctx) },
+               Call{ (ctx:CallContext)=>right.subst(s1)(ctx) },
+               Call{ (ctx:CallContext)=>rest.subst(s1)(ctx) }
        );
-       vm;
+       CallCC.compose(substituted,
+              { tuple:Tuple3[Term,Term,Term] =>
+                    Done(
+                      new EtaTerm(vars,tuple._1,tuple._2,tuple._3,signature)) 
+              });
     }
 
   override def termClassIndex  = TermClassIndex.ETA;
 
   override def termHashCode = hashCode;
 
-  override def termCompare(t:Term):Int = {
-     var c = termClassIndex - t.termClassIndex;
+  override def termCompare(t:Term)(implicit ctx:CallContext)
+                                                :ComputationBounds[Int] = {
+     val c = termClassIndex - t.termClassIndex;
      if (c!=0) {
-        return c;
+        Done(c);
      } else {
-        c = left.termCompare(t.subterm(0));
-        if (c!=0) return c; 
-        c = right.termCompare(t.subterm(1));
-        if (c!=0) return c; 
-        c = rs.termCompare(t.subterm(2));
-        return c;
+        left.onTermCompare(t.subterm(0)){
+           (c:Int,ctx:CallContext) => implicit val ictx=ctx;
+             if (c!=0) 
+               Done(c)
+             else
+               right.onTermCompare(t){
+                 (c:Int,ctx:CallContext) => implicit val ictx=ctx;
+                  if (c!=0) 
+                    Done(c)
+                  else
+                    rs.termCompare(t.subterm(2))
+               }
+        }
      }
   }
 
