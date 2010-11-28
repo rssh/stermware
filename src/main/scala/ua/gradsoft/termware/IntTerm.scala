@@ -54,9 +54,11 @@ case class IntTerm(v:Int, s:IntTermSignature)
   override def getNumber: Number = new java.lang.Integer(value);
   override def getNumberKind: Int = NumberKind.INT.id;
 
-  def termCompare(t: Term):Int = {
+  def fixTermEq(t:Term):Boolean = t.isInt && t.getInt == value ;
+
+  def fixTermCompare(t: Term):Int = {
     var c = termClassIndex - t.termClassIndex;
-    if (c!=0) return 0;
+    if (c!=0) return c;
     return (value - t.getInt);
   }
 

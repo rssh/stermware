@@ -1,19 +1,11 @@
 package ua.gradsoft.termware;
 
+import ua.gradsoft.termware.flow._;
+
 trait ComplexSubst extends Term
 {
 
-  override def termSubst(s: PartialFunction[Term,Term], vm: VM):Term={
-          val marker = vm.createAndPushMarker;
-          vm.pushCommand(termSubstFn(s));
-          vm.runByMarker(marker);
-          return vm.popData.asInstanceOf[Term];
-  }
-
-  override def termSubst(s: PartialFunction[Term,Term]): Term =
-  {
-     val vm = new VM;
-     return termSubst(s,vm);
-  }
+  override def fixSubst(s: PartialFunction[Term,Term]): Term =
+              CallCC.trampoline(Call{(ctx:CallContext)=>subst(s)(ctx)});
 
 }

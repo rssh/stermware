@@ -1,25 +1,11 @@
 package ua.gradsoft.termware;
 
+import ua.gradsoft.termware.flow._;
 
 trait ComplexUnify extends Term
 {
 
-  override def termUnify(t:Term, s:Substitution, vm: VM): 
-                                         (Boolean, Substitution) = {
-     val marker = vm.createAndPushMarker;
-     vm.pushCommand(termUnifyFn(t,s));
-     vm.runByMarker(marker);
-     val retval: Boolean = vm.popData.asInstanceOf[Boolean];
-     if (retval) {
-        return (retval,vm.popData.asInstanceOf[Substitution]); 
-     } else {
-        return (retval,s);
-     }
-  }
-
-  def termUnify(t:Term, s:Substitution): (Boolean, Substitution) = {
-     val vm = new VM;
-     return termUnify(t,s,vm);
-  }
+  def fixUnify(t:Term, s:Substitution): (Boolean, Substitution) = 
+         CallCC.trampoline(Call{ (ctx:CallContext) => unify(t,s)(ctx) });
 
 }

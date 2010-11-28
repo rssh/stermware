@@ -46,11 +46,11 @@ case class BigIntTerm(v:BigInt, s:BigIntTermSignature)
   override def getNumber: Number = value.bigInteger;
   override def getNumberKind: Int = NumberKind.BIG_INTEGER.id;
 
+  def fixTermEq(t:Term):Boolean = t.isBigDecimal && value==t.getBigDecimal;
   
-
-  def termCompare(t: Term):Int = {
+  def fixTermCompare(t: Term):Int = {
     var c = termClassIndex - t.termClassIndex;
-    if (c!=0) return 0;
+    if (c!=0) return c;
     return value.compare(t.getBigInt);
   }
 

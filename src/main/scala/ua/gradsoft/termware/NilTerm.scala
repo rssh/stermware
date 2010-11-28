@@ -12,8 +12,10 @@ class NilTerm(s:NilTermSignature) extends PrimitiveTerm(s)
   
   def termClassIndex=TermClassIndex.NIL;
 
-  def termCompare(t:Term):Int = 
+  def fixTermCompare(t:Term):Int = 
     termClassIndex - t.termClassIndex;
+
+  def fixTermEq(t:Term):Boolean = t.isNil;
 
   def termHashCode: Int = 1+name.hashCode;
 

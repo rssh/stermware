@@ -2,12 +2,12 @@ package ua.gradsoft.termware;
 
 import scala.collection.mutable.HashMap;
 import java.io.PrintWriter;
-import ua.gradsoft.termware.fn.FnNone;
+import ua.gradsoft.termware.flow._;
 
 
 class ErrorTerm(m:String, e:Exception, s: ErrorTermSignature) extends Term
                                           with SimpleSubst
-                                          with SimpleUnifyWithoutVM
+                                          with SimpleUnify
                                           with NonNumberTerm
 {
 
@@ -44,16 +44,15 @@ class ErrorTerm(m:String, e:Exception, s: ErrorTermSignature) extends Term
 
   override def getMessage: String = message;
 
-  override def termSubstFn(s: PartialFunction[Term,Term]): (VM=>VM) 
-   = FnNone;
+  def fixSubst(s: PartialFunction[Term,Term]): Term = this;
 
-  def termSubst(s: PartialFunction[Term,Term]): Term = this;
-
-  def termUnify(t:Term, s:Substitution): (Boolean, Substitution) = (false, s);
+  def fixUnify(t:Term, s:Substitution): (Boolean, Substitution) = (false, s);
    
   def termClassIndex: Int = TermClassIndex.ERROR;
 
-  def termCompare(t:Term): Int = 
+  def fixTermEq(t:Term):Boolean = t.isError && message == t.getMessage;
+
+  def fixTermCompare(t:Term): Int = 
   {
    val cl = termClassIndex - t.termClassIndex;
    if (cl!=0) 
@@ -61,6 +60,11 @@ class ErrorTerm(m:String, e:Exception, s: ErrorTermSignature) extends Term
    else
      return message.compareTo(t.getMessage);
   }
+
+  def termCompare(t:Term)(implicit ctx:CallContext):ComputationBounds[Int]
+   = Done(fixTermCompare(t));
+
+
 
   def termHashCode: Int = 7+message.hashCode;
 

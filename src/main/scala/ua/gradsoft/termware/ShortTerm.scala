@@ -39,11 +39,13 @@ case class ShortTerm(v:Short, s:ShortTermSignature)
   override def getNumber: Number = new java.lang.Short(value);
   override def getNumberKind: Int = NumberKind.SHORT.id;
 
-  def termCompare(t: Term):Int = {
-    var c = termClassIndex - t.termClassIndex;
-    if (c!=0) return 0;
+  def fixTermCompare(t: Term):Int = {
+    val c = termClassIndex - t.termClassIndex;
+    if (c!=0) return c;
     return (value - t.getShort);
   }
+
+  def fixTermEq(t:Term): Boolean = t.isShort && t.getShort == value;
 
   lazy val name = new IntName(value.toInt);
   lazy val termHashCode = value.toInt;

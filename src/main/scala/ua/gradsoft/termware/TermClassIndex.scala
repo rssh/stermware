@@ -23,4 +23,6 @@ object TermClassIndex
 
   val ERROR: Int = 10;
 
+  val REF: Int = 11;
+
 }

@@ -1,5 +1,7 @@
 package ua.gradsoft.termware;
 
+import ua.gradsoft.termware.flow._;
+
 /**
  * Term signature. Can be interpreted as behaviourial definition
  * for family of some kinds of term.
@@ -42,6 +44,9 @@ trait TermSignature
    */
    def createTerm(name:Name, args: IndexedSeq[Term]): Term;
 
+   def fixCreate(name:Name, args:IndexedSeq[Term]): Term 
+         = createTerm(name, args);
+
    def createTerm(name:Name, args: Term*): Term = {
     args match {
      case x: IndexedSeq[Term] => createTerm(name,x)
@@ -56,16 +61,27 @@ trait TermSignature
    }
 
   /**
-   * create term, getting term values from data stack.
+   * create term in computation bounds.
    */
-   def createTermFn(name:Name, arity:Int): VM=>VM = {
-    vm:VM => {
-     val args = new Array[Term](arity);
-     for( i <- 0 to arity ) {
-       args(arity-i-1)=vm.popData.asInstanceOf[Term];
-     };
-     createTerm(name, args);
-     vm;
+   def createTerm(name:Name, args:IndexedSeq[ComputationBounds[Term]])
+                 (implicit ctx:CallContext):ComputationBounds[Term] = 
+     CallCC.compose(CallCC.seq(args),
+                    { 
+                      l:IndexedSeq[Term] => Done(fixCreate(name,l));
+                    });
+   
+   def createTerm(name:Name, args: ComputationBounds[Term]*)
+                 (implicit ctx:CallContext):ComputationBounds[Term] = 
+   {
+    args match {
+     case x: IndexedSeq[ComputationBounds[Term]] => createTerm(name,x)
+     case _ => {
+       val arr = new Array[ComputationBounds[Term]](args.length);
+       for( i <- 0 to args.length-1) {
+          arr.update(i,args(i));
+       }
+       createTerm(name,arr);
+     }
     }
    }
 
@@ -75,8 +91,13 @@ trait TermSignature
    def createTerm(name:String, args: Term*):Term =
     createTerm(theory.symbolTable.getOrCreate(name),args:_*);
 
-   def createTermFn(name:String, arity: Int):VM=>VM =
-    createTermFn(theory.symbolTable.getOrCreate(name),arity);
+   def createTerm(name:String, args: ComputationBounds[Term]*)
+                 (implicit ctx:CallContext):ComputationBounds[Term] = 
+    createTerm(theory.symbolTable.getOrCreate(name),args:_*)(ctx);
+
+   def createTerm(name:String, args: IndexedSeq[ComputationBounds[Term]])
+                 (implicit ctx:CallContext):ComputationBounds[Term] = 
+    createTerm(theory.symbolTable.getOrCreate(name),args);
 
     
    /**
@@ -92,17 +113,14 @@ trait TermSignature
    /**
     * calculate type of term
     **/
-   def getType(t:Term):Term;
+   def termType(t:Term):Term;
 
    /**
-    * function, which get <code> t </code> from data stack and
-    * put calculated type instead.
+    * calcultate type of term in computation bounds
     **/
-   def getTypeFn:VM=>VM
-     = (vm:VM) => { vm.popData match {
-                      case t:Term => vm.pushData(getType(t));
-                      case _      => throw new ErrorTermException("term on stack expected");
-                    }; vm; }
+   def termType(cbt:ComputationBounds[Term])(implicit ctx:CallContext):
+                                                    ComputationBounds[Term]
+     = CallCC.compose(cbt,{(x:Term)=>Done(termType(x))});
 
    /**
     * get theory, where signature was defined

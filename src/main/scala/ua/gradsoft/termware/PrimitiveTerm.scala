@@ -3,11 +3,13 @@ package ua.gradsoft.termware;
 import scala.collection.mutable.HashMap;
 import java.io.PrintWriter;
 
+import ua.gradsoft.termware.flow._;
+
 /**
  * trait for primitive terms.
  */
 abstract class PrimitiveTerm(s:TermSignature) extends Term
-                                      with SimpleUnifyWithoutVM
+                                      with ComplexUnify
                                       with SimpleSubst
 {
 
@@ -31,21 +33,24 @@ abstract class PrimitiveTerm(s:TermSignature) extends Term
 
   override def getMessage = throwUOE;
 
-  def termSubst(s:PartialFunction[Term,Term]):Term = 
+  def fixSubst(s:PartialFunction[Term,Term]):Term = 
     if (s.isDefinedAt(this)) s.apply(this) else this;
 
-  def termUnify(t: Term, s: Substitution)
+  def unify(t: Term, s: Substitution)(implicit ctx:CallContext)
    =
-     if (termEq(t))
-            (true,s)
+     if (fixTermEq(t))
+            Done((true,s))
      else
        if (t.isX) {
-         val r = s+(t->this);
-         (r._1, if (r._1) r._2 else s);
+         s+(t->this);
        } else
-         (false, s)
+         Done(false, s)
    ;
 
+  def termCompare(t:Term)(implicit ctx:CallContext):ComputationBounds[Int]
+   = Done(fixTermCompare(t));
+
+ 
   override def print(out:PrintWriter):Unit = out.print(toString);
 
   val signature = s;

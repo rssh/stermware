@@ -2,14 +2,16 @@ package ua.gradsoft.termware;
 
 import scala.collection.mutable.HashMap;
 import java.io.PrintWriter;
+import ua.gradsoft.termware.flow._;
 
 /**
  * class represent variable, bound in eta-term.
  **/
 class EtaXTerm(n: Name, l:Int, t: Term, o:EtaTerm, s:EtaXTermSignature) 
                                             extends Term
-                                               with SimpleUnifyWithoutVM
+                                               with ComplexUnify
                                                with SimpleSubst
+                                               with SimpleCompare
                                                with NonNumberTerm
 {
 
@@ -41,20 +43,18 @@ class EtaXTerm(n: Name, l:Int, t: Term, o:EtaTerm, s:EtaXTermSignature)
 
    override def xOwner = owner;
 
-   override def termUnify(t:Term, s:Substitution) : (Boolean, Substitution) = {
-      if (t.isX) {
-        if (t.xOwner eq xOwner) {
-            return (t.xLabel == xLabel,s);
-        } else {
-            val pair = (this,t);
-            return s+(this,t);
-        }
+   override def unify(t:Term, s:Substitution)(implicit ctx:CallContext) 
+                              : ComputationBounds[(Boolean, Substitution)] = {
+      if (t.isX && (t.xOwner eq xOwner) ) {
+            Done((t.xLabel == xLabel,s));
       } else {
-        return s+(this,t);
+        s+(this,t);
       }
    }
 
-   def termCompare(t:Term):Int = {
+   def fixTermEq(t:Term): Boolean = { t.isX && (t.xOwner eq xOwner) }; 
+
+   def fixTermCompare(t:Term):Int = {
       var c = termClassIndex - t.termClassIndex;
       if (c!=0) return c;
       c = xLabel - t.xLabel;
@@ -64,7 +64,8 @@ class EtaXTerm(n: Name, l:Int, t: Term, o:EtaTerm, s:EtaXTermSignature)
       return owner.compareTo(t.xOwner);
    }
 
-   override def termSubst(s:PartialFunction[Term,Term]):Term = {
+
+   override def fixSubst(s:PartialFunction[Term,Term]):Term = {
       if (s.isDefinedAt(this)) s(this) else this;
    }
    

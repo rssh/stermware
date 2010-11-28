@@ -49,7 +49,7 @@ class EtaXTermSignature(th:Theory) extends TermSignature
     }
   }
 
-  def getType(t:Term):Term = {
+  def termType(t:Term):Term = {
     var retval=t.getAttribute(theory.symbolTable.TYPE);
     if (retval==None) {
         retval=Some(theory.typeAlgebra.top);

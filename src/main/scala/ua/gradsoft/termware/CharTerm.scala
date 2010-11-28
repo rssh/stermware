@@ -24,7 +24,9 @@ class CharTerm(v:Char, s: CharTermSignature) extends PrimitiveTerm(s)
   override def isChar: Boolean = true;
   override def getChar: Char = v;
 
-  def termCompare(t: Term):Int = {
+  def fixTermEq(t:Term):Boolean = t.isChar && t.getChar == v;
+
+  def fixTermCompare(t: Term):Int = {
     var c = termClassIndex - t.termClassIndex;
     if (c!=0) return 0;
     return v.compare(t.getChar);

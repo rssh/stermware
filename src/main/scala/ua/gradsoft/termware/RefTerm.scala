@@ -9,7 +9,7 @@ case class RefTerm(v:AnyRef, s: RefTermSignature) extends PrimitiveTerm(s)
 
   override def getRef: AnyRef = value;
 
-  def termCompare(t: Term):Int = {
+  def fixTermCompare(t: Term):Int = {
     var c = termClassIndex - t.termClassIndex;
     if (c!=0) return 0;
     if (value!=null) {
@@ -26,7 +26,9 @@ case class RefTerm(v:AnyRef, s: RefTermSignature) extends PrimitiveTerm(s)
     }
   }
 
-  def termClassIndex: Int = TermClassIndex.BOOLEAN;
+  def fixTermEq(t: Term):Boolean = (fixTermCompare(t)==0);
+
+  def termClassIndex: Int = TermClassIndex.REF;
 
   lazy val name = signature.theory.symbolTable.getOrCreate(
                                                       "@"+value.hashCode

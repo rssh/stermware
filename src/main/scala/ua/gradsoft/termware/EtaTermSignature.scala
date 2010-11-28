@@ -1,7 +1,7 @@
 package ua.gradsoft.termware;
 
 import scala.collection.immutable.TreeSet;
-import ua.gradsoft.termware.fn._;
+import ua.gradsoft.termware.flow._;
 import ua.gradsoft.termware.util.TermOrdering;
 
 
@@ -54,68 +54,19 @@ class EtaTermSignature(th:Theory) extends TermSignature
 
   override def createConstant(arg:Any) = throwUOE; 
 
-  def getTypeFn(t:Term):VM=>VM = {
-    var retval=t.getAttribute(theory.symbolTable.TYPE);
-    if (retval==None) {
-      return (vm:VM) => {
-            vm.pushCommandsReverse(
-             calculateTypeFn(t),
-             DupData,
-             SetAttributeFnTN_V(t,theory.symbolTable.TYPE)
-            );
-            vm;
-      };
+  def termType(t:Term):Term = {
+    if (t.isEta) {
+      val lt = t.subterm(0).termType;
+      val rt = t.subterm(1).termType;
+      val rst = t.subterm(2).termType;
+      val typeTerm = theory.freeFunSignature.createTerm("OR",
+                       theory.freeFunSignature.createTerm("ARROW",lt,rt),
+                       rst);
+      theory.typeAlgebra.reduce(typeTerm);
     } else {
-       return PushData(retval.get);
+      throwUOE;
     }
   }
-
-  def calculateTypeFn(t:Term):VM=>VM = {
-     vm:VM => {
-       val left = t.subterm(0);
-       val right = t.subterm(1);
-       val rest = t.subterm(2);
-       vm.pushCommandsReverse(
-          left.signature.getTypeFn,
-          ToData2,
-          right.signature.getTypeFn,
-          ToData2,
-          FromData2,
-          FromData2,
-	  theory.freeFunSignature.createTermFn("FUN",2),
-          rest.signature.getTypeFn,
-	  theory.freeFunSignature.createTermFn("OR",2),
-          theory.typeAlgebra.reduceFn
-       );
-       vm;
-     }
-  }
-
-  def getType(t:Term):Term = {
-    var retval=t.getAttribute(theory.symbolTable.TYPE);
-    if (retval==None) {
-        retval=Some(calculateType(t));
-        t.setAttribute(theory.symbolTable.TYPE,retval.get);
-    }
-    return retval.get;
-  }
-
-  def calculateType(t:Term):Term = {
-     val left = t.subterm(0);
-     val leftType = left.signature.getType(left);
-     val right = t.subterm(1);
-     val rightType = right.signature.getType(right);
-     val rest = t.subterm(2);
-     val restType = rest.signature.getType(rest);
-     val etaTypeIn = theory.freeFunSignature.createTerm(
-                             "OR",
-                             theory.freeFunSignature.createTerm("ARROW",
-                                                              leftType,
-                                                              rightType),
-                             restType);
-     return theory.typeAlgebra.reduce(etaTypeIn);
-  }
-  
 
   private def collectEtaX(t:Term):Set[EtaXTerm] = {
      var r = TreeSet.empty[EtaXTerm](etaXTermOrdering);

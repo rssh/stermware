@@ -3,10 +3,12 @@ package ua.gradsoft.termware;
 import scala.collection.mutable.HashMap;
 import java.io.PrintWriter;
 import ua.gradsoft.termware.fn._;
+import ua.gradsoft.termware.flow._;
 
 abstract class FunctionalTerm(s:TermSignature) extends Term
                                              with ComplexUnify
                                              with ComplexSubst
+                                             with ComplexCompare
                                              with NonNumberTerm
 {
 
@@ -15,64 +17,93 @@ abstract class FunctionalTerm(s:TermSignature) extends Term
   def isEta: Boolean = false;
   def isError: Boolean = false;
 
-  def termUnifyFn(t:Term, s: Substitution): (VM=>VM) =
-   (vm:VM) => {
-     if (patternName==t.patternName && arity==t.arity) {
-         val marker = vm.createAndPushMarker;
-         vm.pushData(s);
-         for(i<- 0 to arity) {
-           val st1 = subterm(i);
-           val st2 = t.subterm(i);
-           vm.pushCommandsReverse(
-              (vm:VM) => { 
-                 val s = vm.popData.asInstanceOf[Substitution]; 
-                 st1.termUnifyFn(st2,s);
-                 vm;
-              },
-              FnIfPop(
-                FnPopData, // substitution now leave on stack
-                FnSeqReverse(FnFalse,FnUpToMarker(marker))
-              )
-           ); 
-         }
-         // if we here, than all ok,
-         vm.pushCommandsReverse(FnTrue);
-     } else {
-         vm.pushData(s);        
-         vm.pushData(false);        
+  def unify(t:Term, s: Substitution)(implicit ctx:CallContext):
+                                ComputationBounds[(Boolean,Substitution)] =
+     ctx.withCall{
+      (ctx:CallContext) => implicit val ictx = ctx;
+        if (patternName==t.patternName && arity==t.arity) {
+           unifySeq(subterms,t.subterms,s);      
+        } else {
+           Done(false,s);
+        }
      }
-     vm;
+
+  def unifySeq(x:Seq[Term],y:Seq[Term],s:Substitution)
+              (implicit ctx: CallContext): 
+                                ComputationBounds[(Boolean,Substitution)] =
+  {
+    if (x.isEmpty) {
+       Done((y.isEmpty,s))
+    } else if (y.isEmpty) {
+       Done((false,s))
+    } else {
+      ctx.withCall{
+         (ctx:CallContext) => implicit val ictx = ctx;
+            x.head.onUnify(y.head,s){
+             (rs: (Boolean,Substitution),ctx:CallContext) => 
+                 implicit val ictx = ctx;
+                 if (rs._1) {
+                    unifySeq(x.tail,y.tail,rs._2);
+                 } else {
+                    Done(false,rs._2);
+                 }
+         }
+      }
+    }
   }
 
-  def termSubstFn(s: PartialFunction[Term,Term]): (VM=>VM) = {
-   (vm:VM) => {
-       vm.pushCommand(signature.createTermFn(name,arity));
-       var i=0;
-       while(i<arity) {
-         val st1 = subterm(arity-i-1);
-         vm.pushCommand(st1.termSubstFn(s));
-       }
-       vm
-   }
-  }
+  def subst(s: PartialFunction[Term,Term])(implicit ctx:CallContext)
+                                               :ComputationBounds[Term]  = 
+  ctx.withCall{
+     (ctx:CallContext) => implicit val ictx = ctx;
+     if (s.isDefinedAt(this)) {
+        Done(s(this));
+     } else {
+       val nSubterms = for(st <-subterms) yield {
+                       if (s.isDefinedAt(st)) {
+                          Done(s(st)); 
+                       } else {
+                         st.subst(s);
+                       }
+                     }
+       val seqCb = CallCC.seq(nSubterms);
+       CallCC.compose(seqCb,
+             { x:IndexedSeq[Term] => Done(signature.createTerm(name,x)) });
+     }
+  };
 
   def termClassIndex = TermClassIndex.FUNCTIONAL;
 
-  def termCompare(t:Term):Int = {
+  def termCompare(t:Term)(implicit ctx:CallContext):ComputationBounds[Int] = 
+  {
     var c = termClassIndex - t.termClassIndex;
-    if (c!=0) return c;
-    c = arity - t.arity;
-    if (c!=0) return c;
-    c = name.compareTo(t.name);
-    if (c!=0) return c;
-    var i=0;
-    while(i<arity) {
-       c=subterms(i).termCompare(t.subterms(i));
-       if (c!=0) return c;
-       i=i+1;  // scala have no ++i 
+    if (c!=0) {
+      Done(c)
+    } else { 
+       c = arity - t.arity;
+       if (c!=0) 
+          Done(c)
+       else {
+          c = name.compareTo(t.name);
+          if (c!=0) Done(c) else termCompareSeq(subterms,t.subterms)
+       }
     }
-    return c; 
   }
+
+  def termCompareSeq(x:Seq[Term],y:Seq[Term])(implicit ctx:CallContext)
+       :ComputationBounds[Int] = 
+  ctx.withCall {
+     (ctx:CallContext) => implicit val ictx=ctx;
+     if (x.isEmpty) 
+         Done(if (y.isEmpty) 0 else -1)
+     else
+       x.head.onTermCompare(y.head){
+         (c:Int, ctx:CallContext) => if (c!=0) 
+                                       Done(c)
+                                     else 
+                                       termCompareSeq(x.tail,y.tail)(ctx);
+       }
+  } 
 
   override def print(out:PrintWriter):Unit = {
      out.print(name.string);

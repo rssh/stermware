@@ -44,10 +44,16 @@ case class LongTerm(v:Long, s:LongTermSignature)
   override def getNumber: Number = new java.lang.Long(value);
   override def getNumberKind: Int = NumberKind.LONG.id;
 
-  def termCompare(t: Term):Int = {
-    var c = termClassIndex - t.termClassIndex;
-    if (c!=0) return 0;
-    return (value - t.getLong).toInt;
+
+  def fixTermEq(t:Term):Boolean = t.isLong && t.getLong == value ;
+
+  def fixTermCompare(t: Term):Int = {
+    val c = termClassIndex - t.termClassIndex;
+    if (c!=0) return c;
+    val cl = value - t.getLong;
+    return if (value < 0)  -1 
+           else if (value > 0) 1
+           else 0;
   }
 
 
