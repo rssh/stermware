@@ -5,20 +5,25 @@ import scala.annotation._;
 class CallCCException[A](val current:ComputationBounds[A],
                          val ctx:CallContext) extends Exception;
 
-object CallCC
-{
-  def apply[A](ctx:CallContext)(block:ComputationBounds[A]):Nothing
-         = throw new CallCCException(block,ctx);
-}
 
 case class CallContext(val nesting:Int=0)
 {
 
-  def withCall:CallContext = CallContext(nesting+1);
+  def nextCall:CallContext = CallContext(nesting+1);
 
   def checkStackOverflow: Boolean = {
-      return (nesting >= ComputationBoundsHelper.MAX_NESTING);
+      return (nesting >= CallCC.MAX_NESTING);
   } 
+
+  @inline
+  def withCall[A](f:CallContext => ComputationBounds[A]):ComputationBounds[A]
+         = if (checkStackOverflow) {
+               throw new CallCCException(
+                             Call{(ctx:CallContext)=>f(ctx)}, this);
+           } else {
+               f(nextCall) ;
+           }
+
 
 }
 
@@ -49,7 +54,7 @@ case class Call[A](
   def isDone: Boolean = false;
   def result: Option[A] = None;
   def step(ctx:CallContext) = {
-      thunk(ctx.withCall);
+      thunk(ctx);
   }
 }
 
@@ -61,20 +66,19 @@ case class ContCall[A,B](
   def isDone: Boolean = false;
   def result: Option[B] = None;
   def step(ctx:CallContext): ComputationBounds[B]={
-        val s = thunk(ctx.withCall);
+        val s = thunk(ctx);
         if (s.isDone) {
             val a = s.result.get;
-            cont(a,ctx.withCall);
+            cont(a,ctx);
         }else{
-             ComputationBoundsHelper.createCont(s,cont,ctx.withCall);
+             CallCC.compose(s,cont)(ctx);
         }
   }
 }
 
 
-object ComputationBoundsHelper
+object CallCC
 {
-
 
   def trampoline[A](cb:ComputationBounds[A]):A = {
        var quit = false;
@@ -95,37 +99,35 @@ object ComputationBoundsHelper
        return result.get;
   }
 
-  def createCont[A,B](ca:ComputationBounds[A],
-                      cont:(A,CallContext)=>ComputationBounds[B],
-                      ctx:CallContext):
+  def compose[A,B](ca:ComputationBounds[A],
+                      cont:(A,CallContext)=>ComputationBounds[B])
+                      (implicit ctx:CallContext):
                                                ComputationBounds[B] = {
+     ctx.withCall{
+       (ctx:CallContext) => implicit val ictx=ctx;
        var current = ca;
        var quit = false;
        var result: Option[ComputationBounds[B]] = None;
        while(!quit) {
-         if (ctx.checkStackOverflow) { 
-           CallCC(ctx)(Call{ (ctx:CallContext)=> 
-                                      createCont(ca,cont,ctx.withCall) });
-         }else{
            try {
-             current=current.step(ctx.withCall);  
+             current=current.step(ctx);  
              if (current.isDone) {
-               result=Some(cont(current.result.get,ctx.withCall));
+               result=Some(cont(current.result.get,ctx));
                quit=true;
              }
            }catch{
              case ex:CallCCException[A] => current=ex.current;
              if (current.isDone) {
-                val sa = cont(current.result.get,ctx.withCall);
-                CallCC(ex.ctx)(sa);
+                val sa = cont(current.result.get,ctx);
+                throw new CallCCException(sa,ex.ctx);
              } else {
-                CallCC(ctx)(Call{ (ctx:CallContext)=> 
-                                      createCont(ca,cont,ctx.withCall) });
+                throw new CallCCException(
+                   Call{ (ctx:CallContext)=> compose(ca,cont)(ctx) },ex.ctx);
              }
            }
-         } 
        }
        result.get;
+     }
   }
 
   val MAX_NESTING=100;
@@ -149,21 +151,23 @@ trait Term
      cont(unify(t));
   }
 
-  import ComputationBoundsHelper._;
+  import CallCC._;
 
-  def unifyCB2(t:Term, ctx:CallContext): ComputationBounds[Boolean] =
+  def unifyCB2(t:Term)(implicit ctx:CallContext): ComputationBounds[Boolean] =
     { 
        Done(unify(t)); 
     }
 
   def fixUnifyCB2[T](t:Term): Boolean = 
-          trampoline(Call{ (ctx:CallContext)=> unifyCB2(t,ctx) });
+          trampoline(Call{ (ctx:CallContext)=> unifyCB2(t)(ctx) });
 
-  def onUnifyCB2[T](t:Term, ctx: CallContext)
-      (cont:(Boolean,CallContext)=>ComputationBounds[T]):ComputationBounds[T] = 
+  def onUnifyCB2[T](t:Term)
+      (cont:(Boolean,CallContext)=>ComputationBounds[T])
+      (implicit ctx: CallContext)
+                                      :ComputationBounds[T] = 
               {
-               val f = unifyCB2(t, ctx.withCall);
-               ComputationBoundsHelper.createCont(f, cont, ctx); 
+               val f = unifyCB2(t)(ctx);
+               CallCC.compose(f,cont)(ctx); 
               }
 
 
@@ -254,14 +258,14 @@ case class FunTerm(val name:String, val args:Seq[Term]) extends Term
 
   import ComputationBoundsHelper._;
 
-  override def unifyCB2(t:Term, ctx:CallContext):ComputationBounds[Boolean]=
+  override def unifyCB2(t:Term)(implicit ctx:CallContext):
+                                             ComputationBounds[Boolean]=
   {
-     if (ctx.checkStackOverflow) {
-       CallCC(ctx)(Call{ (ctx:CallContext) => unifyCB2(t,ctx) });
-     } else {
+     ctx.withCall{
+       (ctx:CallContext) => implicit val ictx=ctx;
        if (t.isFunctional) {
          if (t.funName == name) {
-            return unifySeqCB2(funArgs,t.funArgs,ctx.withCall);
+            return unifySeqCB2(funArgs,t.funArgs);
          } else {
             Done(false);
          }
@@ -272,24 +276,23 @@ case class FunTerm(val name:String, val args:Seq[Term]) extends Term
   }
 
 
-  def unifySeqCB2(x:Seq[Term],y:Seq[Term],ctx:CallContext): 
+  def unifySeqCB2(x:Seq[Term],y:Seq[Term])(implicit ctx:CallContext): 
                                              ComputationBounds[Boolean]=
   {
     if (x.isEmpty) {
        Done(y.isEmpty) 
     } else {
-       if (ctx.checkStackOverflow) {
-         CallCC(ctx)(Call{ (ctx) => unifySeqCB2(x,y,ctx) }); 
-       } else {
-         x.head.onUnifyCB2(y.head,ctx.withCall) {
-          (r:Boolean, ctx:CallContext) => 
+       ctx.withCall{
+         (ctx:CallContext) => implicit val ictx=ctx;
+         x.head.onUnifyCB2(y.head){
+          (r:Boolean, ctx:CallContext) => implicit val ictx=ctx;
              if (!r) {
                Done(false)
              } else {
                if (x.isEmpty) {
                   Done(y.isEmpty);
                }else{
-                  unifySeqCB2(x.tail,y.tail,ctx.withCall) 
+                  unifySeqCB2(x.tail,y.tail)
                }
              }
          }
@@ -339,6 +342,7 @@ object main
      case ex: StackOverflowError => println("Stack overflow");
    }
    println("unification 3");
+   val beginU3 = System.currentTimeMillis();
    try {
      result = hv1 fixUnifyCB2 hv2 
      println("result is "+result);
@@ -346,7 +350,9 @@ object main
      case ex: StackOverflowError => println("Stack overflow");
      ex.printStackTrace();
    }
+   val endU3 = System.currentTimeMillis();
    println("unification 3 with same");
+   val beginU4 = System.currentTimeMillis();
    try {
      result = hv1 fixUnifyCB2 hv1 
      println("result is "+result);
@@ -354,6 +360,10 @@ object main
      case ex: StackOverflowError => println("Stack overflow");
      ex.printStackTrace();
    }
+   val endU4 = System.currentTimeMillis();
+   System.out.println("U diff="+(endU3-beginU3));
+   System.out.println("U same="+(endU4-beginU4));
+
  }
 
 
