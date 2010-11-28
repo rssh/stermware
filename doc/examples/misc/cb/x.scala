@@ -265,7 +265,7 @@ case class FunTerm(val name:String, val args:Seq[Term]) extends Term
        (ctx:CallContext) => implicit val ictx=ctx;
        if (t.isFunctional) {
          if (t.funName == name) {
-            return unifySeqCB2(funArgs,t.funArgs);
+            unifySeqCB2(funArgs,t.funArgs);
          } else {
             Done(false);
          }
