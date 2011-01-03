@@ -73,6 +73,6 @@ class ErrorTerm(m:String, e:Exception, s: ErrorTermSignature) extends Term
   val message=m;
   val exception=e;
 
-  val attributes = new HashMap[Name,Term](); 
+  val attributes = new HashMap[Name,ComputationBounds[Term]](); 
 
 }

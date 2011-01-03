@@ -1,6 +1,6 @@
 package ua.gradsoft.termware;
 
-import ua.gradsoft.termware.fn._;
+import ua.gradsoft.termware.flow._;
 
 class EtaXTermSignature(th:Theory) extends TermSignature
                                        with GeneralUtil
@@ -39,23 +39,21 @@ class EtaXTermSignature(th:Theory) extends TermSignature
 
   override def createConstant(arg:Any) = throwUOE; 
 
-  def getTypeFn(t:Term):VM=>VM = {
-    // TODO: parametrize Signature by subtype of term
-    var retval=t.getAttribute(theory.symbolTable.TYPE);
-    if (retval==None) {
-      return PushData(theory.typeAlgebra.top);
-    } else {
-      return PushData(retval.get);
+  def termType(ct:ComputationBounds[Term])(implicit ctx:CallContext)
+                                                  :ComputationBounds[Term] = {
+   if (ct.isDone) {
+    val t = ct.result.get;
+    t.getAttribute(theory.symbolTable.TYPE) match {
+         case None => {
+            val retval = Done(theory.typeAlgebra.top)
+            t.setAttribute(theory.symbolTable.TYPE, retval);
+            retval;
+         }
+         case Some(x) => x
     }
-  }
-
-  def termType(t:Term):Term = {
-    var retval=t.getAttribute(theory.symbolTable.TYPE);
-    if (retval==None) {
-        retval=Some(theory.typeAlgebra.top);
-        t.setAttribute(theory.symbolTable.TYPE,retval.get);
-    }
-    return retval.get;
+   } else {
+    CallCC.compose(ct, { (x:Term, ctx:CallContext) => termType(Done(x))(ctx); })
+   }
   }
 
   val theory=th;

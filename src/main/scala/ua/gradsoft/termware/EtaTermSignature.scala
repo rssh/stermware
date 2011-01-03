@@ -54,18 +54,26 @@ class EtaTermSignature(th:Theory) extends TermSignature
 
   override def createConstant(arg:Any) = throwUOE; 
 
-  def termType(t:Term):Term = {
-    if (t.isEta) {
-      val lt = t.subterm(0).termType;
-      val rt = t.subterm(1).termType;
-      val rst = t.subterm(2).termType;
-      val typeTerm = theory.freeFunSignature.createTerm("OR",
-                       theory.freeFunSignature.createTerm("ARROW",lt,rt),
-                       rst);
-      theory.typeAlgebra.reduce(typeTerm);
-    } else {
-      throwUOE;
-    }
+  def termType(ct:ComputationBounds[Term])(implicit ctx:CallContext):
+                                              ComputationBounds[Term] = {
+    if (ct.isDone) {
+     val t = ct.result.get;
+     if (t.isEta) {
+       val lct:ComputationBounds[Term] = t.subterm(0).termType;
+       val rct:ComputationBounds[Term] = t.subterm(1).termType;
+       val rsct: ComputationBounds[Term] = t.subterm(2).termType;
+       val tct= theory.freeFunSignature.createTerm("OR",
+                  theory.freeFunSignature.createTerm("ARROW",lct,rct),
+                  rsct);
+       theory.typeAlgebra.reduce(tct);
+     } else {
+       throwUOE;
+     }
+   } else {
+     CallCC.compose(ct,{ 
+       (t:Term,ctx:CallContext) => termType(Done(t))(ctx);
+     });
+   }
   }
 
   private def collectEtaX(t:Term):Set[EtaXTerm] = {

@@ -3,6 +3,7 @@ package ua.gradsoft.termware;
 import scala.util.parsing.combinator.syntactical._;
 import scala.util.parsing.input._;
 import ua.gradsoft.termware._;
+import ua.gradsoft.termware.flow._;
 import ua.gradsoft.termware.parser._;
 
 class TermWareParser(th:Theory, fname:String) extends TokenParsers
@@ -430,8 +431,10 @@ class TermWareParser(th:Theory, fname:String) extends TokenParsers
 
   def posAttributes(t:Term, x:Positional) = {
      t.setAttribute(POS,
-          theory.refSignature.createConstant(
-                            new PositionWithFname(x.pos,fileName)));
+          Done(theory.refSignature.createConstant(
+                            new PositionWithFname(x.pos,fileName))
+          )
+        );
      t;
   }
 

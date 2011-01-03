@@ -163,7 +163,7 @@ class EtaTerm(v:Set[EtaXTerm], l:Term, r:Term, rs:Term, s:EtaTermSignature)
     }
   }
 
-  var attributes=new HashMap[Name,Term]();
+  var attributes=new HashMap[Name,ComputationBounds[Term]]();
 
   //private def newVars(vn:Set[AtomTerm]):Map[Term,Term]=
   //  {

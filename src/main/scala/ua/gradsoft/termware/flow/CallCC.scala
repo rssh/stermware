@@ -173,6 +173,12 @@ object CallCC
    }
   }
 
+  def onProgress[A](ca:ComputationBounds[A])(action:CallContext=>Unit)
+                                                 (implicit ctx:CallContext):
+                                           ComputationBounds[A]=
+  {
+    compose(ca,{ (x:A,ctx:CallContext) => action(ctx); Done(x) })(ctx);
+  }
 
   final val MAX_NESTING=100;
 

@@ -29,7 +29,8 @@ trait Term extends TValue
 
   def theory: Theory = signature.theory;
 
-  final def termType = signature.termType(this);
+  def termType(implicit ctx:CallContext)
+                       = signature.termType(Done(this))(ctx);
 
   def isX: Boolean = false;
 

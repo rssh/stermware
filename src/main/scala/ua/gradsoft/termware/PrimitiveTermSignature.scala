@@ -3,16 +3,11 @@ package ua.gradsoft.termware;
 /**
  * Base signature for primitive types
  */
-abstract class PrimitiveTermSignature(th:Theory) extends TermSignature
+abstract class PrimitiveTermSignature(th:Theory) extends SimpleTermSignature
                                                      with GeneralUtil
 {
 
   override def fixedName:Option[Name] = None;
-
-  override def fixedArity = Some(0);
-
-  override def nameByIndex = None;
-  override def indexByName = None;
 
   override def createTerm(name:Name, args: IndexedSeq[Term]) = throwUOE;
   override def createSpecial(args: Any*):Term = throwUOE;
@@ -23,7 +18,7 @@ abstract class PrimitiveTermSignature(th:Theory) extends TermSignature
    **/
   def typeName: String;
 
-  override def termType(t:Term):Term = termType;
+  override def simpleTermType(t:Term):Term = termType;
   lazy val termType = theory.freeAtomSignature.createConstant(typeName);
 
   val theory=th;
