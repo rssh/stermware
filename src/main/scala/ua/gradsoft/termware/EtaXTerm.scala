@@ -92,6 +92,6 @@ class EtaXTerm(n: Name, l:Int, t: Term, o:EtaTerm, s:EtaXTermSignature)
             val signature = s;
             val typeTerm = t;
 
-   lazy val attributes = new HashMap[Name,Term];
+   lazy val attributes = new HashMap[Name,ComputationBounds[Term]];
 
 }

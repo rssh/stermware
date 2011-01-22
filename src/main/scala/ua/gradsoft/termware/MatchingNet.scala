@@ -1,8 +1,10 @@
 package ua.gradsoft.termware;
 
+
 import scala.collection.Set;
 import scala.collection.mutable.ArrayBuffer;
 import scala.collection.immutable.TreeMap;
+import ua.gradsoft.termware.flow._;
 
 object MatchingNet
 {
@@ -11,12 +13,12 @@ object MatchingNet
 
 trait MatchingCondition
 {
-  def check(t:Term,s:Substitution,vm:VM):(Boolean,Substitution) 
+  def check(t:Term,s:Substitution):ComputationBounds[(Boolean,Substitution)]
 }
 
 object TrueMatchingCondition extends MatchingCondition
 {
-  def check(t:Term,s:Substitution,vm:VM):(Boolean,Substitution) = (true,s);
+  def check(t:Term,s:Substitution):ComputationBounds[(Boolean,Substitution)] = Done((true,s));
 }
 
 trait MatchingNetConstants
@@ -57,8 +59,8 @@ class MatchingNet(val theory:Theory)
                  zipIndexOnFail,
                  getAutoStateIndex(nextFailState,zi));
     
-       def check(t:Term,s:Substitution,vm:VM):(Boolean,Substitution)
-             =condition.check(t,s,vm);
+       def check(t:Term,s:Substitution):ComputationBounds[Pair[Boolean,Substitution]]
+             =condition.check(t,s);
 
        def isFinal:Boolean = (zipIndexStep==ZI_FINAL);
   }
@@ -199,93 +201,114 @@ class MatchingNet(val theory:Theory)
   case class Success(val s:STMSubstitution, val node:Node)
 
 
-  def doMatch(t:Term,vm:VM):Either[Failure,Success]={
-    var czi=BigInt(1);
-    var csi=0;
-    var ct=t;
-    var ctup:Option[Term]=None;
-    var cti=0;
-    var quit:Boolean=false;
-    var cs = STMSubstitution.empty;
-    //var outState=outStates(csi);
-    var autoState=autoStates(csi);
-    while(!quit) {
-       //var nodes=outState.getNodes(czi,ct.name,ct.arity); 
-       var nodes=autoState.nc.find(ct.name,ct.arity); 
-       var test = false;
-       var lastNode:Option[Node] = None;
-       while(!nodes.isEmpty && !test) {
-         var node = nodes.head;
-         lastNode = Some(node);
-         nodes=nodes.tail;
-         var (test,s:STMSubstitution) = node.check(ct,cs,vm);
-         if (test) {
-           //csi=node.nextOutState;
-           csi=node.nextAutoState;
-           cs=s;
-           node.zipIndexStep match {
-              case ZI_DOWN => {
-                               if (ct.arity > 0) {
-                                 ct=ct.subterms(0);
-                                 ctup=Some(ct);
-                                 cti=0;
-                                 czi=czi*2;
-                               } else {
-                                 // impossible
-                                 return Left(
-                                     Failure(t,"down is not avalilable",None));
-                               }
-                              }
-              case ZI_RIGHT => {
-                              if (ctup==None) {
-                                 // impossible
-                                 return Left(
-                                   Failure(t,"right is not available",None));
-                              } else {
-                                 val up=ctup.get;
-                                 cti=cti+1;
-                                 if (cti < ct.arity) {
-                                   ct=up.subterms(cti);
-                                 }else{
-                                   // impossible
-                                   return Left(
-                                     Failure(t,"right is not available",None));
-                                 }
-                                 czi=czi*2+1;
-                              }
-                             }
-              case ZI_FINAL => {
-                                 return Right(Success(cs,node));
-                               }
-              case _ => { throw new TermWareException(
-                                 "internal error: invalid zipIndexStep"); 
+  def doMatch(t:Term)(implicit ctx:CallContext):ComputationBounds[Either[Failure,Success]]=
+    doMatchStep(begTerm=t,
+                inTerm=t,
+                inZi=BigInt(1),
+                inSubst=STMSubstitution.empty,
+                inUpTerm=None,
+                inChildIndex=0,
+                inStateIndex=0,
+                inNodes=autoStates(0).nc.find(t.name,t.arity),
+                inLastNode=None)(ctx);
+                 
+
+  def doMatchStep(
+                  begTerm: Term,
+                  inTerm: Term,
+                  inZi: BigInt,
+                  inSubst: STMSubstitution,
+                  inUpTerm: Option[Term],
+                  inChildIndex: Int,
+                  inStateIndex: Int,
+                  inNodes: List[Node],
+                  inLastNode: Option[Node]
+                   )(implicit ctx:CallContext): ComputationBounds[Either[Failure,Success]] =
+  ctx. withCall {
+    (ctx:CallContext) => implicit val ictx=ctx;
+    var cZi = inZi;
+    var cTerm = inTerm;
+    var cUpTerm = inUpTerm;
+    var cChildIndex = inChildIndex;
+    var cStateIndex = inStateIndex;
+    var cSubst = inSubst;
+    var cNodes = inNodes;
+    var cTest = false;
+    var cLastNode = inLastNode;
+    var optResult: Option[Either[Failure,Success]] = None;
+    while(!cNodes.isEmpty && optResult!=None) {
+      val node = cNodes.head;
+      cLastNode = Some(node);
+      val check = node.check(cTerm,cSubst);
+      if (!check.isDone) {
+        throw new CallCCException(Call {
+            (ctx:CallContext) => doMatchStep(begTerm,cTerm,cZi,cSubst,cUpTerm,cChildIndex,
+                                             cStateIndex,cNodes,cLastNode)(ctx)
+        });
+      }else{
+        var (cTest,nextSubst:STMSubstitution) = check.result.get;
+        if (cTest) {
+          cSubst=nextSubst; 
+          node.zipIndexStep match {
+            case ZI_DOWN => 
+                    if (cTerm.arity > 0) {
+                        cUpTerm = Some(cTerm);
+                        cTerm=cTerm.subterms(0);
+                        cChildIndex=0;
+                        cZi=cZi*2;
+                    } else {
+                        optResult=Some(Left(Failure(begTerm,"down step is not available",None)));
+                    }  
+            case ZI_RIGHT => 
+                    if (cUpTerm==None) {
+                        optResult=Some(Left(Failure(begTerm,"right step is not available",None)));
+                    } else {
+                        cChildIndex=cChildIndex+1; 
+                        val up = cUpTerm.get;
+                        if (cChildIndex >= up.arity) {
+                          optResult=Some(Left(Failure(begTerm,"right step is not available",None)));
+                        } else {
+                          cTerm = up.subterms(cChildIndex); 
+                          cZi=cZi*2+1;
                         }
-           }
-        }
-       }
-       if (!test) {
-        if (lastNode!=None) {
-         var node = lastNode.get;
-         //csi=node.stateIndexOnFail;
-         czi=node.zipIndexOnFail;
-         csi=node.autoStateOnFail;
-         var(ctup,oct,cti)=ZipIndex(t,czi);
-         if (oct==None) {
-           return Left(Failure(t,"invalid zipIndex on fail",None));
-         }else{
-           ct=oct.get;
-         }
+                    }
+            case ZI_FINAL => 
+                    optResult=Some(Right(Success(cSubst,node)))
+            case _   =>
+                     throw new TermWareException("internal error: invalid zipIndexStep"); 
+          }
+          if (optResult==None) {
+            cStateIndex = node.nextAutoState;
+            cNodes = autoStates(cStateIndex).nc.find(cTerm.name,cTerm.arity);
+          }
         } else {
-         // lastNode = None.
-         return Left(Failure(t,"empty node sequence",None));
+          cNodes = cNodes.tail;
         }
-       }
-       cs = cs withIndex czi;
-       //outState=outStates(csi);
-       autoState = autoStates(csi);
+      }
+      if (optResult==None && cNodes.isEmpty) {
+        cLastNode match {
+         case Some(lastNode) => {
+            cZi = lastNode.zipIndexOnFail;
+            cStateIndex = lastNode.autoStateOnFail;
+            var(cUpTerm,optCurrTerm,cChildIndex)=ZipIndex(begTerm,cZi);
+            if (optCurrTerm==None) {
+                optResult=Some(Left(Failure(begTerm,"invalid zip index on fail",None)))
+            } else {
+                cTerm=optCurrTerm.get;
+            }
+         }
+         case None => optResult=Some(Left(Failure(begTerm,"empty node sequence",None)))
+        }
+      }
+      cSubst = cSubst withIndex cZi;
     }
-    return Left(Failure(t,"Impossible: behind constant loop",None));
+    if (optResult!=None) {
+       Done(optResult.get);
+    } else {
+       Done(Left(Failure(begTerm,"behind constant loop",None)));
+    }
   }
+             
 
   class NodeCollect
   {

@@ -21,7 +21,7 @@ class TermWareParserFunSuite extends FunSuite
        case parser.Success(t,_) => {
                        assert(t.isInstanceOf[BooleanTerm]);
                        assert(t.getBoolean);
-                       val attr = t.getAttribute(POS).get;
+                       val attr = t.getAttribute(POS).get.result.get;
                        assert(!attr.isNil);
                        assert(attr.isRef);
                        val p = attr.getRef.asInstanceOf[PositionWithFname];

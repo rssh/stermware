@@ -1,9 +1,11 @@
 package ua.gradsoft.termware;
 
+import ua.gradsoft.termware.flow._;
+
 /**
  * generic signature of term in free algebra.
  **/
-class FreeFunctionalTermSignature(th:Theory) 
+class FreeFunctionalTermSignature(val theory:Theory) 
                                     extends FunctionalTermSignature
 {
 
@@ -17,25 +19,28 @@ class FreeFunctionalTermSignature(th:Theory)
  def createTerm(name:Name, args:IndexedSeq[Term]) : Term =  
          new FreeFunctionalTerm(name,args,this);
  
- def termType(t:Term):Term = {
+ def termType(ct:ComputationBounds[Term])(implicit ctx:CallContext)
+                                                 :ComputationBounds[Term] = {
+  if (ct.isDone) {
+   val t = ct.result.get;
    t.getAttribute(theory.symbolTable.TYPE) match {
       case Some(x) =>  x
       case None   => {
-        val r = calculateType(t);
-        t.setAttribute(theory.symbolTable.TYPE, r);
-        r
+        val typeIn = theory.freeFunSignature.createTerm(
+                        t.name,
+                        t.subterms.map{ _.termType }
+                     );
+        val typeOut = theory.typeAlgebra.reduce(typeIn);
+        CallCC.onProgress(typeOut) {
+          ctx:CallContext => t.setAttribute(theory.symbolTable.TYPE, typeOut);
+        }
+        typeOut;
       }
    }
+  } else {
+   CallCC.compose(ct,((t:Term,ctx:CallContext)=>termType(Done(t))(ctx)));
+  }
  } 
  
- def calculateType(t:Term):Term = {
-   val typeIn = theory.freeFunSignature.createTerm(
-                   t.name,
-                   t.subterms.map{ _.termType }
-                );
-   val typeOut = theory.typeAlgebra.reduce(typeIn);
-   return typeOut;
- }
 
- val theory = th;
 }

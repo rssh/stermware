@@ -123,7 +123,7 @@ abstract class FunctionalTerm(s:TermSignature) extends Term
 
   override def toString = name.toString+"("+subterms.mkString(",")+")";
   
-  lazy val attributes = new HashMap[Name,Term]();
+  lazy val attributes = new HashMap[Name,ComputationBounds[Term]]();
 
   val signature=s;
 

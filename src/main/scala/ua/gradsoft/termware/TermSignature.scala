@@ -111,16 +111,10 @@ trait TermSignature
    def createSpecial(args: Any*): Term;
 
    /**
-    * calculate type of term
-    **/
-   def termType(t:Term):Term;
-
-   /**
     * calcultate type of term in computation bounds
     **/
    def termType(cbt:ComputationBounds[Term])(implicit ctx:CallContext):
-                                                    ComputationBounds[Term]
-     = CallCC.compose(cbt,{(x:Term)=>Done(termType(x))});
+                                                    ComputationBounds[Term];
 
    /**
     * get theory, where signature was defined

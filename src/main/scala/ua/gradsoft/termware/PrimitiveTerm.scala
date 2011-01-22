@@ -54,6 +54,6 @@ abstract class PrimitiveTerm(s:TermSignature) extends Term
   override def print(out:PrintWriter):Unit = out.print(toString);
 
   val signature = s;
-  lazy val attributes = new HashMap[Name,Term]();
+  lazy val attributes = new HashMap[Name,ComputationBounds[Term]]();
 
 }

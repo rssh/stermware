@@ -1,16 +1,11 @@
 package ua.gradsoft.termware;
 
 class AtomTermSignature(override val theory:Theory, tn:Name) 
-                                              extends TermSignature
+                                              extends SimpleTermSignature
                                                with GeneralUtil
 {
 
   override def fixedName = None;
-
-  override def fixedArity = Some(0);
-
-  override def nameByIndex = None;
-  override def indexByName = None;
 
   override def createTerm(name:Name, args: IndexedSeq[Term]) = throwUOE;
   override def createSpecial(args: Any*) = throwUOE;
@@ -27,7 +22,7 @@ class AtomTermSignature(override val theory:Theory, tn:Name)
   /**
    * type of atom is atom itself.
    **/
-  override def termType(t:Term):Term = t;
+  override def simpleTermType(t:Term):Term = t;
 
 }
 
