@@ -1,5 +1,7 @@
 package ua.gradsoft.termware;
 
+import ua.gradsoft.termware.flow._;
+
 trait TermCondition 
 {
 
@@ -19,12 +21,7 @@ trait TermCondition
   /**
    * return function which eval condition and leave result on data stack.
    **/
-  def evalConditionFn(s:Substitution): (VM=>VM);
-
-  /**
-   * eval condition in vm environment to true or false.
-   **/
-  def evalCondition(s:Substitution)(vm:VM):Boolean;
+  def evalConditionFn(s:Substitution): ComputationBounds[Boolean]
 
 
 }
