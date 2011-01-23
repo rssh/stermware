@@ -237,19 +237,30 @@ class MatchingNet(val theory:Theory)
     var cNodes = inNodes;
     var cTest = false;
     var cLastNode = inLastNode;
-    var optResult: Option[Either[Failure,Success]] = None;
+    var optResult: Option[ComputationBounds[Either[Failure,Success]]] = None;
     var trampolinedCheck=inTrampolinedCheck;
     while(!cNodes.isEmpty && optResult!=None) {
       val node = cNodes.head;
-      val check = (if (trampolinedCheck==None) {
+      val check = try{
+                   if (trampolinedCheck==None) {
                        node.check(cTerm,cSubst);
                    } else {
                        val tmp = trampolinedCheck.get;
                        trampolinedCheck=None;
                        Done(tmp);
-                   });
+                   }
+                  } catch {
+                   case ex: CallCCException[Pair[Boolean,Substitution]] => 
+                     throw new CallCCException(
+                        CallCC.compose(ex.current, {
+                          (r:Pair[Boolean,Substitution], ctx:CallContext) => 
+                            doMatchStep(begTerm,cTerm,cZi,cSubst,cUpTerm,cChildIndex,
+                                        cStateIndex,cNodes,cLastNode,Some(r))(ctx)
+                        })
+                     );
+                  }
       if (!check.isDone) {
-        throw new CallCCException(
+        optResult=Some(
             CallCC.compose(check, {
                 (r:Pair[Boolean,Substitution], ctx:CallContext) => 
                             doMatchStep(begTerm,cTerm,cZi,cSubst,cUpTerm,cChildIndex,
@@ -268,23 +279,23 @@ class MatchingNet(val theory:Theory)
                         cChildIndex=0;
                         cZi=cZi*2;
                     } else {
-                        optResult=Some(Left(Failure(begTerm,"down step is not available",None)));
+                        optResult=Some(Done(Left(Failure(begTerm,"down step is not available",None))));
                     }  
             case ZI_RIGHT => 
                     if (cUpTerm==None) {
-                        optResult=Some(Left(Failure(begTerm,"right step is not available",None)));
+                        optResult=Some(Done(Left(Failure(begTerm,"right step is not available",None))));
                     } else {
                         cChildIndex=cChildIndex+1; 
                         val up = cUpTerm.get;
                         if (cChildIndex >= up.arity) {
-                          optResult=Some(Left(Failure(begTerm,"right step is not available",None)));
+                          optResult=Some(Done(Left(Failure(begTerm,"right step is not available",None))));
                         } else {
                           cTerm = up.subterms(cChildIndex); 
                           cZi=cZi*2+1;
                         }
                     }
             case ZI_FINAL => 
-                    optResult=Some(Right(Success(cSubst,node)))
+                    optResult=Some(Done(Right(Success(cSubst,node))))
             case _   =>
                      throw new TermWareException("internal error: invalid zipIndexStep"); 
           }
@@ -303,18 +314,18 @@ class MatchingNet(val theory:Theory)
             cStateIndex = lastNode.autoStateOnFail;
             var(cUpTerm,optCurrTerm,cChildIndex)=ZipIndex(begTerm,cZi);
             if (optCurrTerm==None) {
-                optResult=Some(Left(Failure(begTerm,"invalid zip index on fail",None)))
+                optResult=Some(Done(Left(Failure(begTerm,"invalid zip index on fail",None))));
             } else {
                 cTerm=optCurrTerm.get;
             }
          }
-         case None => optResult=Some(Left(Failure(begTerm,"empty node sequence",None)))
+         case None => optResult=Some(Done(Left(Failure(begTerm,"empty node sequence",None))))
         }
       }
       cSubst = cSubst withIndex cZi;
     }
     if (optResult!=None) {
-       Done(optResult.get);
+       optResult.get;
     } else {
        Done(Left(Failure(begTerm,"behind constant loop",None)));
     }
