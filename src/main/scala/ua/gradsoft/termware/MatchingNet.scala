@@ -211,7 +211,7 @@ class MatchingNet(val theory:Theory)
                 inStateIndex=0,
                 inNodes=autoStates(0).nc.find(t.name,t.arity),
                 inLastNode=None,
-                trampolinedCheck=None)(ctx);
+                inTrampolinedCheck=None)(ctx);
                  
 
   def doMatchStep(
@@ -224,7 +224,7 @@ class MatchingNet(val theory:Theory)
                   inStateIndex: Int,
                   inNodes: List[Node],
                   inLastNode: Option[Node],
-                  trampolinedCheck: Option[Pair[Boolean,Substitution]]
+                  inTrampolinedCheck: Option[Pair[Boolean,Substitution]]
                    )(implicit ctx:CallContext): ComputationBounds[Either[Failure,Success]] =
   ctx. withCall {
     (ctx:CallContext) => implicit val ictx=ctx;
@@ -238,12 +238,15 @@ class MatchingNet(val theory:Theory)
     var cTest = false;
     var cLastNode = inLastNode;
     var optResult: Option[Either[Failure,Success]] = None;
+    var trampolinedCheck=inTrampolinedCheck;
     while(!cNodes.isEmpty && optResult!=None) {
       val node = cNodes.head;
       val check = (if (trampolinedCheck==None) {
                        node.check(cTerm,cSubst);
                    } else {
-                       Done(trampolinedCheck.get);
+                       val tmp = trampolinedCheck.get;
+                       trampolinedCheck=None;
+                       Done(tmp);
                    });
       if (!check.isDone) {
         throw new CallCCException(
