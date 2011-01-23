@@ -210,7 +210,8 @@ class MatchingNet(val theory:Theory)
                 inChildIndex=0,
                 inStateIndex=0,
                 inNodes=autoStates(0).nc.find(t.name,t.arity),
-                inLastNode=None)(ctx);
+                inLastNode=None,
+                trampolinedCheck=None)(ctx);
                  
 
   def doMatchStep(
@@ -222,7 +223,8 @@ class MatchingNet(val theory:Theory)
                   inChildIndex: Int,
                   inStateIndex: Int,
                   inNodes: List[Node],
-                  inLastNode: Option[Node]
+                  inLastNode: Option[Node],
+                  trampolinedCheck: Option[Pair[Boolean,Substitution]]
                    )(implicit ctx:CallContext): ComputationBounds[Either[Failure,Success]] =
   ctx. withCall {
     (ctx:CallContext) => implicit val ictx=ctx;
@@ -238,14 +240,20 @@ class MatchingNet(val theory:Theory)
     var optResult: Option[Either[Failure,Success]] = None;
     while(!cNodes.isEmpty && optResult!=None) {
       val node = cNodes.head;
-      cLastNode = Some(node);
-      val check = node.check(cTerm,cSubst);
+      val check = (if (trampolinedCheck==None) {
+                       node.check(cTerm,cSubst);
+                   } else {
+                       Done(trampolinedCheck.get);
+                   });
       if (!check.isDone) {
-        throw new CallCCException(Call {
-            (ctx:CallContext) => doMatchStep(begTerm,cTerm,cZi,cSubst,cUpTerm,cChildIndex,
-                                             cStateIndex,cNodes,cLastNode)(ctx)
-        });
+        throw new CallCCException(
+            CallCC.compose(check, {
+                (r:Pair[Boolean,Substitution], ctx:CallContext) => 
+                            doMatchStep(begTerm,cTerm,cZi,cSubst,cUpTerm,cChildIndex,
+                                        cStateIndex,cNodes,cLastNode,Some(r))(ctx)
+              }));
       }else{
+        cLastNode = Some(node);
         var (cTest,nextSubst:STMSubstitution) = check.result.get;
         if (cTest) {
           cSubst=nextSubst; 
