@@ -16,21 +16,19 @@ class EtaTermSignature(th:Theory) extends TermSignature
   override def nameByIndex = None;
   override def indexByName = None;
 
-  override def createTerm(name:Name, args: IndexedSeq[Term]):Term = {
-    if (args.length!=3) {
+  /**
+   * direct creation of eta-expression is not allowed.
+   **/
+  override def createTerm(name:Name, args: IndexedSeq[Term]):Term = 
        throwUOE;
-    }
-    val v:Set[EtaXTerm]=collectEtaX(args:_*);
-    return new EtaTerm(v,args(0),args(1),args(2), this);
-  }
 
   /**
-   * v:Set[EtaXTerm], l:Term, r:Term, rs:Term
+   * v:Map[Int,EtaXTerm], l:Term, r:Term, rs:Term
    **/
   override def createSpecial(args: Any*):Term = 
   {
-    val v:Set[EtaXTerm]=args(0) match {
-                     case x:Set[EtaXTerm] => x
+    val v:Map[Int,EtaXTerm]=args(0) match {
+                     case x:Map[Int,EtaXTerm] => x
                      case _               => null
     };
     if (v==null) throwUOE;
@@ -76,37 +74,8 @@ class EtaTermSignature(th:Theory) extends TermSignature
    }
   }
 
-  private def collectEtaX(t:Term):Set[EtaXTerm] = {
-     var r = TreeSet.empty[EtaXTerm](etaXTermOrdering);
-     for(st <- t.subterms) {
-       st match {
-         case x: EtaXTerm => {
-           if (x.xOwner eq null) {
-              r=r+x;
-           }else{
-              /* do nothing */
-           }
-         }
-         case _ => { if (st.arity>0) {
-                       r=r++collectEtaX(st);
-                     }  
-         }
-       }
-     } 
-     return r;
-  }
-
-
-  private def collectEtaX(terms:Term*):Set[EtaXTerm] = {
-     var r = TreeSet.empty[EtaXTerm](etaXTermOrdering);
-     for(t <- terms) yield {
-       r++=collectEtaX(t);
-     }
-     return r;
-  }
 
   val theory=th;
 
-  lazy val etaXTermOrdering=new TermOrdering[EtaXTerm]();
 }
 

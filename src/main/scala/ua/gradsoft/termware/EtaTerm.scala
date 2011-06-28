@@ -10,7 +10,7 @@ import ua.gradsoft.termware.util._;
 import ua.gradsoft.termware.flow._;
 
 
-class EtaTerm(v:Set[EtaXTerm], l:Term, r:Term, rs:Term, s:EtaTermSignature)  
+class EtaTerm(v:Map[Int,EtaXTerm], l:Term, r:Term, rs:Term, s:EtaTermSignature)  
                              extends EtaXOwner
                                          with ComplexUnify
                                          with ComplexSubst
@@ -80,6 +80,8 @@ class EtaTerm(v:Set[EtaXTerm], l:Term, r:Term, rs:Term, s:EtaTermSignature)
                                                   ComputationBounds[Term] = 
     ctx.withCall { 
        (ctx:CallContext) => implicit val ictx = ctx;
+       val newVars = vars.mapValues(x=>new EtaXTerm(x.name,x.xLabel,x.typeTerm,null,
+                                                    signature.theory.etaXSignature));
        val s1 = new PartialFunction[Term,Term]{
 
                   def isDefinedAt(t:Term):Boolean =
@@ -90,18 +92,9 @@ class EtaTerm(v:Set[EtaXTerm], l:Term, r:Term, rs:Term, s:EtaTermSignature)
                              false;
                      }
 
-                  def apply(t:Term):Term =
-                     t match {
-                        case x:EtaXTerm =>
-                           if (x.xOwner==EtaTerm.this) 
-                             new EtaXTerm(x.name,x.xLabel,
-                                          x.typeTerm,
-                                          null,
-                                          signature.theory.etaXSignature)
-                           else
-                             x
-                        case _ => t
-                     }
+                  def apply(t:Term):Term = 
+                     newVars(t.asInstanceOf[EtaXTerm].xLabel);
+
                   
                 }.orElse(s);
        val substituted = CallCC.tuple(
@@ -112,7 +105,7 @@ class EtaTerm(v:Set[EtaXTerm], l:Term, r:Term, rs:Term, s:EtaTermSignature)
        CallCC.compose(substituted,
               { tuple:Tuple3[Term,Term,Term] =>
                     Done(
-                      new EtaTerm(vars,tuple._1,tuple._2,tuple._3,signature)) 
+                      new EtaTerm(newVars,tuple._1,tuple._2,tuple._3,signature)) 
               });
     }
 
@@ -145,7 +138,7 @@ class EtaTerm(v:Set[EtaXTerm], l:Term, r:Term, rs:Term, s:EtaTermSignature)
   override def print(out:PrintWriter):Unit = {
     out.print("var (");
     var frs = true;
-    for(x <- vars) {
+    for((i,x) <- vars) {
        if (!frs) {
           out.print(", ");
        }else{
@@ -165,22 +158,13 @@ class EtaTerm(v:Set[EtaXTerm], l:Term, r:Term, rs:Term, s:EtaTermSignature)
 
   var attributes=new HashMap[Name,ComputationBounds[Term]]();
 
-  //private def newVars(vn:Set[AtomTerm]):Map[Term,Term]=
-  //  {
-  //    var r:Map[Term, Term] = TreeMap.empty;
-  //    for(v:Term <- vars) {
-  //        r=r+(v -> new EtaXTerm(v.name, v.xLabel,null));
-  //    }
-  //    r;
-  //  }
 
-
-  private val vars: Set[EtaXTerm] = v;
+  private val vars: Map[Int,EtaXTerm] = v;
   private val left: Term = l;
   private val right: Term = r;
   private val rest: Term = rs;
           val signature = s;
-  for(x <- v) x.setOwner(this);
+  for((i,x) <- v) x.setOwner(this);
        
   private lazy val hash: Int = left.hashCode+right.hashCode+rest.hashCode;
 

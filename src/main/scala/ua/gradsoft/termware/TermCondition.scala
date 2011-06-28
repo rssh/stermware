@@ -25,3 +25,44 @@ trait TermCondition
 
 
 }
+
+object TrueTermCondition extends TermCondition
+{
+
+  def isQuickTrue=true;
+  def isQuickFalse=false;
+  def evalConditionFn(s:Substitution) = Done(true);
+
+}
+
+object FalseTermCondition extends TermCondition
+{
+
+  def isQuickTrue=false;
+  def isQuickFalse=true;
+  def evalConditionFn(s:Substitution) = Done(false);
+
+}
+
+object TermCondition
+{
+
+   def apply(v:Boolean):TermCondition =
+    v match {
+       case true => TrueTermCondition
+       case false => FalseTermCondition
+    }
+
+   def apply(t:Term):TermCondition = build(t);
+
+   def build(t:Term):TermCondition =
+   {
+     if (t.isBoolean) {
+         apply(t.getBoolean);
+     } else {
+         //TODO: implement
+         throw new UnsupportedOperationException("not implemented");
+     }
+   }
+
+}

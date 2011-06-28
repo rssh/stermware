@@ -202,14 +202,15 @@ class TermWareParser(th:Theory, fname:String) extends TokenParsers
   def conditionalRuleTail:Parser[Term] = (
      rep1sep( conditionalRuleBranch , OP("|") ) ~ opt(OP("!->") ~> term ) ^^ {
        case x ~ y => {
-          val last:Term =
-             if (y==None) {
-                 th.nilSignature.createConstant(null); 
-             } else {
-                 y.get
-             };
+          val branches = (if (y==None) 
+                            x
+                          else
+                            x :+ theory.createFunTerm(conditionalRuleBranchName, 
+                                           theory.booleanSignature.createConstant(true),
+                                           y.get)
+                         );
           theory.createFunTerm(conditionalRuleTailName, 
-                                            termFromList(theory,x),last);
+                                            termFromList(theory,branches));
        }
      }
   );
