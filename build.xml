@@ -21,7 +21,7 @@
 
  <path id="test.path">
   <path refid="build.path" />
-  <fileset dir="lib" includes="scalatest-*.jar" />
+  <fileset dir="lib" includes="scalatest*.jar" />
    <pathelement location="${basedir}/build/test"/>
  </path>
   
