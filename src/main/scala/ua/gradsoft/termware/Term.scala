@@ -6,11 +6,14 @@ import java.io.PrintWriter;
 import java.io.OutputStream;
 import java.io.StringWriter;
 
-@serializable
+/**
+ * Uniform representation of term object.
+ **/
 trait Term extends TValue 
         with Ordered[Term]
         with TermAttributed
         with GeneralUtil
+        with Serializable
 {
 
   def arity: Int;
