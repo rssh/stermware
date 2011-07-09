@@ -10,7 +10,7 @@ import ua.gradsoft.termware.util._;
 import ua.gradsoft.termware.flow._;
 
 
-class EtaTerm(v:Map[Int,EtaXTerm], l:Term, r:Term, rs:Term, s:EtaTermSignature)  
+class EtaTerm(v:Map[Int,EtaXTerm], l:Term, r:Term, rs:Option[Term], s:EtaTermSignature)  
                              extends EtaXOwner
                                          with ComplexUnify
                                          with ComplexSubst
@@ -28,15 +28,15 @@ class EtaTerm(v:Map[Int,EtaXTerm], l:Term, r:Term, rs:Term, s:EtaTermSignature)
 
   override def name = signature.fixedName.get;
 
-  override def arity = 3;
+  override def arity = if (rest==None) 2 else 3;
 
-  override def subterms = IndexedSeq(left, right, rest);
+  override def subterms = if (rest==None) IndexedSeq(left, right) else IndexedSeq(left, right, rest.get);
 
   override def subterm(index: Int) = 
     index match {
       case 0 => left
       case 1 => right
-      case 2 => rest
+      case 2 => if (rest!=None) rest.get else throwUOE;
       case _ => throwUOE
     }
 
@@ -59,8 +59,12 @@ class EtaTerm(v:Map[Int,EtaXTerm], l:Term, r:Term, rs:Term, s:EtaTermSignature)
                  val r = rs._1;
                  val s = rs._2;
                  if(r) {
-                   val tRest = t.subterms(2);
-                   rest.unify(tRest,s);
+                   rest match {
+                      case None => Done(((t.arity==2),s))
+                      case Some(xRest) =>
+                         val tRest = t.subterms(2);
+                         xRest.unify(tRest,s);
+                   }
                  } else {
                    Done((false,s));
                  }
@@ -100,10 +104,14 @@ class EtaTerm(v:Map[Int,EtaXTerm], l:Term, r:Term, rs:Term, s:EtaTermSignature)
        val substituted = CallCC.tuple(
                Call{ (ctx:CallContext)=>left.subst(s1)(ctx) },
                Call{ (ctx:CallContext)=>right.subst(s1)(ctx) },
-               Call{ (ctx:CallContext)=>rest.subst(s1)(ctx) }
+               Call{ (ctx:CallContext)=> rest match {
+                                           case None => Done(None)
+                                           case Some(xRest) => CallCC.some(xRest.subst(s1))(ctx) 
+                                         } 
+                   }
        );
        CallCC.compose(substituted,
-              { tuple:Tuple3[Term,Term,Term] =>
+              { tuple:Tuple3[Term,Term,Option[Term]] =>
                     Done(
                       new EtaTerm(newVars,tuple._1,tuple._2,tuple._3,signature)) 
               });
@@ -129,7 +137,10 @@ class EtaTerm(v:Map[Int,EtaXTerm], l:Term, r:Term, rs:Term, s:EtaTermSignature)
                   if (c!=0) 
                     Done(c)
                   else
-                    rs.termCompare(t.subterm(2))
+                    rs match {
+                      case None => Done(if (t.arity==2) 0 else -1)
+                      case Some(x) => x.termCompare(t.subterm(2))
+                    }
                }
         }
      }
@@ -150,9 +161,9 @@ class EtaTerm(v:Map[Int,EtaXTerm], l:Term, r:Term, rs:Term, s:EtaTermSignature)
     left.print(out);
     out.print("->");
     right.print(out);
-    if (rest.name!=ID) {
+    if (rest!=None) {
       out.print("|");
-      rest.print(out);
+      rest.get.print(out);
     }
   }
 
@@ -162,7 +173,7 @@ class EtaTerm(v:Map[Int,EtaXTerm], l:Term, r:Term, rs:Term, s:EtaTermSignature)
   private val vars: Map[Int,EtaXTerm] = v;
   private val left: Term = l;
   private val right: Term = r;
-  private val rest: Term = rs;
+  private val rest: Option[Term] = rs;
           val signature = s;
   for((i,x) <- v) x.setOwner(this);
        

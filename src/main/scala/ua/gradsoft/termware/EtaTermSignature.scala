@@ -46,8 +46,7 @@ class EtaTermSignature(th:Theory) extends TermSignature
                case t:Term => t
                case _      => null
     };
-    if (rs==null) throwUOE;
-    return new EtaTerm(v,l,r,rs,this);
+    return new EtaTerm(v,l,r,(if (rs==null) None else Some(rs)),this);
   }
 
   override def createConstant(arg:Any) = throwUOE; 

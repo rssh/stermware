@@ -180,6 +180,11 @@ object CallCC
     compose(ca,{ (x:A,ctx:CallContext) => action(ctx); Done(x) })(ctx);
   }
 
+  def some[A](ca:ComputationBounds[A])(implicit ctx:CallContext): ComputationBounds[Option[A]] =
+  {
+    compose(ca,{ (x:A,ctx:CallContext) => Done(Some(x)) })(ctx);
+  }
+
   final val MAX_NESTING=100;
 
 }

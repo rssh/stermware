@@ -16,9 +16,9 @@ class TermRuleBuilder(override val theory:Theory) extends DefaultTermNames
   def build(t:Term):TermRule = {
     t.name match {
       case Rule => val pattern=t.subterm(0);
-                       val destination=t.subterm(1);
-                       val condition=TermCondition(true);
-                       TermRule(pattern, List(TermRuleBranch(condition, destination))); 
+                   val destination=t.subterm(1);
+                   val condition=TermCondition(true);
+                   TermRule(pattern, List(TermRuleBranch(condition, destination))); 
       case ConditionalRule =>
                        val pattern=t.subterm(0);
                        var cb=t.subterm(1);
@@ -30,6 +30,7 @@ class TermRuleBuilder(override val theory:Theory) extends DefaultTermNames
                          cb=cb.subterm(1);
                        }
                        TermRule(pattern, rbranches.reverse); 
+      //case With =>
     }
   }
 
