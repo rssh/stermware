@@ -84,23 +84,8 @@ class EtaTerm(vars:IndexedSeq[XTerm], l:Term, r:Term, rs:Option[Term], s:EtaTerm
                                                   ComputationBounds[Term] = 
     ctx.withCall { 
        (ctx:CallContext) => implicit val ictx = ctx;
-       val newVars = vars.map(x=>new XTerm(x.name,x.xLabel,x.typeTerm,null,
-                                           signature.theory.xSignature));
-       val s1 = new PartialFunction[Term,Term]{
-
-                  def isDefinedAt(t:Term):Boolean =
-                     t match {
-                        case x:XTerm =>
-                           (x.xOwner==EtaTerm.this)
-                        case _ =>
-                             false;
-                     }
-
-                  def apply(t:Term):Term = 
-                     newVars(t.asInstanceOf[XTerm].xLabel);
-
-                  
-                }.orElse(s);
+       val (newVars, sv) = copyVarFun;
+       val s1=sv.orElse(s);
        val substituted = CallCC.tuple(
                Call{ (ctx:CallContext)=>left.subst(s1)(ctx) },
                Call{ (ctx:CallContext)=>right.subst(s1)(ctx) },

@@ -43,23 +43,8 @@ class WithTerm(vars:IndexedSeq[XTerm], val p:Term, ws: WithTermSignature)
                                                   ComputationBounds[Term] = 
     ctx.withCall { 
        (ctx:CallContext) => implicit val ictx = ctx;
-       val newVars = vars.map(x=>new XTerm(x.name,x.xLabel,x.typeTerm,null,
-                                            signature.theory.xSignature));
-       val s1 = new PartialFunction[Term,Term]{
-
-                  def isDefinedAt(t:Term):Boolean =
-                     t match {
-                        case x:XTerm =>
-                           (x.xOwner eq WithTerm.this)
-                        case _ =>
-                             false;
-                     }
-
-                  def apply(t:Term):Term = 
-                     newVars(t.asInstanceOf[XTerm].xLabel);
-
-                  
-                }.orElse(s);
+       val (newVars, sv) = copyVarFun;
+       val s1 = sv.orElse(s);
        CallCC.compose(p.subst(s1),
               { (t:Term) => Done(new WithTerm(newVars,t,ws)) }
        );
