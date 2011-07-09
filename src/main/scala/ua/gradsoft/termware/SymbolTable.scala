@@ -47,9 +47,10 @@ class SymbolTable
 
   lazy val NIL = getOrCreate("nil");
   lazy val CONS = getOrCreate("cons");
-  val TYPE = getOrCreate("TYPE");
-  val ERROR = getOrCreate("ERROR");
-  val ETA = getOrCreate("ETA");
+  lazy val TYPE = getOrCreate("TYPE");
+  lazy val ERROR = getOrCreate("ERROR");
+  lazy val ETA = getOrCreate("ETA");
+  lazy val WITH = getOrCreate("WITH");
 
 }
 

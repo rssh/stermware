@@ -7,19 +7,17 @@ import ua.gradsoft.termware.flow._;
 /**
  * class represent variable, bound in eta-term.
  **/
-class EtaXTerm(n: Name, l:Int, t: Term, o:EtaTerm, s:EtaXTermSignature) 
+class XTerm(override val name: Name, 
+            override val xLabel:Int, 
+            val  typeTerm:Term, 
+                 owner :XOwner, 
+            override val signature:XTermSignature) 
                                             extends Term
                                                with ComplexUnify
                                                with SimpleSubst
                                                with SimpleCompare
                                                with NonNumberTerm
 {
-
-   /**
-    * get name of EtaXTerm.
-    *Note, that different eta-x terms can have same names.
-    **/
-   def name:Name = vname;
 
    /**
     * arity of eta-x term is always 0
@@ -41,7 +39,13 @@ class EtaXTerm(n: Name, l:Int, t: Term, o:EtaTerm, s:EtaXTermSignature)
     */
    def subterms = IndexedSeq.empty;
 
-   override def xOwner = owner;
+   /**
+    * get xOwner
+    **/
+   override def xOwner:XOwner = xOwner_;
+
+            def xOwner_=(owner:XOwner):Unit =
+                { xOwner_ = owner; }
 
    override def unify(t:Term, s:Substitution)(implicit ctx:CallContext) 
                               : ComputationBounds[(Boolean, Substitution)] = {
@@ -59,9 +63,9 @@ class EtaXTerm(n: Name, l:Int, t: Term, o:EtaTerm, s:EtaXTermSignature)
       if (c!=0) return c;
       c = xLabel - t.xLabel;
       if (c!=0) return c;
-      c=vname.compareTo(t.name);
+      c=name.compareTo(t.name);
       if (c!=0) return c;
-      return owner.compareTo(t.xOwner);
+      return xOwner.compareTo(t.xOwner);
    }
 
 
@@ -74,24 +78,14 @@ class EtaXTerm(n: Name, l:Int, t: Term, o:EtaTerm, s:EtaXTermSignature)
    override def isAtom: Boolean = false;
    override def isNil: Boolean = false;
 
-   override def termClassIndex: Int = TermClassIndex.ETA_X;
+   override def termClassIndex: Int = TermClassIndex.X;
 
-   override def termHashCode: Int = n.hashCode+xLabel+owner.hashCode*31;
+   override def termHashCode: Int = name.hashCode+xLabel+(if (xOwner==null) 0 else xOwner.hashCode*31);
 
    override def print(out:PrintWriter):Unit = { out.print(name.string); }
 
-   private[termware] def setOwner(o:EtaTerm): Unit = {
-     owner=o;
-   }
-
-   
-
-   private[termware] val vname: Name = n;
-   override val xLabel: Int = l;
-   private[termware] var owner: EtaTerm = o;
-            val signature = s;
-            val typeTerm = t;
-
    lazy val attributes = new HashMap[Name,ComputationBounds[Term]];
+   
+   private[termware] var xOwner_ = owner;
 
 }

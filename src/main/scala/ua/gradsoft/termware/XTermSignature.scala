@@ -2,7 +2,7 @@ package ua.gradsoft.termware;
 
 import ua.gradsoft.termware.flow._;
 
-class EtaXTermSignature(th:Theory) extends TermSignature
+class XTermSignature(th:Theory) extends TermSignature
                                        with GeneralUtil
 {
 
@@ -34,7 +34,7 @@ class EtaXTermSignature(th:Theory) extends TermSignature
                case _      => null
     };
     if (t==null) throwUOE;
-    return new EtaXTerm(n,i,t,null,this);
+    return new XTerm(n,i,t,null,this);
   }
 
   override def createConstant(arg:Any) = throwUOE; 

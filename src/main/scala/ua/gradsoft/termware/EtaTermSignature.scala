@@ -23,13 +23,13 @@ class EtaTermSignature(th:Theory) extends TermSignature
        throwUOE;
 
   /**
-   * v:Map[Int,EtaXTerm], l:Term, r:Term, rs:Term
+   * v:IndexedSeq[XTerm], l:Term, r:Term, rs:Term
    **/
   override def createSpecial(args: Any*):Term = 
   {
-    val v:Map[Int,EtaXTerm]=args(0) match {
-                     case x:Map[Int,EtaXTerm] => x
-                     case _               => null
+    val v:IndexedSeq[XTerm]=args(0) match {
+                     case x:IndexedSeq[XTerm] => x
+                     case _                   => null
     };
     if (v==null) throwUOE;
     val l:Term = args(1) match {

@@ -137,4 +137,16 @@ trait TheoryTermConversions
         { th.funSignature("cons").createTerm("cons",_,_); }
       );
 
+  def indexedSeqFromTermList(th:Theory, h:Term):IndexedSeq[Term] =
+  {
+    val consName = th.symbolTable.CONS;
+    var c = h;
+    var seq = IndexedSeq[Term]();
+    while(!c.isNil) {
+       seq = seq :+ c.subterm(0);
+       c=c.subterm(1);
+    }
+    seq;
+  }
+
 }

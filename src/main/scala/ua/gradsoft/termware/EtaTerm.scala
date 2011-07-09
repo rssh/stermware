@@ -10,12 +10,12 @@ import ua.gradsoft.termware.util._;
 import ua.gradsoft.termware.flow._;
 
 
-class EtaTerm(v:Map[Int,EtaXTerm], l:Term, r:Term, rs:Option[Term], s:EtaTermSignature)  
-                             extends EtaXOwner
-                                         with ComplexUnify
-                                         with ComplexSubst
-                                         with ComplexCompare
-                                         with NonNumberTerm
+class EtaTerm(vars:IndexedSeq[XTerm], l:Term, r:Term, rs:Option[Term], s:EtaTermSignature)  
+                             extends XOwner(vars)
+                                  with ComplexUnify
+                                  with ComplexSubst
+                                  with ComplexCompare
+                                  with NonNumberTerm
 {
 
   def isNil = false;
@@ -84,20 +84,20 @@ class EtaTerm(v:Map[Int,EtaXTerm], l:Term, r:Term, rs:Option[Term], s:EtaTermSig
                                                   ComputationBounds[Term] = 
     ctx.withCall { 
        (ctx:CallContext) => implicit val ictx = ctx;
-       val newVars = vars.mapValues(x=>new EtaXTerm(x.name,x.xLabel,x.typeTerm,null,
-                                                    signature.theory.etaXSignature));
+       val newVars = vars.map(x=>new XTerm(x.name,x.xLabel,x.typeTerm,null,
+                                           signature.theory.xSignature));
        val s1 = new PartialFunction[Term,Term]{
 
                   def isDefinedAt(t:Term):Boolean =
                      t match {
-                        case x:EtaXTerm =>
+                        case x:XTerm =>
                            (x.xOwner==EtaTerm.this)
                         case _ =>
                              false;
                      }
 
                   def apply(t:Term):Term = 
-                     newVars(t.asInstanceOf[EtaXTerm].xLabel);
+                     newVars(t.asInstanceOf[XTerm].xLabel);
 
                   
                 }.orElse(s);
@@ -149,7 +149,7 @@ class EtaTerm(v:Map[Int,EtaXTerm], l:Term, r:Term, rs:Option[Term], s:EtaTermSig
   override def print(out:PrintWriter):Unit = {
     out.print("var (");
     var frs = true;
-    for((i,x) <- vars) {
+    for(x <- vars) {
        if (!frs) {
           out.print(", ");
        }else{
@@ -170,15 +170,11 @@ class EtaTerm(v:Map[Int,EtaXTerm], l:Term, r:Term, rs:Option[Term], s:EtaTermSig
   var attributes=new HashMap[Name,ComputationBounds[Term]]();
 
 
-  private val vars: Map[Int,EtaXTerm] = v;
   private val left: Term = l;
   private val right: Term = r;
   private val rest: Option[Term] = rs;
           val signature = s;
-  for((i,x) <- v) x.setOwner(this);
        
   private lazy val hash: Int = left.hashCode+right.hashCode+rest.hashCode;
-
-  lazy val ID = signature.theory.symbolTable.getOrCreate("id");
 
 }

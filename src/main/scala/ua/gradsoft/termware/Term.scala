@@ -37,7 +37,7 @@ trait Term extends TValue
 
   def isX: Boolean = false;
 
-  def xOwner: Term =  throwUOE;
+  def xOwner: XOwner =  throwUOE;
 
   def xLabel: Int = 0;
 

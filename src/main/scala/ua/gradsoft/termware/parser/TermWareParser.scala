@@ -262,7 +262,7 @@ class TermWareParser(th:Theory, fname:String) extends TokenParsers
 
   def withTerm:Parser[Term] = (
        ("with" | '$' ) ~> '(' ~> repsep( vardef , ',' ) ~ ( ')' ~> term ) ^^ {
-          case x ~ y => theory.createFunTerm(etaName,termFromList(theory,x),y);
+          case x ~ y => theory.createFunTerm(withName,termFromList(theory,x),y);
        }
   );
 
@@ -448,7 +448,7 @@ class TermWareParser(th:Theory, fname:String) extends TokenParsers
   lazy val typeTop = theory.typeAlgebra.top;
 
   lazy val ifElseName = theory.symbolTable.getOrCreate("ifElse");
-  lazy val etaName = theory.symbolTable.getOrCreate("eta");
+  lazy val withName = theory.symbolTable.getOrCreate("with");
   lazy val ruleName = theory.symbolTable.getOrCreate("rule");
   lazy val simpleRuleTailName = theory.symbolTable.getOrCreate("ruleTail");
   lazy val conditionalRuleName = theory.symbolTable.getOrCreate("conditionalRule");

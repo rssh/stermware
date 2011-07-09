@@ -19,7 +19,7 @@ object TermClassIndex
 
   val ETA: Int = 8;
 
-  val ETA_X: Int = 9;
+  val X: Int = 9;
 
   val ERROR: Int = 10;
 

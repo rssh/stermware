@@ -31,12 +31,15 @@ trait FreeAlgebra extends Theory
   val bigDecimalSignature = new BigDecimalTermSignature(this);
 
   val etaSignature = new EtaTermSignature(this);
-  val etaXSignature = new EtaXTermSignature(this);
+  val xSignature = new XTermSignature(this);
   val refSignature = new RefTermSignature(this);
   val listSignature = new ListTermSignature(this);
   val arraySignature = new FreeTermWithFixedNameAnyAritySignature(
                                     symbolTable.getOrCreate("ARRAY"),
                                     this);
+
+  val withSignature = new WithTermSignature(this);
+
 
   def funSignature(name:Name): TermSignature 
                = if (name==symbolTable.CONS)  {

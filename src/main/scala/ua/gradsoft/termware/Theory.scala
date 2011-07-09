@@ -47,10 +47,12 @@ trait Theory extends TermWareInstance
  def arraySignature: TermSignature;
  def listSignature: TermSignature;
 
- def etaSignature: TermSignature; 
- def etaXSignature: EtaXTermSignature; 
+ def etaSignature: EtaTermSignature; 
+ def xSignature: XTermSignature; 
 
  def refSignature: TermSignature;
+
+ def withSignature: WithTermSignature;
 
  def errorSignature: ErrorTermSignature;
 
@@ -61,5 +63,6 @@ trait Theory extends TermWareInstance
 
  def createFunTerm(name:String, args:Term*):Term 
               = createFunTerm(symbolTable.getOrCreate(name),args:_*);
+
 
 }
