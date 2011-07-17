@@ -84,8 +84,7 @@ class EtaTerm(vars:IndexedSeq[XTerm], l:Term, r:Term, rs:Option[Term], s:EtaTerm
                                                   ComputationBounds[Term] = 
     ctx.withCall { 
        (ctx:CallContext) => implicit val ictx = ctx;
-       val (newVars, sv) = copyVarFun;
-       val s1=sv.orElse(s);
+       val (newVars, s1) = copyVarFun(s);
        val substituted = CallCC.tuple(
                Call{ (ctx:CallContext)=>left.subst(s1)(ctx) },
                Call{ (ctx:CallContext)=>right.subst(s1)(ctx) },

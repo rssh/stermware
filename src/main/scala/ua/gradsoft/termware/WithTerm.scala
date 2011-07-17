@@ -43,8 +43,7 @@ class WithTerm(vars:IndexedSeq[XTerm], val p:Term, ws: WithTermSignature)
                                                   ComputationBounds[Term] = 
     ctx.withCall { 
        (ctx:CallContext) => implicit val ictx = ctx;
-       val (newVars, sv) = copyVarFun;
-       val s1 = sv.orElse(s);
+       val (newVars, s1) = copyVarFun(s);
        CallCC.compose(p.subst(s1),
               { (t:Term) => Done(new WithTerm(newVars,t,ws)) }
        );

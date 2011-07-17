@@ -9,11 +9,18 @@ abstract class XOwner(val vars:IndexedSeq[XTerm]) extends Term
   for(x <- vars) x.xOwner = this;
 
 
-  def copyVarFun: (IndexedSeq[XTerm], PartialFunction[Term,Term]) =
+  def copyVarFun(s:PartialFunction[Term,Term]): 
+                    (IndexedSeq[XTerm], PartialFunction[Term,Term]) =
   {
-    val newVars = vars.map(x=>new XTerm(x.name,x.xLabel,x.typeTerm,null,
-                                      signature.theory.xSignature));
-    val s1 = new PartialFunction[Term,Term]{
+    val newVars = vars.flatMap{
+         (x:XTerm)=> if (s.isDefinedAt(x)) {
+                        None
+                     } else {
+                         Some(new XTerm(x.name,x.xLabel,x.typeTerm,null,
+                                      signature.theory.xSignature))
+                     }
+    };
+    val s1 = s.orElse(new PartialFunction[Term,Term]{
 
                   def isDefinedAt(t:Term):Boolean =
                      t match {
@@ -26,8 +33,7 @@ abstract class XOwner(val vars:IndexedSeq[XTerm]) extends Term
                   def apply(t:Term):Term =
                      newVars(t.asInstanceOf[XTerm].xLabel);
 
-                };
-
+                });
     return (newVars,s1);
   }
 
