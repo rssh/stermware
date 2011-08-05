@@ -128,3 +128,13 @@ abstract class FunctionalTerm(s:TermSignature) extends Term
   val signature=s;
 
 }
+
+
+object FunctionalTerm
+{
+
+   def unapply(t:FunctionalTerm):Option[Tuple3[Name,IndexedSeq[Term],TermSignature]] =
+     Some((t.name,t.subterms,t.signature));
+
+}
+

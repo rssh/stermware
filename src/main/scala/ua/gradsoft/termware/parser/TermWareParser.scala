@@ -262,7 +262,8 @@ class TermWareParser(th:Theory, fname:String) extends TokenParsers
 
   def withTerm:Parser[Term] = (
        ("with" | '$' ) ~> '(' ~> repsep( vardef , ',' ) ~ ( ')' ~> term ) ^^ {
-          case x ~ y => theory.createFunTerm(withName,termFromList(theory,x),y);
+          case x ~ y => theory.withSignature.createTerm(withName,
+                                   IndexedSeq(termFromList(theory,x),y));
        }
   );
 

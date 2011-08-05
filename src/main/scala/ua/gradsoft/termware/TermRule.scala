@@ -3,7 +3,7 @@ package ua.gradsoft.termware;
 
 case class TermRuleBranch(val condition:TermCondition, val result:Term)
 
-case class TermRule(val pattern:Term, branches: List[TermRuleBranch], vars:IndexedSeq[XTerm]=IndexedSeq())
+case class TermRule(val pattern:Term, branches: List[TermRuleBranch])
 {
   def withCondition:Boolean = 
          branches.find(!_.condition.isQuickTrue)!=None;
@@ -30,7 +30,7 @@ class TermRuleBuilder(override val theory:Theory) extends DefaultTermNames
                          cb=cb.subterm(1);
                        }
                        TermRule(pattern, rbranches.reverse); 
-      //case With =>
+      case With => build(t.subterm(0))
     }
   }
 

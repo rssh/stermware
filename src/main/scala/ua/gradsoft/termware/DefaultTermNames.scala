@@ -7,5 +7,6 @@ trait DefaultTermNames
 
    lazy val Rule = theory.symbolTable.getOrCreate("rule");
    lazy val ConditionalRule = theory.symbolTable.getOrCreate("conditionalRule");
+   lazy val With = theory.symbolTable.getOrCreate("with");
     
 }

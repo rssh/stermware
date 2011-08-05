@@ -109,3 +109,21 @@ trait Term extends TValue
 
 }
 
+object Term
+{
+
+   /**
+    * unapply for generic term matching
+    *<code>
+    *  t match {
+    *    case Term(name, subterms, signature) => ....
+    *  }
+    *</code>
+    **/
+   def unapply(t:Term): Option[Tuple3[Name,Seq[Term],TermSignature]] = 
+                                      Some((t.name,t.subterms,t.signature));
+
+
+}
+
+

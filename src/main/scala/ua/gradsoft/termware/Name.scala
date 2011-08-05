@@ -13,3 +13,9 @@ trait Name extends Ordered[Name]
  def string: String;
 }
 
+object Name
+{
+
+   def unapply(n:Name) : Option[String] = Some(n.string);
+
+}

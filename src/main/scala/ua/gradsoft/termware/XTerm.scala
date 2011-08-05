@@ -89,3 +89,11 @@ class XTerm(override val name: Name,
    private[termware] var xOwner_ = owner;
 
 }
+
+object XTerm
+{
+
+  def unapply(t:XTerm):Option[Tuple5[Name,Int,Term,Term,TermSignature]] =
+                                 Some((t.name,t.xLabel,t.typeTerm,t.xOwner,t.signature))
+
+}
