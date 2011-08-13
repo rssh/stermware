@@ -19,6 +19,11 @@ trait TValue extends GeneralUtil
   def getBoolean: Boolean = throwUOE;
 
   /**
+   * scala version of getBoolean
+   **/
+  def boolean_! : Boolean = getBoolean;
+
+  /**
    * is this is byte ?
    **/
   def isByte:  Boolean;
@@ -27,6 +32,11 @@ trait TValue extends GeneralUtil
    * get byte value if one is byte.
    */
   def getByte: Byte;
+
+  /**
+   * get byte value if one is byte.
+   */
+  def byte_! : Byte = getByte;
 
   /**
    *  is this is short ?

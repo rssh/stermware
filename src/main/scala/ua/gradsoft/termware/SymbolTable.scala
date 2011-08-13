@@ -51,6 +51,7 @@ class SymbolTable
   lazy val ERROR = getOrCreate("ERROR");
   lazy val ETA = getOrCreate("ETA");
   lazy val WITH = getOrCreate("WITH");
+  lazy val LET = getOrCreate("LET");
 
 }
 

@@ -25,4 +25,6 @@ object TermClassIndex
 
   val REF: Int = 11;
 
+  val LET_PROXY: Int = 12;
+
 }

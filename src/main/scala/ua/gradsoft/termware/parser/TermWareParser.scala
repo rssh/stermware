@@ -174,9 +174,21 @@ class TermWareParser(th:Theory, fname:String) extends TokenParsers
   );
 
   def assign: Parser[Term] = {
-     identifier ~ ( OP("<-") ~> term ) ^^ {
-         case x ~ y =>  th.funSignature("assign").createTerm("assign",x,y);
+     identifier ~  opAssigment ~ term  ^^ {
+         case x ~ y ~ z =>  th.funSignature("assign").createTerm("assign",x,y,z);
        }
+  }
+
+  def opAssigment: Parser[Term] = {
+     (
+      OP("<-")
+      |
+      OP("<-:")
+      |
+      OP("<-*")
+     ) ^^ {
+        x => IntTerm(1,th.intSignature);
+     }
   }
 
   def ruleTail:Parser[Term] = (
@@ -190,7 +202,7 @@ class TermWareParser(th:Theory, fname:String) extends TokenParsers
   );
 
   def OP(s:String): Parser[Token] = (
-     elem("->", (x:Elem)=>(
+     elem("operator", (x:Elem)=>(
                          x.isInstanceOf[OperatorToken]
                         &&
                          x.asInstanceOf[OperatorToken].chars==s

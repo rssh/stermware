@@ -15,7 +15,7 @@ trait Theory extends TermWareInstance
 
  def shortSignature: TermSignature;
 
- def intSignature: TermSignature;
+ def intSignature: IntTermSignature;
 
  def longSignature: TermSignature;
 

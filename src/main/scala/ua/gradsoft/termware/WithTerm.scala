@@ -12,31 +12,13 @@ import ua.gradsoft.termware.flow._;
 
 class WithTerm(vars:IndexedSeq[XTerm], val p:Term, ws: WithTermSignature)  
                              extends XOwner(vars)
+                                with ProxyTerm
                                          with ComplexUnify
                                          with ComplexSubst
                                          with ComplexCompare
-                                         with NonNumberTerm
 {
 
-  def isNil = p.isNil;
-
-  def isAtom = p.isAtom;
-
-  def isEta = p.isEta;
-
-  def isError = p.isError;
-
-  override def name = p.name;
-
-  override def arity = p.arity;
-
-  override def subterms = p.subterms;
-
-  override def subterm(index: Int) = p.subterm(index); 
-
-  override def unify(t:Term,s:Substitution)(implicit ctx:CallContext)
-                               :ComputationBounds[(Boolean,Substitution)]=
-    p.unify(t,s)(ctx);
+  def proxy = p;
 
   override def subst(s:PartialFunction[Term,Term])
                     (implicit ctx: CallContext) :
@@ -48,15 +30,6 @@ class WithTerm(vars:IndexedSeq[XTerm], val p:Term, ws: WithTermSignature)
               { (t:Term) => Done(new WithTerm(newVars,t,ws)) }
        );
     }
-
-  override def termClassIndex  = p.termClassIndex;
-
-  override def termHashCode = hashCode;
-
-  override def termCompare(t:Term)(implicit ctx:CallContext)
-                                                :ComputationBounds[Int] = 
-     p.termCompare(t);
-  
 
   override def print(out:PrintWriter):Unit = {
     out.print("with (");
