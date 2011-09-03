@@ -46,7 +46,7 @@ class ErrorTerm(m:String, e:Exception, s: ErrorTermSignature) extends Term
 
   def fixSubst(s: PartialFunction[Term,Term]): Term = this;
 
-  def fixUnify(t:Term, s:Substitution): (Boolean, Substitution) = (false, s);
+  def fixUnify(t:Term, s:Substitution[Term]): (Boolean, Substitution[Term]) = (false, s);
    
   def termClassIndex: Int = TermClassIndex.ERROR;
 
@@ -74,5 +74,6 @@ class ErrorTerm(m:String, e:Exception, s: ErrorTermSignature) extends Term
   val exception=e;
 
   val attributes = new HashMap[Name,ComputationBounds[Term]](); 
+
 
 }

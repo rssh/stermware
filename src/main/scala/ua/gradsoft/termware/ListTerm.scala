@@ -18,14 +18,14 @@ class ListTerm(h:Term, t:Term, s:ListTermSignature)
 
   def subterms:IndexedSeq[Term] = IndexedSeq[Term](head,tail);
 
-  override def unify(t:Term, s: Substitution)
-         (implicit ctx:CallContext):ComputationBounds[(Boolean,Substitution)]=
+  override def unify(t:Term, s: Substitution[Term])
+         (implicit ctx:CallContext):ComputationBounds[(Boolean,Substitution[Term])]=
   {
    if (t.arity==2)
     ctx.withCall{
       (ctx:CallContext)=>implicit val ictx=ctx;
       head.onUnify(t.subterm(0),s) {
-         (r:(Boolean,Substitution),ctx:CallContext) => implicit val ictx=ctx;
+         (r:(Boolean,Substitution[Term]),ctx:CallContext) => implicit val ictx=ctx;
          if (r._1) {
            tail.unify(t.subterm(1),r._2);
          }else{

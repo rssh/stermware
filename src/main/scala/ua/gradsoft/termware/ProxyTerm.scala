@@ -81,7 +81,7 @@ trait ProxyTerm  extends Term
 
    override def xOwner:XOwner = proxy.xOwner;
 
-   def unify(t:Term, s:Substitution)(implicit ctx:CallContext) = 
+   def unify(t:Term, s:Substitution[Term])(implicit ctx:CallContext) = 
           proxy.unify(t,s)(ctx);
 
    override def isError: Boolean = proxy.isError;

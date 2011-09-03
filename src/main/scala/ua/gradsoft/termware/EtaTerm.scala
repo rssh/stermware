@@ -40,21 +40,21 @@ class EtaTerm(vars:IndexedSeq[XTerm], l:Term, r:Term, rs:Option[Term], s:EtaTerm
       case _ => throwUOE
     }
 
-  override def unify(t:Term,s:Substitution)(implicit ctx:CallContext)
-                               :ComputationBounds[(Boolean,Substitution)]=
+  override def unify(t:Term,s:Substitution[Term])(implicit ctx:CallContext)
+                               :ComputationBounds[(Boolean,Substitution[Term])]=
   {
     if (t.isEta) {
       ctx.withCall{
        (ctx:CallContext) => implicit val ictx = ctx;
        val tLeft = t.subterms(0);
        left.onUnify(tLeft,s){
-         (rs:(Boolean,Substitution), ctx: CallContext) =>
+         (rs:(Boolean,Substitution[Term]), ctx: CallContext) =>
            implicit val ictx = ctx;
            val (r,s) = (rs._1, rs._2);
            if(r) {
              val tRight = t.subterms(1);
              right.onUnify(tRight,s){
-               (rs:(Boolean,Substitution),ctx:CallContext) =>
+               (rs:(Boolean,Substitution[Term]),ctx:CallContext) =>
                  implicit val ictx = ctx;
                  val r = rs._1;
                  val s = rs._2;

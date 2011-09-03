@@ -17,8 +17,8 @@ abstract class FunctionalTerm(s:TermSignature) extends Term
   def isEta: Boolean = false;
   def isError: Boolean = false;
 
-  def unify(t:Term, s: Substitution)(implicit ctx:CallContext):
-                                ComputationBounds[(Boolean,Substitution)] =
+  def unify(t:Term, s: Substitution[Term])(implicit ctx:CallContext):
+                                ComputationBounds[(Boolean,Substitution[Term])] =
      ctx.withCall{
       (ctx:CallContext) => implicit val ictx = ctx;
         if (patternName==t.patternName && arity==t.arity) {
@@ -28,9 +28,9 @@ abstract class FunctionalTerm(s:TermSignature) extends Term
         }
      }
 
-  def unifySeq(x:Seq[Term],y:Seq[Term],s:Substitution)
+  def unifySeq(x:Seq[Term],y:Seq[Term],s:Substitution[Term])
               (implicit ctx: CallContext): 
-                                ComputationBounds[(Boolean,Substitution)] =
+                              ComputationBounds[(Boolean,Substitution[Term])] =
   {
     if (x.isEmpty) {
        Done((y.isEmpty,s))
@@ -40,7 +40,7 @@ abstract class FunctionalTerm(s:TermSignature) extends Term
       ctx.withCall{
          (ctx:CallContext) => implicit val ictx = ctx;
             x.head.onUnify(y.head,s){
-             (rs: (Boolean,Substitution),ctx:CallContext) => 
+             (rs: (Boolean,Substitution[Term]),ctx:CallContext) => 
                  implicit val ictx = ctx;
                  if (rs._1) {
                     unifySeq(x.tail,y.tail,rs._2);

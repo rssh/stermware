@@ -36,7 +36,7 @@ abstract class PrimitiveTerm(s:TermSignature) extends Term
   def fixSubst(s:PartialFunction[Term,Term]):Term = 
     if (s.isDefinedAt(this)) s.apply(this) else this;
 
-  def unify(t: Term, s: Substitution)(implicit ctx:CallContext)
+  def unify(t: Term, s: Substitution[Term])(implicit ctx:CallContext)
    =
      if (fixTermEq(t))
             Done((true,s))
@@ -50,7 +50,6 @@ abstract class PrimitiveTerm(s:TermSignature) extends Term
   def termCompare(t:Term)(implicit ctx:CallContext):ComputationBounds[Int]
    = Done(fixTermCompare(t));
 
- 
   override def print(out:PrintWriter):Unit = out.print(toString);
 
   val signature = s;

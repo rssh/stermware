@@ -36,6 +36,7 @@ trait TValue extends GeneralUtil
   /**
    * get byte value if one is byte.
    */
+  @inline
   def byte_! : Byte = getByte;
 
   /**
@@ -49,6 +50,12 @@ trait TValue extends GeneralUtil
   def getShort: Short;
 
   /**
+   * scala-like getShort
+   **/
+  def short_! : Short = getShort;
+
+
+  /**
    *  is this is integer ?
    **/
   def isInt:  Boolean;
@@ -57,6 +64,11 @@ trait TValue extends GeneralUtil
    * get int value
    **/
   def getInt: Int;
+
+  /**
+   * get int value
+   **/
+  def int_! : Int = getInt;
 
   /**
    * is this is long ?
@@ -69,6 +81,11 @@ trait TValue extends GeneralUtil
   def getLong: Long;
 
   /**
+   * get long is one is long.
+   **/
+  def long_! : Long = getLong;
+
+  /**
    * if this is big integer
    **/
   def isBigInt: Boolean;
@@ -79,11 +96,17 @@ trait TValue extends GeneralUtil
   def getBigInt: BigInt;
 
   /**
+   * get BigInteger if one is big integer.
+   **/
+  def bigInt_! : BigInt = getBigInt;
+
+  /**
    * it this term can be represented as big decimal ?
    **/
   def isBigDecimal: Boolean;
 
   def getBigDecimal: BigDecimal;
+
 
   def isFloat: Boolean;
 

@@ -6,6 +6,7 @@ import ua.gradsoft.termware.flow._;
 
 trait TermAttributed
 {
+   type AttributeMapType = Map[Name,ComputationBounds[Term]];
 
    def getAttribute(name:Name):Option[ComputationBounds[Term]]
          = attributes.get(name);
@@ -16,7 +17,7 @@ trait TermAttributed
    def resetAttribute(name:Name):Option[ComputationBounds[Term]]
         = attributes.remove(name);
 
-   def attributes:Map[Name,ComputationBounds[Term]];
+   def attributes:AttributeMapType;
 }
 
 

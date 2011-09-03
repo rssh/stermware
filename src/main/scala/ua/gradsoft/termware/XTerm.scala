@@ -47,8 +47,8 @@ class XTerm(override val name: Name,
             def xOwner_=(owner:XOwner):Unit =
                 { xOwner_ = owner; }
 
-   override def unify(t:Term, s:Substitution)(implicit ctx:CallContext) 
-                              : ComputationBounds[(Boolean, Substitution)] = {
+   override def unify(t:Term, s:Substitution[Term])(implicit ctx:CallContext) 
+                              : ComputationBounds[(Boolean, Substitution[Term])] = {
       if (t.isX && (t.xOwner eq xOwner) ) {
             Done((t.xLabel == xLabel,s));
       } else {

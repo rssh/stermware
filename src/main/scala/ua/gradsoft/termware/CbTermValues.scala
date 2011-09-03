@@ -23,7 +23,8 @@ trait CbTValue extends GeneralUtil
   /**
    * scala version of getBoolean
    **/
-  def boolean_! : ComputationBounds[Boolean]
+  @inline
+  def boolean_! : ComputationBounds[Boolean] = getBoolean;
 
   /**
    * is this is byte ?
@@ -38,6 +39,7 @@ trait CbTValue extends GeneralUtil
   /**
    * get byte value if one is byte.
    */
+  @inline
   def byte_! : ComputationBounds[Byte] = getByte;
 
   /**
@@ -53,6 +55,7 @@ trait CbTValue extends GeneralUtil
   /**
    * scala version of getShort.
    **/
+  @inline
   def short_! : ComputationBounds[Short] = getShort;
   
   /**
@@ -64,6 +67,12 @@ trait CbTValue extends GeneralUtil
    * get int value
    **/
   def getInt: ComputationBounds[Int];
+
+  /**
+   * scala version of getInt
+   **/
+  @inline
+  def int_! : ComputationBounds[Int] = getInt;
 
   /**
    * is this is long ?
@@ -86,12 +95,30 @@ trait CbTValue extends GeneralUtil
   def getBigInt: ComputationBounds[BigInt];
 
   /**
+   * get big intt is term have appropriate type.
+   **/
+  @inline
+  def bigInt_! : ComputationBounds[BigInt] = getBigInt;
+
+  /**
    * it this term can be represented as big decimal ?
    **/
   def isBigDecimal: ComputationBounds[Boolean];
 
+  /**
+   * get BigDecmal is term have approprate type.
+   **/
   def getBigDecimal: ComputationBounds[BigDecimal];
 
+  /**
+   * get bigDecimal is term have appropriate type.
+   **/
+  @inline
+  def bigDecimal_! : ComputationBounds[BigDecimal] = getBigDecimal;
+
+  /**
+   * if this is float.
+   **/
   def isFloat: ComputationBounds[Boolean];
 
   def getFloat: ComputationBounds[Float];
@@ -117,7 +144,7 @@ trait CbTValue extends GeneralUtil
 
   def getString: ComputationBounds[String] ;
 
-  def string_! : ComputationBounds[String];
+  def string_! : ComputationBounds[String] = getString;
 
   /**
    * is this a special exception object ?
@@ -135,5 +162,7 @@ trait CbTValue extends GeneralUtil
   def isRef: ComputationBounds[Boolean];
 
   def getRef: ComputationBounds[AnyRef];
+
+  def ref_! : ComputationBounds[AnyRef] = getRef;
 
 }

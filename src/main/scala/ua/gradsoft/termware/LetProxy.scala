@@ -123,7 +123,7 @@ case class LetProxy(val letName: Name,
    override def xOwner:XOwner = 
     (if (isComputed) proxy.xOwner else throwUOE);
 
-   def unify(t:Term, s:Substitution)(implicit ctx:CallContext) = {
+   def unify(t:Term, s:Substitution[Term])(implicit ctx:CallContext) = {
       CallCC.compose(computed,
               { (x:Term,ctx:CallContext) => x.unify(t,s)(ctx) }
              );

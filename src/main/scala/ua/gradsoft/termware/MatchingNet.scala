@@ -13,12 +13,14 @@ object MatchingNet
 
 trait MatchingCondition
 {
-  def check(t:Term,s:Substitution):ComputationBounds[(Boolean,Substitution)]
+  def check(t:Term,s:Substitution[Term]):ComputationBounds[(Boolean,
+                                                            Substitution[Term])]
 }
 
 object TrueMatchingCondition extends MatchingCondition
 {
-  def check(t:Term,s:Substitution):ComputationBounds[(Boolean,Substitution)] = Done((true,s));
+  def check(t:Term,s:Substitution[Term]):ComputationBounds[(Boolean,
+                                         Substitution[Term])] = Done((true,s));
 }
 
 trait MatchingNetConstants
@@ -59,7 +61,7 @@ class MatchingNet(val theory:Theory)
                  zipIndexOnFail,
                  getAutoStateIndex(nextFailState,zi));
     
-       def check(t:Term,s:Substitution):ComputationBounds[Pair[Boolean,Substitution]]
+       def check(t:Term,s:Substitution[Term]):ComputationBounds[Pair[Boolean,Substitution[Term]]]
              =condition.check(t,s);
 
        def isFinal:Boolean = (zipIndexStep==ZI_FINAL);
@@ -198,7 +200,7 @@ class MatchingNet(val theory:Theory)
   val allRules = new ArrayBuffer[TermRule];
 
   case class Failure(val t:Term, val m:String, val prev:Option[Failure])
-  case class Success(val s:STMSubstitution, val node:Node)
+  case class Success(val s:STMSubstitution[Term], val node:Node)
 
 
   def doMatch(t:Term)(implicit ctx:CallContext):ComputationBounds[Either[Failure,Success]]=
@@ -218,13 +220,13 @@ class MatchingNet(val theory:Theory)
                   begTerm: Term,
                   inTerm: Term,
                   inZi: BigInt,
-                  inSubst: STMSubstitution,
+                  inSubst: STMSubstitution[Term],
                   inUpTerm: Option[Term],
                   inChildIndex: Int,
                   inStateIndex: Int,
                   inNodes: List[Node],
                   inLastNode: Option[Node],
-                  inTrampolinedCheck: Option[Pair[Boolean,Substitution]]
+                  inTrampolinedCheck: Option[Pair[Boolean,Substitution[Term]]]
                    )(implicit ctx:CallContext): ComputationBounds[Either[Failure,Success]] =
   ctx. withCall {
     (ctx:CallContext) => implicit val ictx=ctx;
@@ -250,10 +252,10 @@ class MatchingNet(val theory:Theory)
                        Done(tmp);
                    }
                   } catch {
-                   case ex: CallCCException[Pair[Boolean,Substitution]] => 
+                   case ex: CallCCException[Pair[Boolean,Substitution[Term]]] => 
                      throw new CallCCException(
                         CallCC.compose(ex.current, {
-                          (r:Pair[Boolean,Substitution], ctx:CallContext) => 
+                          (r:Pair[Boolean,Substitution[Term]], ctx:CallContext) => 
                             doMatchStep(begTerm,cTerm,cZi,cSubst,cUpTerm,cChildIndex,
                                         cStateIndex,cNodes,cLastNode,Some(r))(ctx)
                         })
@@ -262,13 +264,13 @@ class MatchingNet(val theory:Theory)
       if (!check.isDone) {
         optResult=Some(
             CallCC.compose(check, {
-                (r:Pair[Boolean,Substitution], ctx:CallContext) => 
+                (r:Pair[Boolean,Substitution[Term]], ctx:CallContext) => 
                             doMatchStep(begTerm,cTerm,cZi,cSubst,cUpTerm,cChildIndex,
                                         cStateIndex,cNodes,cLastNode,Some(r))(ctx)
               }));
       }else{
         cLastNode = Some(node);
-        var (cTest,nextSubst:STMSubstitution) = check.result.get;
+        var (cTest,nextSubst:STMSubstitution[Term]) = check.result.get;
         if (cTest) {
           cSubst=nextSubst; 
           node.zipIndexStep match {

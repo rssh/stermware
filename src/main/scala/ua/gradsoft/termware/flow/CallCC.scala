@@ -54,6 +54,11 @@ object CallCC
          result.get;
        }
 
+  def fcompose[A,B](ca:ComputationBounds[A],
+                    cont:(A,CallContext)=>ComputationBounds[B]):
+                                                 ComputationBounds[B]=
+    Call { (ctx:CallContext) => compose(ca,cont)(ctx); }
+
   @inline
   def compose[A,B](ca:ComputationBounds[A],
                    cont:A=>ComputationBounds[B])

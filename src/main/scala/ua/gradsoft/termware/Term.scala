@@ -11,6 +11,7 @@ import java.io.StringWriter;
  **/
 trait Term extends TValue 
         with Ordered[Term]
+        with Unificable[Term]
         with TermAttributed
         with GeneralUtil
         with Serializable
@@ -54,18 +55,10 @@ trait Term extends TValue
 
   def fixSubst(s: PartialFunction[Term,Term]): Term;
 
-  def unify(t:Term, s: Substitution)(implicit ctx:CallContext):
-                                  ComputationBounds[(Boolean,Substitution)];
+  def unify(t:Term, s: Substitution[Term])(implicit ctx:CallContext):
+                              ComputationBounds[(Boolean,Substitution[Term])];
 
-  def onUnify[T](t:Term, s:Substitution)
-         (cont:((Boolean,Substitution),CallContext)=>ComputationBounds[T])
-         (implicit ctx:CallContext) =
-  {
-     val f = Call{ (ctx:CallContext) => unify(t,s)(ctx); };
-     CallCC.compose(f,cont);
-  };
-
-  def fixUnify(t:Term, s:Substitution): (Boolean, Substitution);
+  def fixUnify(t:Term, s:Substitution[Term]): (Boolean, Substitution[Term]);
 
   def termClassIndex: Int; 
 
@@ -90,6 +83,9 @@ trait Term extends TValue
   def termHashCode: Int; 
 
   override def hashCode = termHashCode;
+
+  def toCbTerm: CbTerm = new TermCbTerm(this);
+
 
   def print(out: PrintWriter): Unit ;
 
