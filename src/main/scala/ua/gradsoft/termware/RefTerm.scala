@@ -3,6 +3,7 @@ package ua.gradsoft.termware;
 
 case class RefTerm(v:AnyRef, s: RefTermSignature) extends PrimitiveTerm(s)
                                            with NonNumberTerm
+                                           with NonBooleanTerm
 {
 
   override def isRef: Boolean = true;

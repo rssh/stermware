@@ -9,6 +9,7 @@ class ErrorTerm(m:String, e:Exception, s: ErrorTermSignature) extends Term
                                           with SimpleSubst
                                           with SimpleUnify
                                           with NonNumberTerm
+                                          with NonBooleanTerm
 {
 
   def this(e:Exception, s:ErrorTermSignature) = {

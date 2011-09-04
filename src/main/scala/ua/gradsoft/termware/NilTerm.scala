@@ -4,6 +4,7 @@ package ua.gradsoft.termware;
 class NilTerm(s:NilTermSignature) extends PrimitiveTerm(s)
                                     with FixedNameTerm
                                     with NonNumberTerm
+                                    with NonBooleanTerm
 {
 
   override def isNil = true;

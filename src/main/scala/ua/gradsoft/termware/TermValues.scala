@@ -11,12 +11,12 @@ trait TValue extends GeneralUtil
   /**
    * is this is boolean ?
    */
-  def isBoolean: Boolean = false;
+  def isBoolean: Boolean;
 
   /**
    * get boolean value if one is boolean.
    */
-  def getBoolean: Boolean = throwUOE;
+  def getBoolean: Boolean;
 
   /**
    * scala version of getBoolean

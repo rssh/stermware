@@ -16,6 +16,7 @@ class EtaTerm(vars:IndexedSeq[XTerm], l:Term, r:Term, rs:Option[Term], s:EtaTerm
                                   with ComplexSubst
                                   with ComplexCompare
                                   with NonNumberTerm
+                                  with NonBooleanTerm
 {
 
   def isNil = false;

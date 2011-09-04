@@ -8,6 +8,11 @@ import java.io.PrintWriter;
 abstract class NumberPrimitiveTerm[T](v:T, s:TermSignature) 
                                                    extends PrimitiveTerm(s)
 {
+
+  def isBoolean: Boolean = false;
+
+  def getBoolean: Boolean = throwUOE;
+
   override def isNumber: Boolean = true;
 
   def termClassIndex: Int = TermClassIndex.NUMBER;

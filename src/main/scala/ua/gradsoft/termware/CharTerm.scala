@@ -19,6 +19,7 @@ case class CharName(v:Char) extends Name
 
 class CharTerm(v:Char, s: CharTermSignature) extends PrimitiveTerm(s)
                                                   with NonNumberTerm
+                                                  with NonBooleanTerm
 {
 
   override def isChar: Boolean = true;

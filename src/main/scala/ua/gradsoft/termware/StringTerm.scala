@@ -6,6 +6,7 @@ package ua.gradsoft.termware;
 case class StringTerm(v:String, s: StringTermSignature) 
                                             extends PrimitiveTerm(s)
                                                with NonNumberTerm
+                                               with NonBooleanTerm
 {
 
   override def isString: Boolean = true;

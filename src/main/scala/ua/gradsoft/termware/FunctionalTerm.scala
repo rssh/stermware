@@ -10,6 +10,7 @@ abstract class FunctionalTerm(s:TermSignature) extends Term
                                              with ComplexSubst
                                              with ComplexCompare
                                              with NonNumberTerm
+                                             with NonBooleanTerm
 {
 
   def isNil: Boolean = false;

@@ -4,6 +4,7 @@ import java.io.PrintWriter;
 
 case class AtomTerm(val name:Name,s:AtomTermSignature) extends PrimitiveTerm(s)
                                             with NonNumberTerm
+                                            with NonBooleanTerm
 {
 
   override def isAtom = true;

@@ -17,6 +17,7 @@ class XTerm(override val name: Name,
                                                with SimpleSubst
                                                with SimpleCompare
                                                with NonNumberTerm
+                                               with NonBooleanTerm
 {
 
    /**
