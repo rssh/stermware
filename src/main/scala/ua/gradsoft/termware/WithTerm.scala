@@ -48,7 +48,7 @@ class WithTerm(vars:IndexedSeq[XTerm], val p:Term, ws: WithTermSignature)
 
   def signature = ws.apply(p.signature);
 
-  var attributes=new HashMap[Name,ComputationBounds[Term]]();
+  var attributes=new HashMap[Name,Term]();
        
   private lazy val hash: Int = p.hashCode;
 

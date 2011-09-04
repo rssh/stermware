@@ -1,6 +1,6 @@
 package ua.gradsoft.termware;
 
-import scala.collection.mutable.HashMap;
+import scala.collection.mutable.{HashMap => MutableHashMap};
 import java.io.PrintWriter;
 import ua.gradsoft.termware.flow._;
 
@@ -73,7 +73,7 @@ class ErrorTerm(m:String, e:Exception, s: ErrorTermSignature) extends Term
   val message=m;
   val exception=e;
 
-  val attributes = new HashMap[Name,ComputationBounds[Term]](); 
+  val attributes = new MutableHashMap[Name,Term](); 
 
 
 }

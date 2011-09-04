@@ -84,7 +84,7 @@ class XTerm(override val name: Name,
 
    override def print(out:PrintWriter):Unit = { out.print(name.string); }
 
-   lazy val attributes = new HashMap[Name,ComputationBounds[Term]];
+   lazy val attributes = new HashMap[Name,Term];
    
    private[termware] var xOwner_ = owner;
 

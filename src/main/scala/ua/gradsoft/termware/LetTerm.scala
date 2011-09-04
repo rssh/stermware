@@ -71,7 +71,7 @@ class LetTerm(val vars:IndexedSeq[TermBinding],
 
   def signature = ls.apply(p.signature);
 
-  var attributes=new HashMap[Name,ComputationBounds[Term]]();
+  var attributes=new HashMap[Name,Term]();
 
   private lazy val hash: Int = p.hashCode;
 

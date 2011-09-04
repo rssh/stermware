@@ -24,7 +24,7 @@ class FreeFunctionalTermSignature(val theory:Theory)
   if (ct.isDone) {
    val t = ct.result.get;
    t.getAttribute(theory.symbolTable.TYPE) match {
-      case Some(x) =>  x
+      case Some(x) =>  Done(x)
       case None   => {
         val typeIn = theory.freeFunSignature.createTerm(
                         t.name,
@@ -32,7 +32,7 @@ class FreeFunctionalTermSignature(val theory:Theory)
                      );
         val typeOut = theory.typeAlgebra.reduce(typeIn);
         CallCC.onProgress(typeOut) {
-          ctx:CallContext => t.setAttribute(theory.symbolTable.TYPE, typeOut);
+          ctx:CallContext => t.setAttribute(theory.symbolTable.TYPE, new ComputationBoundsTerm(typeOut));
         }
         typeOut;
       }

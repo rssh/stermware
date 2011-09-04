@@ -1,6 +1,6 @@
 package ua.gradsoft.termware;
 
-import scala.collection.mutable.HashMap;
+import scala.collection.mutable.{HashMap => MutableHashMap};
 import java.io.PrintWriter;
 
 import ua.gradsoft.termware.flow._;
@@ -53,6 +53,6 @@ abstract class PrimitiveTerm(s:TermSignature) extends Term
   override def print(out:PrintWriter):Unit = out.print(toString);
 
   val signature = s;
-  lazy val attributes = new HashMap[Name,ComputationBounds[Term]]();
+  lazy val attributes = new MutableHashMap[Name,Term]();
 
 }

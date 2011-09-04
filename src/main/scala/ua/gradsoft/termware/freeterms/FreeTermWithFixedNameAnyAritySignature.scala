@@ -18,14 +18,14 @@ class FreeTermWithFixedNameAnyAritySignature(n:Name,
   if (ct.isDone) {
    val t = ct.result.get;
    t.getAttribute(theory.symbolTable.TYPE) match {
-      case Some(x) =>  x
+      case Some(x) =>  Done(x)
       case None   => {
         val typeIn = theory.freeFunSignature.createTerm(
                         t.name,
                         t.subterms.map( _.termType )
                      );
         val typeOut = theory.typeAlgebra.reduce(typeIn);
-        t.setAttribute(theory.symbolTable.TYPE, typeOut);
+        t.setAttribute(theory.symbolTable.TYPE, new ComputationBoundsTerm(typeOut));
         typeOut
       }
    }

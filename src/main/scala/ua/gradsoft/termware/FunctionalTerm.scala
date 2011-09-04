@@ -1,6 +1,6 @@
 package ua.gradsoft.termware;
 
-import scala.collection.mutable.HashMap;
+import scala.collection.mutable.{HashMap => MutableHashMap};
 import java.io.PrintWriter;
 import ua.gradsoft.termware.fn._;
 import ua.gradsoft.termware.flow._;
@@ -123,7 +123,7 @@ abstract class FunctionalTerm(s:TermSignature) extends Term
 
   override def toString = name.toString+"("+subterms.mkString(",")+")";
   
-  lazy val attributes = new HashMap[Name,ComputationBounds[Term]]();
+  lazy val attributes = new MutableHashMap[Name,Term]();
 
   val signature=s;
 

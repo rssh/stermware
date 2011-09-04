@@ -445,9 +445,8 @@ class TermWareParser(th:Theory, fname:String) extends TokenParsers
 
   def posAttributes(t:Term, x:Positional) = {
      t.setAttribute(POS,
-          Done(theory.refSignature.createConstant(
+          theory.refSignature.createConstant(
                             new PositionWithFname(x.pos,fileName))
-          )
         );
      t;
   }

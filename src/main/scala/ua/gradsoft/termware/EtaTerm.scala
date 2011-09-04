@@ -3,7 +3,7 @@ package ua.gradsoft.termware;
 import scala.collection.Set;
 import scala.collection.immutable.Map;
 import scala.collection.immutable.TreeMap;
-import scala.collection.mutable.HashMap;
+import scala.collection.mutable.{HashMap => MutableHashMap};
 import java.io.PrintWriter;
 import ua.gradsoft.termware.fn._;
 import ua.gradsoft.termware.util._;
@@ -151,7 +151,7 @@ class EtaTerm(vars:IndexedSeq[XTerm], l:Term, r:Term, rs:Option[Term], s:EtaTerm
     }
   }
 
-  var attributes=new HashMap[Name,ComputationBounds[Term]]();
+  var attributes=new MutableHashMap[Name,Term]();
 
 
   private val left: Term = l;

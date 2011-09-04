@@ -46,10 +46,10 @@ class XTermSignature(th:Theory) extends TermSignature
     t.getAttribute(theory.symbolTable.TYPE) match {
          case None => {
             val retval = Done(theory.typeAlgebra.top)
-            t.setAttribute(theory.symbolTable.TYPE, retval);
+            t.setAttribute(theory.symbolTable.TYPE, new ComputationBoundsTerm(retval));
             retval;
          }
-         case Some(x) => x
+         case Some(x) => Done(x)
     }
    } else {
     CallCC.compose(ct, { (x:Term, ctx:CallContext) => termType(Done(x))(ctx); })
