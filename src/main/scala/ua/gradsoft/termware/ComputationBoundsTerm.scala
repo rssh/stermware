@@ -9,9 +9,9 @@ class ComputationBoundsTerm(val cbt: ComputationBounds[Term]) extends Term
    private var isComputed = false;
    lazy val term = { val x=CallCC.trampoline(cbt); isComputed=true; x; }
 
-   override def isBoolean: Boolean = term.isBoolean;
+   def isBoolean: Boolean = term.isBoolean;
 
-   override def getBoolean: Boolean = term.getBoolean;
+   def getBoolean: Boolean = term.getBoolean;
 
    def isByte:  Boolean = term.isByte;
   
