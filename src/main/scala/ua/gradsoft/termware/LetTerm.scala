@@ -2,7 +2,7 @@ package ua.gradsoft.termware;
 
 import ua.gradsoft.termware.flow._;
 import java.io.PrintWriter;
-import scala.collection.mutable.HashMap;
+import scala.collection.mutable.{HashMap => MutableHashMap};
 
 /**
  * term, which store bindings.
@@ -11,9 +11,6 @@ class LetTerm(val vars:IndexedSeq[TermBinding],
               val p:Term, 
               val ls: LetTermSignature)  
                              extends ProxyTerm
-                              with ComplexUnify
-                              with ComplexSubst
-                              with ComplexCompare
 {
 
   def proxy = p;
@@ -69,9 +66,9 @@ class LetTerm(val vars:IndexedSeq[TermBinding],
     }
   }
 
-  def signature = ls.apply(p.signature);
+  override def signature = ls.apply(p.signature);
 
-  var attributes=new HashMap[Name,Term]();
+  override val attributes=new MutableHashMap[Name,Term]();
 
   private lazy val hash: Int = p.hashCode;
 

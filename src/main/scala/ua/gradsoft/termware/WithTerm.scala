@@ -3,7 +3,7 @@ package ua.gradsoft.termware;
 import scala.collection.Set;
 import scala.collection.immutable.Map;
 import scala.collection.immutable.TreeMap;
-import scala.collection.mutable.HashMap;
+import scala.collection.mutable.{HashMap => MutableHashMap};
 import java.io.PrintWriter;
 import ua.gradsoft.termware.fn._;
 import ua.gradsoft.termware.util._;
@@ -13,9 +13,6 @@ import ua.gradsoft.termware.flow._;
 class WithTerm(vars:IndexedSeq[XTerm], val p:Term, ws: WithTermSignature)  
                              extends XOwner(vars)
                                 with ProxyTerm
-                                         with ComplexUnify
-                                         with ComplexSubst
-                                         with ComplexCompare
 {
 
   def proxy = p;
@@ -46,9 +43,9 @@ class WithTerm(vars:IndexedSeq[XTerm], val p:Term, ws: WithTermSignature)
     p.print(out);
   }
 
-  def signature = ws.apply(p.signature);
+  override def signature = ws.apply(p.signature);
 
-  var attributes=new HashMap[Name,Term]();
+  override val attributes=new MutableHashMap[Name,Term]();
        
   private lazy val hash: Int = p.hashCode;
 

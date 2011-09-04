@@ -84,6 +84,9 @@ trait ProxyTerm  extends Term
    def unify(t:Term, s:Substitution[Term])(implicit ctx:CallContext) = 
           proxy.unify(t,s)(ctx);
 
+   def fixUnify(t:Term, s:Substitution[Term]) = 
+          proxy.fixUnify(t,s);
+
    override def isError: Boolean = proxy.isError;
 
    override def isEta: Boolean = proxy.isEta;
@@ -96,23 +99,35 @@ trait ProxyTerm  extends Term
                                                 :ComputationBounds[Int] =
     proxy.termCompare(t)(ctx);
 
+   override def fixTermCompare(t:Term) =
+                                 proxy.fixTermCompare(t);
+
+
    override def onTermCompare[T](t:Term)
                       (cont:(Int,CallContext) => ComputationBounds[T])
                       (implicit ctx:CallContext) : ComputationBounds[T] =
     proxy.onTermCompare(t)(cont)(ctx);
 
 
-   override def termEq(t:Term)(implicit ctx:CallContext): ComputationBounds[Boolean] = proxy.termEq(t)(ctx);
+   override def termEq(t:Term)(implicit ctx:CallContext): ComputationBounds[Boolean] 
+                                      = proxy.termEq(t)(ctx);
 
+   def fixTermEq(t:Term): Boolean = proxy.fixTermEq(t);
 
-  override def subst(s:PartialFunction[Term,Term])
+   def subst(s:PartialFunction[Term,Term])
                     (implicit ctx: CallContext) :
                                            ComputationBounds[Term] = 
     proxy.subst(s)(ctx);
 
-  override def termClassIndex  = proxy.termClassIndex;
+   def  fixSubst(s:PartialFunction[Term,Term]) = proxy.fixSubst(s);
 
-  override def termHashCode = proxy.hashCode;
+   override def termClassIndex  = proxy.termClassIndex;
+
+   override def termHashCode = proxy.hashCode;
+
+   override def signature = proxy.signature;
+
+   override def attributes = proxy.attributes;
 
   private lazy val hash: Int = proxy.hashCode;
 

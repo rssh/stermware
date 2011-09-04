@@ -71,7 +71,7 @@ class LetTermSignature(th:Theory) extends TermSignature
                  val letName = t.subterm(0).name;
                  val letKind = t.subterm(1);
                  val letValue = t.subterm(2);
-                 val binding = TermBinding(letName,letKind.getInt,Done(letValue));
+                 val binding = TermBinding(letName,letKind.getInt,letValue);
                  m=m.updated(letName,i);
                  i = i+1;
                  binding;

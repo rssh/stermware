@@ -5,7 +5,9 @@ import ua.gradsoft.termware.flow._;
 
 class ComputationBoundsTerm(val cbt: ComputationBounds[Term]) extends Term
 {
-   lazy val term = CallCC.trampoline(cbt);
+
+   private var isComputed = false;
+   lazy val term = { val x=CallCC.trampoline(cbt); isComputed=true; x; }
 
    override def isBoolean: Boolean = term.isBoolean;
 
@@ -126,5 +128,18 @@ class ComputationBoundsTerm(val cbt: ComputationBounds[Term]) extends Term
 
    def attributes = term.attributes;
 
+   override def toComputationBounds: ComputationBounds[Term] =
+   {
+     if (isComputed) Done(term) else cbt;
+   }
+
+
+}
+
+object ComputationBoundsTerm
+{
+
+   def apply(ct:ComputationBounds[Term]) : Term = 
+     if (ct.isDone) ct.result.get else new ComputationBoundsTerm(ct);
 
 }

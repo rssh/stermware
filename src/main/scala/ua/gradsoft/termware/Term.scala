@@ -86,6 +86,7 @@ trait Term extends TValue
 
   def toCbTerm: CbTerm = new TermCbTerm(this);
 
+  def toComputationBounds: ComputationBounds[Term] = Done(this);
 
   def print(out: PrintWriter): Unit ;
 
