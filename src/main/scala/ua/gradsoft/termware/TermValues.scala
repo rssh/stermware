@@ -21,6 +21,7 @@ trait TValue extends GeneralUtil
   /**
    * scala version of getBoolean
    **/
+  @inline
   def boolean_! : Boolean = getBoolean;
 
   /**
@@ -68,6 +69,7 @@ trait TValue extends GeneralUtil
   /**
    * get int value
    **/
+  @inline
   def int_! : Int = getInt;
 
   /**
@@ -98,6 +100,7 @@ trait TValue extends GeneralUtil
   /**
    * get BigInteger if one is big integer.
    **/
+  @inline
   def bigInt_! : BigInt = getBigInt;
 
   /**
@@ -107,6 +110,8 @@ trait TValue extends GeneralUtil
 
   def getBigDecimal: BigDecimal;
 
+  @inline
+  def bigDecimal_! : BigDecimal = getBigDecimal;
 
   def isFloat: Boolean;
 
@@ -115,6 +120,9 @@ trait TValue extends GeneralUtil
   def isDouble: Boolean;
 
   def getDouble: Double;
+
+  @inline
+  final def double_! : Double = getDouble;
 
   /**
    * if this is number type ?
