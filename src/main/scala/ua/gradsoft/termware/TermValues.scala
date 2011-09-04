@@ -22,7 +22,7 @@ trait TValue extends GeneralUtil
    * scala version of getBoolean
    **/
   @inline
-  def boolean_! : Boolean = getBoolean;
+  final def boolean_! : Boolean = getBoolean;
 
   /**
    * is this is byte ?
@@ -38,7 +38,7 @@ trait TValue extends GeneralUtil
    * get byte value if one is byte.
    */
   @inline
-  def byte_! : Byte = getByte;
+  final def byte_! : Byte = getByte;
 
   /**
    *  is this is short ?
@@ -53,7 +53,8 @@ trait TValue extends GeneralUtil
   /**
    * scala-like getShort
    **/
-  def short_! : Short = getShort;
+  @inline
+  final def short_! : Short = getShort;
 
 
   /**
@@ -70,7 +71,7 @@ trait TValue extends GeneralUtil
    * get int value
    **/
   @inline
-  def int_! : Int = getInt;
+  final def int_! : Int = getInt;
 
   /**
    * is this is long ?
@@ -85,6 +86,7 @@ trait TValue extends GeneralUtil
   /**
    * get long is one is long.
    **/
+  @inline
   def long_! : Long = getLong;
 
   /**
@@ -108,6 +110,9 @@ trait TValue extends GeneralUtil
    **/
   def isBigDecimal: Boolean;
 
+  /**
+   * return bigDecimal value if hold one.
+   **/
   def getBigDecimal: BigDecimal;
 
   @inline
@@ -116,6 +121,9 @@ trait TValue extends GeneralUtil
   def isFloat: Boolean;
 
   def getFloat: Float;
+
+  @inline
+  def float_! : Float = getFloat;
 
   def isDouble: Boolean;
 
@@ -130,6 +138,9 @@ trait TValue extends GeneralUtil
   def isNumber: Boolean ;
 
   def getNumber: Number;
+
+  @inline
+  final def number_! : Number = getNumber;
 
   def getNumberKind: Int;
 
