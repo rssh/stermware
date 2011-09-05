@@ -7,13 +7,16 @@ trait TermWareDSL extends DefaultTermNames
 
   implicit def intToTerm(x:Int):Term = theory.intSignature.createConstant(x);
   implicit def longToTerm(x:Long):Term = theory.longSignature.createConstant(x);
+  implicit def doubleToTerm(x:Double):Term = theory.doubleSignature.createConstant(x);
   implicit def stringToTerm(x:Long):Term = theory.stringSignature.createConstant(x);
 
   /**
    *Functionl term represented as
-   * Name :: (x1,...xN) 
+   * Name `with` (x1,...xN) 
    *  or
-   * Name :: Seq(  )
+   * Name with_ Seq(  )
+   *
+   * '*' can be used instead `with`
    **/
 
   class NameVerb(fn:Name)
@@ -27,7 +30,10 @@ trait TermWareDSL extends DefaultTermNames
   def FN(fn:String) = new NameVerb(theory.symbolTable.getOrCreate(fn));
   def <>(fn:Name) = new NameVerb(fn);
   def <>(fn:String) =  new NameVerb(theory.symbolTable.getOrCreate(fn));
+  def f_ (fn:String) =  <>(fn);
 
+  def a(n:String) = theory.atomSignature(n).createConstant(n);
+  
 
 
 }

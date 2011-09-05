@@ -15,6 +15,7 @@ trait Term extends TValue
         with TermAttributed
         with GeneralUtil
         with Serializable
+        with TermOps
 {
 
   def arity: Int;

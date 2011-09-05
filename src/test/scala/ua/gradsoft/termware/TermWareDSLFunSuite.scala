@@ -31,10 +31,29 @@ class TermWareDSLFunSuite extends FunSuite {
         case Term(n,subterms,theory) =>
                                       assert(n.string=="fn2");
                                       assert(subterms.length==2);
+                                      assert(subterms(0).isInt);
          case _ => assert(false,"t4 mut be matched by term");
      }
 
   }
 
+  test("unfix operations on terms") {
+     import TermWareDSL._;
+
+     val t: Term = (FN("f")*(1,2) + a("x")) * a("y");
+
+     t match {
+       case Term(Name("multiply"),Seq(x1,x2),_) =>
+              x1 match {
+                case Term(Name("plus"),Seq(x11,x12),_) =>
+                              assert(x11.name.string == "f");
+                              assert(x11.subterm(0).isInt);
+                case _ => assert(false,"first argument must be plus expr");
+              }
+              assert(x2.isAtom);
+       case _ => assert(false,"term must be matched to multiply");
+     }
+
+  }
 
 }
