@@ -6,9 +6,8 @@ class ErrorTermSignature(th:Theory) extends TermSignature
                                        with GeneralUtil
 {
 
-  override def termType(ct:ComputationBounds[Term])(implicit ctx:CallContext)
-                                                    :ComputationBounds[Term] = 
-   Done(typeTerm);
+  override def termType(t:Term): Term =
+   typeTerm;
 
   override def fixedName = Some(theory.symbolTable.ERROR);
 

@@ -9,18 +9,41 @@ import ua.gradsoft.termware.flow._;
 object MatchingNet
 {
   def apply(th:Theory)=new MatchingNet(th);
+
 }
 
 trait MatchingCondition
 {
-  def check(t:Term,s:Substitution[Term]):ComputationBounds[(Boolean,
-                                                            Substitution[Term])]
+  def check(t:Term,s:STMSubstitution[Term]):(Boolean,STMSubstitution[Term],Option[Term])
 }
 
 object TrueMatchingCondition extends MatchingCondition
 {
-  def check(t:Term,s:Substitution[Term]):ComputationBounds[(Boolean,
-                                         Substitution[Term])] = Done((true,s));
+  def check(t:Term,s:STMSubstitution[Term]) = (true,s,None);
+}
+
+class  RuleBranchMatchingCondition(branches:List[TermRuleBranch]) extends MatchingCondition
+{
+
+  def check(t:Term,s:STMSubstitution[Term]) =
+  {
+    var ct=branches;
+    var resBranch: Option[Term] = None;
+    var resSubst:STMSubstitution[Term] = s;
+    while( ct!=Nil && resBranch==None) {
+      ct match {
+        case branch::rest =>
+           val ev = branch.condition.eval(s);
+           if (ev._1) {
+              resBranch=Some(branch.result);
+              resSubst=ev._2;
+           }
+        case Nil => /* do nothing */ 
+      }
+    }
+    (resBranch!=None,resSubst,resBranch);
+  }
+
 }
 
 trait MatchingNetConstants
@@ -61,7 +84,7 @@ class MatchingNet(val theory:Theory)
                  zipIndexOnFail,
                  getAutoStateIndex(nextFailState,zi));
     
-       def check(t:Term,s:Substitution[Term]):ComputationBounds[Pair[Boolean,Substitution[Term]]]
+       def check(t:Term,s:STMSubstitution[Term]):(Boolean,STMSubstitution[Term],Option[Term])
              =condition.check(t,s);
 
        def isFinal:Boolean = (zipIndexStep==ZI_FINAL);
@@ -199,11 +222,11 @@ class MatchingNet(val theory:Theory)
   val autoStates = new ArrayBuffer[AutoState];
   val allRules = new ArrayBuffer[TermRule];
 
-  case class Failure(val t:Term, val m:String, val prev:Option[Failure])
-  case class Success(val s:STMSubstitution[Term], val node:Node)
+  case class Failure(val t:Term, val m:String)
+  case class Success(val s:STMSubstitution[Term], val node:Node, val result:Option[Term])
 
 
-  def doMatch(t:Term)(implicit ctx:CallContext):ComputationBounds[Either[Failure,Success]]=
+  def doMatch(t:Term):Either[Failure,Success]=
     doMatchStep(begTerm=t,
                 inTerm=t,
                 inZi=BigInt(1),
@@ -213,7 +236,7 @@ class MatchingNet(val theory:Theory)
                 inStateIndex=0,
                 inNodes=autoStates(0).nc.find(t.name,t.arity),
                 inLastNode=None,
-                inTrampolinedCheck=None)(ctx);
+                inTrampolinedCheck=None);
                  
 
   def doMatchStep(
@@ -227,9 +250,8 @@ class MatchingNet(val theory:Theory)
                   inNodes: List[Node],
                   inLastNode: Option[Node],
                   inTrampolinedCheck: Option[Pair[Boolean,Substitution[Term]]]
-                   )(implicit ctx:CallContext): ComputationBounds[Either[Failure,Success]] =
-  ctx. withCall {
-    (ctx:CallContext) => implicit val ictx=ctx;
+                   ): Either[Failure,Success] =
+  {
     var cZi = inZi;
     var cTerm = inTerm;
     var cUpTerm = inUpTerm;
@@ -239,38 +261,13 @@ class MatchingNet(val theory:Theory)
     var cNodes = inNodes;
     var cTest = false;
     var cLastNode = inLastNode;
-    var optResult: Option[ComputationBounds[Either[Failure,Success]]] = None;
+    var optResult: Option[Either[Failure,Success]] = None;
     var trampolinedCheck=inTrampolinedCheck;
     while(!cNodes.isEmpty && optResult!=None) {
       val node = cNodes.head;
-      val check = try{
-                   if (trampolinedCheck==None) {
-                       node.check(cTerm,cSubst);
-                   } else {
-                       val tmp = trampolinedCheck.get;
-                       trampolinedCheck=None;
-                       Done(tmp);
-                   }
-                  } catch {
-                   case ex: CallCCException[Pair[Boolean,Substitution[Term]]] => 
-                     throw new CallCCException(
-                        CallCC.compose(ex.current, {
-                          (r:Pair[Boolean,Substitution[Term]], ctx:CallContext) => 
-                            doMatchStep(begTerm,cTerm,cZi,cSubst,cUpTerm,cChildIndex,
-                                        cStateIndex,cNodes,cLastNode,Some(r))(ctx)
-                        })
-                     );
-                  }
-      if (!check.isDone) {
-        optResult=Some(
-            CallCC.compose(check, {
-                (r:Pair[Boolean,Substitution[Term]], ctx:CallContext) => 
-                            doMatchStep(begTerm,cTerm,cZi,cSubst,cUpTerm,cChildIndex,
-                                        cStateIndex,cNodes,cLastNode,Some(r))(ctx)
-              }));
-      }else{
+      val check = node.check(cTerm,cSubst);
         cLastNode = Some(node);
-        var (cTest,nextSubst:STMSubstitution[Term]) = check.result.get;
+        var (cTest,nextSubst:STMSubstitution[Term],optBranch) = check;
         if (cTest) {
           cSubst=nextSubst; 
           node.zipIndexStep match {
@@ -281,23 +278,23 @@ class MatchingNet(val theory:Theory)
                         cChildIndex=0;
                         cZi=cZi*2;
                     } else {
-                        optResult=Some(Done(Left(Failure(begTerm,"down step is not available",None))));
+                        optResult=Some(Left(Failure(begTerm,"down step is not available")));
                     }  
             case ZI_RIGHT => 
                     if (cUpTerm==None) {
-                        optResult=Some(Done(Left(Failure(begTerm,"right step is not available",None))));
+                        optResult=Some(Left(Failure(begTerm,"right step is not available")));
                     } else {
                         cChildIndex=cChildIndex+1; 
                         val up = cUpTerm.get;
                         if (cChildIndex >= up.arity) {
-                          optResult=Some(Done(Left(Failure(begTerm,"right step is not available",None))));
+                          optResult=Some(Left(Failure(begTerm,"right step is not available")));
                         } else {
                           cTerm = up.subterms(cChildIndex); 
                           cZi=cZi*2+1;
                         }
                     }
             case ZI_FINAL => 
-                    optResult=Some(Done(Right(Success(cSubst,node))))
+                    optResult=Some(Right(Success(cSubst,node,optBranch)))
             case _   =>
                      throw new TermWareException("internal error: invalid zipIndexStep"); 
           }
@@ -308,7 +305,6 @@ class MatchingNet(val theory:Theory)
         } else {
           cNodes = cNodes.tail;
         }
-      }
       if (optResult==None && cNodes.isEmpty) {
         cLastNode match {
          case Some(lastNode) => {
@@ -316,12 +312,12 @@ class MatchingNet(val theory:Theory)
             cStateIndex = lastNode.autoStateOnFail;
             var(cUpTerm,optCurrTerm,cChildIndex)=ZipIndex(begTerm,cZi);
             if (optCurrTerm==None) {
-                optResult=Some(Done(Left(Failure(begTerm,"invalid zip index on fail",None))));
+                optResult=Some(Left(Failure(begTerm,"invalid zip index on fail")));
             } else {
                 cTerm=optCurrTerm.get;
             }
          }
-         case None => optResult=Some(Done(Left(Failure(begTerm,"empty node sequence",None))))
+         case None => optResult=Some(Left(Failure(begTerm,"empty node sequence")));
         }
       }
       cSubst = cSubst withIndex cZi;
@@ -329,7 +325,7 @@ class MatchingNet(val theory:Theory)
     if (optResult!=None) {
        optResult.get;
     } else {
-       Done(Left(Failure(begTerm,"behind constant loop",None)));
+       Left(Failure(begTerm,"behind constant loop"));
     }
   }
              
@@ -358,11 +354,14 @@ class MatchingNet(val theory:Theory)
         allS += nRule;
       }
     );
-    val allOutState = getOrCreateOutState(allS);
-    val noneOutState = getOrCreateOutState(noneS);
+    allOutState = Some(getOrCreateOutState(allS));
+    noneOutState = Some(getOrCreateOutState(noneS));
     // TODO: add to none fail node.
-    build(zi,allOutState,noneOutState,zi,upR,cR,0);
+    build(zi,allOutState.get,noneOutState.get,zi,upR,cR,0);
   }
+
+  var allOutState:Option[OutState]=None;
+  var noneOutState:Option[OutState]=None;
 
   def build(zi: BigInt, 
             prevOutState: OutState,
@@ -381,7 +380,7 @@ class MatchingNet(val theory:Theory)
                                           failOutState, failZi,
                                           upRuleParts, cRuleParts, hi);
        if (arity == 0) {
-         val n = new Node(zi,T,ZI_FINAL,nextOwnState,nextFailState,nextFailZi);
+         val n = new Node(zi,buildRuleTermCondition(ruleIndexes),ZI_FINAL,nextOwnState,nextFailState,nextFailZi);
          prevOutState.addFNFA(zi,name,arity,n);
        }else{
          var n = new Node(zi,T,ZI_DOWN,nextOwnState,nextFailState,nextFailZi);
@@ -424,7 +423,7 @@ class MatchingNet(val theory:Theory)
                                           prevOutState,nextOutState,
                                           failOutState,failZi,
                                           upRuleParts, cRuleParts, hi);
-       val n = new Node(zi,T,ZI_FINAL,nextOutState,nextFailState,nextFailZi);
+       val n = new Node(zi,buildRuleTermCondition(ruleIndexes),ZI_FINAL,nextOutState,nextFailState,nextFailZi);
        prevOutState.addFNAA(zi,name,n);
     }
     for( (arity,ruleIndexes) <- nc.anfa) {
@@ -433,7 +432,7 @@ class MatchingNet(val theory:Theory)
                                           prevOutState,nextOutState,
                                           failOutState,failZi,
                                           upRuleParts, cRuleParts, hi);
-       val n = new Node(zi,T,ZI_FINAL,nextOutState,nextFailState,nextFailZi);
+       val n = new Node(zi,buildRuleTermCondition(ruleIndexes),ZI_FINAL,nextOutState,nextFailState,nextFailZi);
        prevOutState.addANFA(zi,arity,n);
     }
     if (!nc.anaa.isEmpty) {
@@ -442,7 +441,7 @@ class MatchingNet(val theory:Theory)
                                           prevOutState,nextOutState,
                                           failOutState,failZi,
                                           upRuleParts, cRuleParts, hi);
-       val n = new Node(zi,T,ZI_FINAL,nextOutState,nextFailState,nextFailZi);
+       val n = new Node(zi,buildRuleTermCondition(nc.anaa),ZI_FINAL,nextOutState,nextFailState,nextFailZi);
        prevOutState.addANAA(zi,n);
     }
    }
@@ -527,4 +526,40 @@ class MatchingNet(val theory:Theory)
      } 
    }
 
+   def buildRuleTermCondition(ruleIndexes: Set[Int]): MatchingCondition =
+   {
+     checkUnreachable(ruleIndexes);
+     new RuleBranchMatchingCondition(ruleIndexes.toList.flatMap(allRules(_).branches));
+   }
+
+   def checkUnreachable(ruleIndexes: Set[Int]): Unit =
+   {
+    var wasTrue=false;
+    for(ri <- ruleIndexes) {
+      val r = allRules(ri);
+      for(branch <- r.branches) {
+        if (branch.condition.isQuickTrue) {
+           if (wasTrue) {
+              addBuildError("branch is not reachable",branch);
+           } else {
+              wasTrue=true;
+           }
+        } else {
+           if (wasTrue) {
+              addBuildError("branch is not reachable",branch);
+              return;
+           }
+        }
+      }
+    }
+   }
+
+   def addBuildError(message:String, where: TermRuleBranch): Unit =
+   {
+     errors :+ (message, where) ;
+   }
+
+   var errors = Seq[Pair[String,AnyRef]]();
+
 }
+

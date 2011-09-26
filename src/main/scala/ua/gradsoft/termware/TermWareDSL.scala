@@ -35,7 +35,6 @@ trait TermWareDSL extends DefaultTermNames
   def a(n:String) = theory.atomSignature(n).createConstant(n);
   
 
-
 }
 
 object TermWareDSL extends TermWareDSL

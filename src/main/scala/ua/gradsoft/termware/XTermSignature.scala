@@ -39,21 +39,15 @@ class XTermSignature(th:Theory) extends TermSignature
 
   override def createConstant(arg:Any) = throwUOE; 
 
-  def termType(ct:ComputationBounds[Term])(implicit ctx:CallContext)
-                                                  :ComputationBounds[Term] = {
-   if (ct.isDone) {
-    val t = ct.result.get;
+  def termType(t:Term) :Term = {
     t.getAttribute(theory.symbolTable.TYPE) match {
+         case Some(x) => x
          case None => {
-            val retval = Done(theory.typeAlgebra.top)
-            t.setAttribute(theory.symbolTable.TYPE, new ComputationBoundsTerm(retval));
+            val retval = theory.typeAlgebra.top;
+            t.setAttribute(theory.symbolTable.TYPE, retval);
             retval;
          }
-         case Some(x) => Done(x)
     }
-   } else {
-    CallCC.compose(ct, { (x:Term, ctx:CallContext) => termType(Done(x))(ctx); })
-   }
   }
 
   val theory=th;

@@ -7,7 +7,8 @@ trait TermSystem
 
   def theory: Theory;
 
-  def reduce(ct:ComputationBounds[Term])(implicit ctx:CallContext) 
-                                                  :ComputationBounds[Term];
+  def reduce(t: Term): Pair[Term, Boolean]
+
+  def reduce(ct: ComputationBounds[Term])(implicit ctx:CallContext): ComputationBounds[Pair[ComputationBounds[Term], Boolean]]
 
 }

@@ -44,13 +44,11 @@ class LetTermSignature(th:Theory) extends TermSignature
     }
   }
 
-  def termType(ct:ComputationBounds[Term])(implicit ctx:CallContext):
-                                              ComputationBounds[Term] = {
-     if (ct.isDone) {
-       ct.result.get.signature.termType(ct);
-     } else {
-       CallCC.compose(ct,(t:Term)=>t.signature.termType(Done(t)) );
-     }
+  def termType(t:Term):Term = {
+    t match {
+      case pt:ProxyTerm => pt.proxy.termType
+      case _ => throwUOE
+    }
   }
 
 

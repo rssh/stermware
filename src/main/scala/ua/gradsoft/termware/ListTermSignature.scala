@@ -42,25 +42,19 @@ class ListTermSignature(th:Theory)
                            this.createTerm(name, args.drop(1)),this)
   };
  
- def termType(ct:ComputationBounds[Term])(implicit ctx:CallContext)
-                                                 :ComputationBounds[Term] = {
-  if (ct.isDone) {
-   val t = ct.result.get;
+ def termType(t:Term): Term = {
    t.getAttribute(theory.symbolTable.TYPE) match {
-      case Some(x) =>  Done(x)
+      case Some(x) =>  x
       case None   => {
         val typeIn = theory.freeFunSignature.createTerm(
                                t.name,
                                t.subterms.map( _.termType )
                      );
-        val typeOut = theory.typeAlgebra.reduce(typeIn);
-        t.setAttribute(theory.symbolTable.TYPE, new ComputationBoundsTerm(typeOut));
+        val typeOut = theory.typeAlgebra.reduce(typeIn)._1;
+        t.setAttribute(theory.symbolTable.TYPE, typeOut);
         typeOut
       }
    }
-  } else {
-   CallCC.compose(ct, { (t:Term,ctx:CallContext) => termType(Done(t))(ctx); });
-  }
  } 
  
  

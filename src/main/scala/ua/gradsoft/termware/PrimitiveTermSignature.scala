@@ -18,7 +18,8 @@ abstract class PrimitiveTermSignature(th:Theory) extends SimpleTermSignature
    **/
   def typeName: String;
 
-  override def simpleTermType(t:Term):Term = termType;
+  override def termType(t:Term):Term = termType;
+
   lazy val termType = theory.freeAtomSignature.createConstant(typeName);
 
   val theory=th;

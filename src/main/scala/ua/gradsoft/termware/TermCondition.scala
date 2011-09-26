@@ -19,9 +19,9 @@ trait TermCondition
   def isQuickTrue:  Boolean;
   
   /**
-   * return function which eval condition and leave result on data stack.
+   * eval condition with given substitution
    **/
-  def evalConditionFn(s:Substitution[Term]): ComputationBounds[Boolean]
+  def eval(s:STMSubstitution[Term]): (Boolean, STMSubstitution[Term])
 
 
 }
@@ -31,7 +31,7 @@ object TrueTermCondition extends TermCondition
 
   def isQuickTrue=true;
   def isQuickFalse=false;
-  def evalConditionFn(s:Substitution[Term]) = Done(true);
+  def eval(s:STMSubstitution[Term]) = (true, s);
 
 }
 
@@ -40,7 +40,7 @@ object FalseTermCondition extends TermCondition
 
   def isQuickTrue=false;
   def isQuickFalse=true;
-  def evalConditionFn(s:Substitution[Term]) = Done(false);
+  def eval(s:STMSubstitution[Term]) = (false, s);
 
 }
 

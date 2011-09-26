@@ -19,10 +19,6 @@ trait SimpleTermSignature extends TermSignature
     
   // def createSpecial(args: Any*): Term;
 
-   def termType(cbt:ComputationBounds[Term])(implicit ctx:CallContext):
-                                                    ComputationBounds[Term]=
-      CallCC.compose(cbt,{ (t:Term,ctx:CallContext)=>Done(simpleTermType(t))});
-
-   def simpleTermType(t:Term):Term;
+   def termType(t:Term):Term;
 
 }

@@ -19,27 +19,19 @@ class FreeFunctionalTermSignature(val theory:Theory)
  def createTerm(name:Name, args:IndexedSeq[Term]) : Term =  
          new FreeFunctionalTerm(name,args,this);
  
- def termType(ct:ComputationBounds[Term])(implicit ctx:CallContext)
-                                                 :ComputationBounds[Term] = {
-  if (ct.isDone) {
-   val t = ct.result.get;
+ def termType(t:Term):Term = {
    t.getAttribute(theory.symbolTable.TYPE) match {
-      case Some(x) =>  Done(x)
+      case Some(x) => x
       case None   => {
         val typeIn = theory.freeFunSignature.createTerm(
                         t.name,
                         t.subterms.map{ _.termType }
                      );
-        val typeOut = theory.typeAlgebra.reduce(typeIn);
-        CallCC.onProgress(typeOut) {
-          ctx:CallContext => t.setAttribute(theory.symbolTable.TYPE, new ComputationBoundsTerm(typeOut));
-        }
+        val typeOut = theory.typeAlgebra.reduce(typeIn)._1;
+        t.setAttribute(theory.symbolTable.TYPE, typeOut);
         typeOut;
       }
    }
-  } else {
-   CallCC.compose(ct,((t:Term,ctx:CallContext)=>termType(Done(t))(ctx)));
-  }
  } 
  
 

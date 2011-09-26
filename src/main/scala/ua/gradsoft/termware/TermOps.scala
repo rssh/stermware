@@ -14,10 +14,12 @@ trait TermOps
 
   def % (t:Term) = signature.theory.createFunTerm("percent",this,t);
 
-  def < (t:Term) = signature.theory.createFunTerm("less",this,t);
-  def <= (t:Term) = signature.theory.createFunTerm("lessEq",this,t);
-  def > (t:Term) = signature.theory.createFunTerm("greater",this,t);
-  def >= (t:Term) = signature.theory.createFunTerm("greaterEq",this,t);
+ //
+ //this is reserved by Ordered
+ // def < (t:Term) = signature.theory.createFunTerm("less",this,t);
+ // def <= (t:Term) = signature.theory.createFunTerm("lessEq",this,t);
+ // def > (t:Term) = signature.theory.createFunTerm("greater",this,t);
+ // def >= (t:Term) = signature.theory.createFunTerm("greaterEq",this,t);
 
   // eq and new does not overloaded.
   //def == (t:Term) = signature.theory.createFunTerm("greaterEq",this,t);
@@ -35,5 +37,6 @@ trait TermOps
 
   def << (t:Term) = signature.theory.createFunTerm("leftShift",this,t);
   def >> (t:Term) = signature.theory.createFunTerm("rightShift",this,t);
+
 
 }

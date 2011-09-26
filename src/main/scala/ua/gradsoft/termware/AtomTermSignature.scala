@@ -22,7 +22,7 @@ class AtomTermSignature(override val theory:Theory, tn:Name)
   /**
    * type of atom is atom itself.
    **/
-  override def simpleTermType(t:Term):Term = t;
+  override def termType(t:Term):Term = t;
 
 }
 

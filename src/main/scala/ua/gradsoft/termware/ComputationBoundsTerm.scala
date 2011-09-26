@@ -85,7 +85,7 @@ class ComputationBoundsTerm(val cbt: ComputationBounds[Term]) extends Term
 
    override def theory: Theory = term.theory;
 
-   override def termType(implicit ctx:CallContext) = term.termType(ctx);
+   override def termType: Term = term.termType;
 
    override def isX: Boolean = term.isX;
 

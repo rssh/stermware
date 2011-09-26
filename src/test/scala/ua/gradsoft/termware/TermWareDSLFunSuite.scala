@@ -56,4 +56,19 @@ class TermWareDSLFunSuite extends FunSuite {
 
   }
 
+  test("build rule without vars") {
+     import TermWareDSL._;
+
+     val t1:Term = a("a1");
+     val t2:Term = a("a2");
+
+     //val rule = rule(t1 -> t2);
+     //System.out.println();
+
+  }
+
+
+
 }
+
+
