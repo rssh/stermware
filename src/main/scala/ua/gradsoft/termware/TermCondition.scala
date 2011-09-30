@@ -23,6 +23,17 @@ trait TermCondition
    **/
   def eval(s:STMSubstitution[Term]): (Boolean, STMSubstitution[Term])
 
+  /**
+   * logical and 
+   **/
+  def && (c: TermCondition) = AndTermCondition(this,c);
+
+  @inline
+  final def and (c: TermCondition) = &&(c);
+
+  def || (c: TermCondition) = OrTermCondition(this,c);
+
+  def unary_! = NotTermCondition(this);
 
 }
 
@@ -44,6 +55,62 @@ object FalseTermCondition extends TermCondition
 
 }
 
+case class AndTermCondition(val frs:TermCondition, val snd:TermCondition) extends TermCondition
+{
+
+  def isQuickTrue=(frs.isQuickTrue && snd.isQuickTrue);
+  def isQuickFalse=(frs.isQuickFalse || snd.isQuickFalse);
+
+  def eval(s:STMSubstitution[Term]) = 
+    frs.eval(s) match {
+      case (true,s1) => snd.eval(s1)
+      case (false,s1) => (false,s)
+    }
+
+}
+
+case class OrTermCondition(val frs:TermCondition, val snd:TermCondition) extends TermCondition
+{
+
+  def isQuickTrue=(frs.isQuickTrue || snd.isQuickTrue);
+  def isQuickFalse=(frs.isQuickFalse && snd.isQuickFalse);
+
+  def eval(s:STMSubstitution[Term]) = 
+    frs.eval(s) match {
+      case (true,s1) => (true, s1)
+      case (false,s1) => snd.eval(s)
+    }
+
+}
+
+case class NotTermCondition(val frs:TermCondition) extends TermCondition
+{
+
+  def isQuickTrue=(frs.isQuickFalse);
+  def isQuickFalse=(frs.isQuickTrue);
+
+  def eval(s:STMSubstitution[Term]) = 
+    frs.eval(s) match {
+      case (true, s1) => (false, s1)
+      case (false, s1) => (true, s1)
+    }
+
+}
+
+class FunTermCondition(
+                        val fun: (Seq[Term]=>Boolean),
+                        val args:Seq[Term]
+                       ) extends TermCondition
+{
+
+  def isQuickTrue=false;
+  def isQuickFalse=false;
+   
+  def eval(s:STMSubstitution[Term]) =
+                (fun(args.map(_.fixSubst(s))),s)
+
+}
+
 object TermCondition
 {
 
@@ -53,9 +120,9 @@ object TermCondition
        case false => FalseTermCondition
     }
 
-   def apply(t:Term):TermCondition = build(t);
+   def apply(t:Term, ts:TermSystem):TermCondition = build(t,ts);
 
-   def build(t:Term):TermCondition =
+   def build(t:Term, ts:TermSystem):TermCondition =
    {
      if (t.isBoolean) {
          apply(t.getBoolean);
@@ -64,5 +131,6 @@ object TermCondition
          throw new UnsupportedOperationException("not implemented");
      }
    }
+
 
 }

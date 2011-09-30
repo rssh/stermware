@@ -10,8 +10,10 @@ case class TermRule(val pattern:Term, branches: List[TermRuleBranch])
 
 }
 
-class TermRuleBuilder(override val theory:Theory) extends DefaultTermNames
+class TermRuleBuilder(ts:TermSystem) extends DefaultTermNames
 {
+
+  def theory = ts.theory;
 
   def build(t:Term):Seq[TermRule] = {
     t match {
@@ -24,7 +26,7 @@ class TermRuleBuilder(override val theory:Theory) extends DefaultTermNames
                 while(!cb.isNil) {
                   val b=cb.subterm(0);
                   rbranches=TermRuleBranch(
-                             TermCondition(b.subterm(0)),b.subterm(1))::rbranches;
+                             TermCondition(b.subterm(0),ts),b.subterm(1))::rbranches;
                   cb=cb.subterm(1);
                 }
                 TermRule(pattern, rbranches.reverse)::Nil
@@ -41,7 +43,7 @@ class TermRuleBuilder(override val theory:Theory) extends DefaultTermNames
 
 object TermRule
 {
-  def build(t:Term, th:Theory) = new TermRuleBuilder(th).build(t);
+  def build(t:Term, ts:TermSystem) = new TermRuleBuilder(ts).build(t);
 }
 
 

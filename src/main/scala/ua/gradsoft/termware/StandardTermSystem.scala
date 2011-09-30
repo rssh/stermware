@@ -8,6 +8,7 @@ import ua.gradsoft.termware.flow._;
 class StandardTermSystem(
                          override val theory: Theory,
                          val matching: MatchingNet,
+                         val facts: FactsDatabase,
                          val strategy: Strategy
                         ) extends TermSystem
 {
