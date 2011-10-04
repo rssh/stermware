@@ -13,4 +13,15 @@ class BooleanTermSignature(th:Theory) extends PrimitiveTermSignature(th)
 
   override def typeName = "Boolean";
 
+  /**
+   * native Boolean object reference.
+   **/
+  def toAnyRef(t:Term) = java.lang.Boolean.valueOf(t.getBoolean);
+
+  /**
+   * return native boolean.
+   **/
+  def toAny(t:Term) = t.boolean_! ;
+
+
 }

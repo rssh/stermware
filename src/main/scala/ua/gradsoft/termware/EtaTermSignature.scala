@@ -65,6 +65,16 @@ class EtaTermSignature(th:Theory) extends TermSignature
      }
   }
 
+  /**
+   * return t.
+   **/
+  def toAnyRef(t:Term) = t;
+
+  /**
+   * return t
+   **/
+  def toAny(t:Term) = t;
+
 
   val theory=th;
 

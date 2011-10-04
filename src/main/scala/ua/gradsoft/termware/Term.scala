@@ -88,6 +88,10 @@ trait Term extends TValue
 
   def toComputationBounds: ComputationBounds[Term] = Done(this);
 
+  def toAnyRef = signature.toAnyRef(this);
+
+  def toAny = signature.toAny(this);
+
   def print(out: PrintWriter): Unit ;
 
   def print(out: OutputStream = System.out): Unit = {
@@ -103,6 +107,7 @@ trait Term extends TValue
     pw.flush();
     return sw.toString
   }
+
 
 }
 

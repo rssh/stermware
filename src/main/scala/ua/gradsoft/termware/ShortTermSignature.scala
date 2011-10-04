@@ -14,4 +14,15 @@ class ShortTermSignature(th:Theory) extends PrimitiveTermSignature(th)
 
   def typeName = "Short" ;
 
+  /**
+   * native Short object reference.
+   **/
+  def toAnyRef(t:Term) = java.lang.Short.valueOf(t.getShort);
+
+  /**
+   * return short value.
+   **/
+  def toAny(t:Term) = t.short_! ;
+
+
 }

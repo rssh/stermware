@@ -13,4 +13,9 @@ class StringTermSignature(th:Theory) extends PrimitiveTermSignature(th)
 
   override def typeName = "String";
 
+  def toAnyRef(t:Term) = t.getString;
+
+  def toAny(t:Term) = t.getString ;
+
+
 }

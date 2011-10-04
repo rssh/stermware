@@ -14,6 +14,17 @@ class ByteTermSignature(th:Theory) extends PrimitiveTermSignature(th)
 
   override def typeName = "Byte" ;
 
+  /**
+   * native Byte object reference.
+   **/
+  def toAnyRef(t:Term) = java.lang.Byte.valueOf(t.getByte);
+
+  /**
+   * return byte value.
+   **/
+  def toAny(t:Term) = t.byte_! ;
+
+
 }
 
 

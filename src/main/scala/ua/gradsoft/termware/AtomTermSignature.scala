@@ -24,5 +24,15 @@ class AtomTermSignature(override val theory:Theory, tn:Name)
    **/
   override def termType(t:Term):Term = t;
 
+  /**
+   * reference of atom is atom itself.
+   **/
+  def toAnyRef(t:Term) = t;
+
+  /**
+   * return t
+   **/
+  def toAny(t:Term) = t;
+
 }
 

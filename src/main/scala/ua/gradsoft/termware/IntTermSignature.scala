@@ -14,4 +14,15 @@ class IntTermSignature(th:Theory) extends PrimitiveTermSignature(th)
 
   override def typeName = "Int" ;
 
+  /**
+   * native Int object reference.
+   **/
+  def toAnyRef(t:Term) = java.lang.Integer.valueOf(t.getInt);
+
+  /**
+   * return int value.
+   **/
+  def toAny(t:Term) = t.int_! ;
+
+
 }

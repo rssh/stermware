@@ -4,6 +4,7 @@ import ua.gradsoft.termware.freeterms._;
 import ua.gradsoft.termware.parser.OperatorSyntax;
 
 trait FreeAlgebra extends Theory
+                     with DefaultTermTranslation
 {
 
   val booleanSignature = new BooleanTermSignature(this);

@@ -14,4 +14,17 @@ class LongTermSignature(th:Theory) extends PrimitiveTermSignature(th)
 
   val typeName = "Long" ;
 
+  /**
+   * native Long object reference.
+   **/
+  def toAnyRef(t:Term) = java.lang.Long.valueOf(t.getLong);
+
+  /**
+   * return long value.
+   **/
+  def toAny(t:Term) = t.long_! ;
+
+
+
+
 }

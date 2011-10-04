@@ -84,5 +84,22 @@ class LetTermSignature(th:Theory) extends TermSignature
 
   override def createSpecial(args: Any*) = throwUOE;
 
+   /**
+    * t when unbound, or proxy.getAnyRef when bound.
+    **/
+   def toAnyRef(t:Term) = 
+     t match {
+       case pt: ProxyTerm => pt.proxy.toAnyRef
+       case _ => t
+     }
+
+  def toAny(t:Term) = 
+     t match {
+       case pt: ProxyTerm => pt.proxy.toAnyRef
+       case _ => t
+     }
+
+
+
 }
 

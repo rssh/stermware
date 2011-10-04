@@ -12,4 +12,15 @@ class NilTermSignature(th:Theory) extends PrimitiveTermSignature(th)
   val nil = new NilTerm(this);
   lazy val NIL = th.symbolTable.getOrCreate("Nil");
 
+ /**
+   * reference of nil is scala nil.
+   **/
+  def toAnyRef(t:Term) = Nil;
+
+  /**
+   * return scala nil.
+   **/
+  def toAny(t:Term) = Nil;
+
+
 }

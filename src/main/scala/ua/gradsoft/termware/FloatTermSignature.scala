@@ -13,4 +13,17 @@ class FloatTermSignature(th:Theory) extends PrimitiveTermSignature(th)
 
   override def typeName = "Float" ;
 
+ /**
+   * native Float object reference.
+   **/
+  def toAnyRef(t:Term) = java.lang.Float.valueOf(t.getFloat);
+
+  /**
+   * return float value.
+   **/
+  def toAny(t:Term) = t.float_! ;
+
+
+
+
 }

@@ -148,9 +148,18 @@ trait TValue extends GeneralUtil
 
   def getChar: Char = throwUOE;
 
+  @inline
+  final def char_! : Char = getChar;
+
+  /**
+   * is this is string ?
+   **/
   def isString:  Boolean = false;
 
   def getString: String = throwUOE;
+
+  @inline
+  final def string_! : String = getString;
 
   /**
    * is this a special exception object ?

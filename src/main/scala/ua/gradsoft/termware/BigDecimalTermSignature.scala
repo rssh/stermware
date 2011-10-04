@@ -14,4 +14,15 @@ class BigDecimalTermSignature(th:Theory) extends PrimitiveTermSignature(th)
 
   override def typeName = "BigDecimal" ;
 
+  /**
+   * native BigDecimal object.
+   **/
+  def toAnyRef(t:Term) = t.getBigDecimal;
+
+  /**
+   * return native BigDecimal object.
+   **/
+  def toAny(t:Term) = t.getBigDecimal;
+
+
 }

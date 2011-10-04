@@ -120,4 +120,14 @@ trait TermSignature
     **/
    def theory: Theory;
 
+   /**
+    * transform term to native language object reference.
+    **/
+   def toAnyRef(t:Term):AnyRef;
+
+   /**
+    * transform term to native language object.
+    **/
+   def toAny(t:Term):Any;
+
 }

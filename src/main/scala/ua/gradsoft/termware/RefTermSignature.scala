@@ -13,4 +13,9 @@ class RefTermSignature(th:Theory) extends PrimitiveTermSignature(th)
 
   def typeName="Ref";
 
+  def toAnyRef(t:Term) = t.getRef;
+
+  def toAny(t:Term) = t.getRef;
+
+
 }

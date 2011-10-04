@@ -70,10 +70,24 @@ class WithTermSignature(th:Theory) extends TermSignature
      }
   }
 
+  def toAnyRef(t:Term) =
+     t match {
+       case pt: WithTerm => pt.proxy.toAnyRef;
+       case _ => t
+     }
+
+
+  def toAny(t:Term) = 
+     t match {
+       case pt: WithTerm => pt.proxy.toAny;
+       case _ => t
+     }
+
 
   def apply(s:TermSignature):TermSignature = s;
 
   val theory=th;
+
 
   
   /**
@@ -97,6 +111,8 @@ class WithTermSignature(th:Theory) extends TermSignature
       };
       (seq,m);
   }
+
+
 
 }
 

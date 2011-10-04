@@ -64,5 +64,12 @@ trait Theory extends TermWareInstance
  def createFunTerm(name:String, args:Term*):Term 
               = createFunTerm(symbolTable.getOrCreate(name),args:_*);
 
+ def toAnyRef(t:Term):AnyRef = t.signature.toAnyRef(t);
+
+ def toAny(t:Term): Any = t.signature.toAny(t);
+
+ def fromAnyRef(x:AnyRef): Term;
+
+ def fromAny(x:Any): Term;
 
 }
