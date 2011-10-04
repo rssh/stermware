@@ -24,5 +24,18 @@ class ShortTermSignature(th:Theory) extends PrimitiveTermSignature(th)
    **/
   def toAny(t:Term) = t.short_! ;
 
+  def fromAnyRef(x:AnyRef) =
+   x match {
+      case n: java.lang.Number => Some(ShortTerm(n.shortValue,this))
+      case _ => None
+   }
+
+  def fromAny(x:Any) =
+   x match {
+      case n: Short => Some(ShortTerm(n,this))
+      case r: AnyRef => fromAny(r)
+      case _ => None
+   }
+
 
 }

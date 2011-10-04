@@ -23,5 +23,19 @@ class BooleanTermSignature(th:Theory) extends PrimitiveTermSignature(th)
    **/
   def toAny(t:Term) = t.boolean_! ;
 
+  def fromAnyRef(x:AnyRef) =
+   x match {
+      case  b: java.lang.Boolean => Some(BooleanTerm(b,this))
+      case  t: Term => if (t.isBoolean) Some(t) else None
+      case _ => None
+   }
+
+  def fromAny(x:Any) =
+   x match {
+      case b: Boolean => Some(new BooleanTerm(b,this))
+      case r: AnyRef => fromAnyRef(r)
+      case _ => None
+   }
+
 
 }

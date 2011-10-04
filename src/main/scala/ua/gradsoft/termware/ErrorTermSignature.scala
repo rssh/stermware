@@ -32,6 +32,23 @@ class ErrorTermSignature(th:Theory) extends TermSignature
 
   def toAny(t:Term) = t.getException;
 
+  /**
+   *
+   **/
+  def fromAnyRef(x:AnyRef) = 
+    x match {
+      case e: Exception => Some(new ErrorTerm(e,this))
+      case t: Term => if (t.isError) Some(t) else None
+      case _ => None
+    }
+
+  def fromAny(x:Any) = 
+    x match {
+      case r: AnyRef => fromAnyRef(r)
+      case _ => None
+    }
+
+
   lazy val typeTerm = theory.atomSignature(theory.symbolTable.ERROR).createConstant(theory.symbolTable.ERROR);
   val theory = th;
 

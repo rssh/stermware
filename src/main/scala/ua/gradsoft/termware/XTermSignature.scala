@@ -4,6 +4,7 @@ import ua.gradsoft.termware.flow._;
 
 class XTermSignature(th:Theory) extends TermSignature
                                        with GeneralUtil
+                                       with RefTranslatedTermSignature
 {
 
   override def fixedName = None;
@@ -55,10 +56,12 @@ class XTermSignature(th:Theory) extends TermSignature
    **/
    def toAnyRef(t:Term) = t;
 
-  /**
-   * return t
-   **/
-  def toAny(t:Term) = t;
+  def fromAnyRef(x:AnyRef) =
+    x match {
+      case t: Term => if (t.isX) Some(t) else None
+      case _ => None
+    }
+
 
   val theory=th;
 }

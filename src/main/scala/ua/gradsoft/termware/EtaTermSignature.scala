@@ -7,6 +7,7 @@ import ua.gradsoft.termware.util.TermOrdering;
 
 class EtaTermSignature(th:Theory) extends TermSignature
                                     with GeneralUtil
+                                    with RefTranslatedTermSignature
 {
 
   override def fixedName = Some(theory.symbolTable.ETA);
@@ -71,10 +72,14 @@ class EtaTermSignature(th:Theory) extends TermSignature
   def toAnyRef(t:Term) = t;
 
   /**
-   * return t
+   * we can;t create with from external term,
+   * except it was selt.
    **/
-  def toAny(t:Term) = t;
-
+  def fromAnyRef(x:AnyRef) =
+    x match {
+      case t: Term => if (t.isEta) Some(t) else None
+      case _ => None
+    }
 
   val theory=th;
 

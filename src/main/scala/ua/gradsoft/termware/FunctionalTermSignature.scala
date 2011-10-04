@@ -5,6 +5,7 @@ package ua.gradsoft.termware;
  **/
 trait FunctionalTermSignature extends TermSignature
                                   with GeneralUtil
+                                  with RefTranslatedTermSignature
 {
 
    /**
@@ -23,9 +24,12 @@ trait FunctionalTermSignature extends TermSignature
    def toAnyRef(t:Term) = t;
 
   /**
-   * return t
+   * check that t is term.
    **/
-  def toAny(t:Term) = t;
-
+  def fromAnyRef(x:AnyRef) =
+   x match {
+      case  t: Term => Some(t)
+      case _ => None
+   }
 
 }

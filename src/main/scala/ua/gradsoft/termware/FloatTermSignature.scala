@@ -23,6 +23,21 @@ class FloatTermSignature(th:Theory) extends PrimitiveTermSignature(th)
    **/
   def toAny(t:Term) = t.float_! ;
 
+ def fromAnyRef(x:AnyRef) =
+   x match {
+      case n: java.lang.Number => Some(FloatTerm(n.floatValue,this))
+      case t: Term => if (t.isFloat) Some(t) else None
+      case _ => None
+   }
+
+  def fromAny(x:Any) =
+   x match {
+      case n: Float => Some(FloatTerm(n,this))
+      case r: AnyRef => fromAny(r)
+      case _ => None
+   }
+
+
 
 
 

@@ -24,6 +24,21 @@ class DoubleTermSignature(th:Theory) extends PrimitiveTermSignature(th)
    **/
   def toAny(t:Term) = t.double_! ;
 
+  def fromAnyRef(x:AnyRef) =
+   x match {
+      case n: java.lang.Number => Some(DoubleTerm(n.doubleValue,this))
+      case _ => None
+   }
+
+  def fromAny(x:Any) =
+   x match {
+      case n: Float => Some(DoubleTerm(n,this))
+      case n: Double => Some(DoubleTerm(n,this))
+      case r: AnyRef => fromAny(r)
+      case _ => None
+   }
+
+
 
 
 }

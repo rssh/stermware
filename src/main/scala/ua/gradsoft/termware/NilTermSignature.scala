@@ -22,5 +22,18 @@ class NilTermSignature(th:Theory) extends PrimitiveTermSignature(th)
    **/
   def toAny(t:Term) = Nil;
 
+  def fromAnyRef(x:AnyRef) =
+    x match {
+      case Nil => Some(nil)
+      case t: Term => if (t.isNil) Some(t) else None
+      case _ => None
+    }
+
+  def fromAny(x:Any) =
+    x match {
+      case r: AnyRef => fromAnyRef(r)
+      case _ => None
+    }
+
 
 }

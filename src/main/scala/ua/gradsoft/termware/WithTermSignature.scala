@@ -83,6 +83,21 @@ class WithTermSignature(th:Theory) extends TermSignature
        case _ => t
      }
 
+  /**
+   * we can;t create with from external term,
+   * except it was selt.
+   **/
+  def fromAnyRef(x:AnyRef) = 
+    x match {
+      case t: Term => Some(t)
+      case _ => None
+    }
+
+  def fromAny(x:Any) = 
+    x match {
+      case r: AnyRef => fromAnyRef(r)
+      case _ => None
+    }
 
   def apply(s:TermSignature):TermSignature = s;
 

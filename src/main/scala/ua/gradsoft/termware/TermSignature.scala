@@ -130,4 +130,15 @@ trait TermSignature
     **/
    def toAny(t:Term):Any;
 
+   /**
+    * transform native language object reference to term.
+    **/
+   def fromAnyRef(x:AnyRef): Option[Term];
+
+   /**
+    * transform native language object to term.
+    **/
+   def fromAny(x:Any):Option[Term];
+
+
 }

@@ -24,6 +24,22 @@ class ByteTermSignature(th:Theory) extends PrimitiveTermSignature(th)
    **/
   def toAny(t:Term) = t.byte_! ;
 
+  def fromAnyRef(x:AnyRef) =
+   x match {
+      case  b: java.lang.Number => Some(new ByteTerm(b.byteValue,this))
+      case  t: Term => if (t.isByte) Some(t) else None
+      case _ => None
+   }
+
+  def fromAny(x:Any) =
+   x match {
+      case x: Byte => Some(new ByteTerm(x,this))
+      case r: AnyRef => fromAnyRef(r)
+      case _ => None
+   }
+
+
+
 
 }
 

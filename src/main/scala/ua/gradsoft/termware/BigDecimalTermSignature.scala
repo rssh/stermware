@@ -25,4 +25,19 @@ class BigDecimalTermSignature(th:Theory) extends PrimitiveTermSignature(th)
   def toAny(t:Term) = t.getBigDecimal;
 
 
+  def fromAnyRef(x:AnyRef) =
+   x match {
+      case bd: BigDecimal => Some(BigDecimalTerm(bd,this))
+      case  t: Term => if (t.isBigDecimal) Some(t) else None
+      case _ => None
+   }
+
+  def fromAny(x:Any) =
+   x match {
+      case x: Long => fromAnyRef(BigDecimal.valueOf(x))
+      case r: AnyRef => fromAnyRef(r)
+      case _ => None
+   }
+
+
 }
