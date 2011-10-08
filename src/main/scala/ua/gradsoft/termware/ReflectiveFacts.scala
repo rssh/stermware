@@ -9,7 +9,7 @@ import java.lang.reflect.Modifier;
  T* output signals are mapped to approproative methods
  * of facts objects.
  **/
-trait RefelectiveFacts extends FactsDatabase
+trait ReflectiveFacts extends FactsDatabase
 {
 
  def resolveSignal(th:Theory, n:Name, a:Int): Option[(Seq[Term],STMSubstitution[Term])=>(Boolean,STMSubstitution[Term])] =
@@ -18,7 +18,7 @@ trait RefelectiveFacts extends FactsDatabase
     val myClass = this.getClass;
     val myObj = this;
     myClass.getMethods.flatMap{
-      (m:Method) => if ((m.getName)==n && Modifier.isPublic(m.getModifiers)) {
+            (m:Method) => if ((m.getName)==n.string && Modifier.isPublic(m.getModifiers)) {
                           val rt = m.getReturnType;
                           if (rt == classOf[java.lang.Boolean] || rt == classOf[Boolean]) {
                             methodInvocationWithArgs(m,a,th).map{
@@ -39,7 +39,7 @@ trait RefelectiveFacts extends FactsDatabase
  def resolveAction(th: Theory, n:Name,a:Int): Option[(Seq[Term],STMSubstitution[Term])=>Unit] =
  {
    this.getClass.getMethods.flatMap{
-      (m:Method) => if ((m.getName)==n && Modifier.isPublic(m.getModifiers)) {
+      (m:Method) => if ((m.getName)==n.string && Modifier.isPublic(m.getModifiers)) {
          // return type always ignored. 
          methodInvocationWithArgs(m,a,th) map {
            (f:((Seq[Term],STMSubstitution[Term])=>AnyRef)) =>
@@ -54,7 +54,7 @@ trait RefelectiveFacts extends FactsDatabase
  def resolveFunction(th:Theory, n:Name, a:Int): Option[(Seq[Term],STMSubstitution[Term])=>Term] =
  {
    this.getClass.getMethods.flatMap{
-      (m:Method) => if ((m.getName)==n && Modifier.isPublic(m.getModifiers)) {
+      (m:Method) => if ((m.getName)==n.string && Modifier.isPublic(m.getModifiers)) {
                         methodInvocationWithArgs(m,a,th) map {
                            (f:((Seq[Term],STMSubstitution[Term])=>AnyRef)) =>
                            {
