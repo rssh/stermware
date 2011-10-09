@@ -76,7 +76,8 @@ trait ReflectiveFacts extends FactsDatabase
       // TODO: think about exception handling
      Some({ 
         (args:Seq[Term],s:STMSubstitution[Term]) => 
-         m.invoke(myObj,transformArgs(args,a,0));
+         val jargs = transformArgs(args,a,0);
+         m.invoke(myObj,jargs:_*);
      })
   } else if (pt.length == a+1) {
      if (pt(0).isAssignableFrom(classOf[STMSubstitution[Term]])) {
@@ -84,13 +85,13 @@ trait ReflectiveFacts extends FactsDatabase
         (args:Seq[Term],s:STMSubstitution[Term]) => 
         val mArgs = transformArgs(args,pt.length,1);
         mArgs(0)=s;
-        th.fromAnyRef(m.invoke(myObj,mArgs));
+        th.fromAnyRef(m.invoke(myObj,mArgs:_*));
       }) 
      } else if (pt(pt.length-1).isAssignableFrom(classOf[STMSubstitution[Term]])) {
       Some{
         (args:Seq[Term],s:STMSubstitution[Term]) => 
         val mArgs = transformArgs(args,pt.length,0);
-        th.fromAnyRef(m.invoke(myObj,mArgs));
+        th.fromAnyRef(m.invoke(myObj,mArgs:_*));
       }
      } else {
         None;
@@ -101,12 +102,14 @@ trait ReflectiveFacts extends FactsDatabase
  }
 
 
- private def transformArgs(args:Seq[Term],methodArity:Int,offset:Int): Array[AnyRef] =
+ private def transformArgs(args:Seq[Term],methodArity:Int,offset:Int): 
+                                                                Array[AnyRef]=
  {
    var i=0;
    val retval = new Array[AnyRef](methodArity);
    while(i<args.length) {
      retval(i+offset)=args(i).toAnyRef;
+     i += 1;
    }
    retval;
  }
