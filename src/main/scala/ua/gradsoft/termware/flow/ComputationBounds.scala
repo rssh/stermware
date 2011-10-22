@@ -48,8 +48,8 @@ case class ContCall[+A,+B,XA <: A](
         val s = try {
                  thunk(ctx);
                 } catch {
-                  case ex: CallCCException[A] =>
-                        throw new CallCCException(Call{
+                  case ex: CallCCThrowable[A] =>
+                        throw new CallCCThrowable(Call{
                                 (ctx:CallContext) => step(ctx) })(ex.ctx);
                 }
           if (s.isDone) {

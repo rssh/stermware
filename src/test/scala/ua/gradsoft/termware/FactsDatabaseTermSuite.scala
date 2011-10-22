@@ -22,9 +22,15 @@ class FactsDatabaseFunSuite extends FunSuite {
     val rf1_1 = f1s(Seq(TermWare.instance.fromAny(3)),
                         STMSubstitution.empty[Term]);
     assert(rf1_1._1);
-    val fU1Name = TermWare.instance.symbolTable.getOrCreate("fU1");
-    val optFU1 = facts.resolveSignal(TermWare.instance,fU1Name,1);
-    assert(optFU1==None);
+    val rf1_2 = f1s(Seq(TermWare.instance.fromAny(2)),
+                        STMSubstitution.empty[Term]);
+    assert(!rf1_2._1);
+   //TODO: think what to do.
+   // val rf1_3 = f1s(Seq(TermWare.instance.fromAny("qqq")),
+   //                     STMSubstitution.empty[Term]);
+   // val fU1Name = TermWare.instance.symbolTable.getOrCreate("fU1");
+   // val optFU1 = facts.resolveSignal(TermWare.instance,fU1Name,1);
+   // assert(optFU1==None);
   }
 
 }

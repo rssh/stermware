@@ -17,7 +17,7 @@ object CallCC
              try {
                current = current.step(CallContext.empty);
              } catch {
-                case ex: CallCCException[A] => current = ex.current;
+                case ex: CallCCThrowable[A] => current = ex.current;
              }
          }
        }
@@ -41,12 +41,12 @@ object CallCC
                quit=true;
              }
            }catch{
-             case ex:CallCCException[A] => current=ex.current;
+             case ex:CallCCThrowable[A] => current=ex.current;
              if (current.isDone) {
                 val sa = cont(current.result.get,ctx);
-                throw new CallCCException(sa)(ex.ctx);
+                throw new CallCCThrowable(sa)(ex.ctx);
              } else {
-                throw new CallCCException(Call{ (ctx:CallContext)=> 
+                throw new CallCCThrowable(Call{ (ctx:CallContext)=> 
                                           compose(ca,cont)(ctx) });
              }
            }
@@ -80,9 +80,9 @@ object CallCC
             try {
               cca=cca.step(ctx)
             } catch {
-              case ex: CallCCException[A] => {
+              case ex: CallCCThrowable[A] => {
                 cca = ex.current;
-                throw new CallCCException(
+                throw new CallCCThrowable(
                    Call{ (ctx:CallContext)=> pair(cca,ccb)(ctx) })(ex.ctx);
               }
             }
@@ -93,9 +93,9 @@ object CallCC
             try {
               ccb=ccb.step(ctx)
             } catch {
-              case ex: CallCCException[B] => {
+              case ex: CallCCThrowable[B] => {
                 ccb = ex.current;
-                throw new CallCCException(
+                throw new CallCCThrowable(
                     Call{ (ctx:CallContext)=> pair(cca,ccb)(ctx) })(ex.ctx);
               }
             }
@@ -127,7 +127,7 @@ object CallCC
            current=current.step(ctx);
         }
       } catch {
-         case ex:CallCCException[A] => {
+         case ex:CallCCThrowable[A] => {
               current = ex.current;
               inex=true;
          }
@@ -168,7 +168,7 @@ object CallCC
                  }
                }
            if (s.wasException) {
-              throw new CallCCException(Call{
+              throw new CallCCThrowable(Call{
                  (ctx:CallContext) => seq1(s.lDone,s.lInProcess)(ctx)
               })
            }

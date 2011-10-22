@@ -21,7 +21,7 @@ case class CallContext(val nesting: Int=0)
                                              ComputationBounds[Y] = 
         { 
           if (nesting > CallCC.MAX_NESTING) {
-            throw new CallCCException(
+            throw new CallCCThrowable(
                     Call{ (ctx:CallContext) => ctx.withCall(block) })(this);
           } else {
             block(this.next); 
