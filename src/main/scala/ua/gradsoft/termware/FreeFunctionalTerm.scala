@@ -2,7 +2,6 @@ package ua.gradsoft.termware;
 
 import scala.collection.mutable.HashMap;
 import java.io.PrintWriter;
-import ua.gradsoft.termware.fn._;
 
 
 class FreeFunctionalTerm(n:Name,ts:IndexedSeq[Term],

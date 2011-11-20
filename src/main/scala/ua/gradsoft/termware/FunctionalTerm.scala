@@ -2,7 +2,6 @@ package ua.gradsoft.termware;
 
 import scala.collection.mutable.{HashMap => MutableHashMap};
 import java.io.PrintWriter;
-import ua.gradsoft.termware.fn._;
 import ua.gradsoft.termware.flow._;
 
 abstract class FunctionalTerm(s:TermSignature) extends Term

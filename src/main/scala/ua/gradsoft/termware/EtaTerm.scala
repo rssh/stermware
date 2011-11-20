@@ -5,7 +5,6 @@ import scala.collection.immutable.Map;
 import scala.collection.immutable.TreeMap;
 import scala.collection.mutable.{HashMap => MutableHashMap};
 import java.io.PrintWriter;
-import ua.gradsoft.termware.fn._;
 import ua.gradsoft.termware.util._;
 import ua.gradsoft.termware.flow._;
 
