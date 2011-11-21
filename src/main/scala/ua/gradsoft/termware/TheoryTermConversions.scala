@@ -66,24 +66,25 @@ trait TheoryTermConversions
       case x:java.lang.Long => th.longSignature.createConstant(x)
       case x:BigInt => th.bigIntSignature.createConstant(x)
       case x:BigDecimal => th.bigDecimalSignature.createConstant(x)
+      case x:java.math.BigDecimal => th.bigDecimalSignature.createConstant(x)
       case x:String => th.stringSignature.createConstant(x)
       case x:java.lang.Character => th.charSignature.createConstant(x)
-      case x:Array[AnyRef] => {
+      case x:Array[_] => {
          val newBody = new Array[Term](x.length);
          var i=0;
          while(i < x.length) {
-           newBody(i) = termFromAnyRef(th,x(i));
+           newBody(i) = termFromAny(th,x(i));
            i += 1;
          }
          return th.arraySignature.createSpecial(newBody);
       }
-      case x:List[AnyRef] => {
+      case x:List[_] => {
          if (x.isEmpty) {
           return th.nilSignature.createSpecial();
          } else {
           val consName = th.listSignature.fixedName.get;
           return th.listSignature.createTerm(consName, 
-                                            termFromAnyRef(th,x.head), 
+                                            termFromAny(th,x.head), 
                                             termFromAnyRef(th,x.drop(1)));
          }
       }
@@ -130,6 +131,21 @@ trait TheoryTermConversions
    }else{
      throw new TermWareException("Can't convert term to reference");    
    }
+  }
+
+  def termFromAny(th:Theory, a:Any):Term =
+  {
+    //termFromAnyRef
+    a match {
+      case x:Byte => th.byteSignature.createConstant(x)
+      case x:Short => th.shortSignature.createConstant(x)
+      case x:Int => th.intSignature.createConstant(x)
+      case x:Long => th.longSignature.createConstant(x)
+      case x:Character => th.charSignature.createConstant(x)
+      case x:AnyRef => termFromAnyRef(th,x)
+      case x => /* impossible */
+                  throw new TermWareException("Can't convert term from any: unknown type for "+x.toString);
+    }
   }
 
   def termFromList(th:Theory, l:List[Term]):Term = 

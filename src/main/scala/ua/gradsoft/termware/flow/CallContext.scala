@@ -17,12 +17,12 @@ case class CallContext(val nesting: Int=0)
    * call block in next level of nesting
    **/
   @inline
-  def withCall[Y](block:CallContext=>ComputationBounds[Y]):
+  def withCall[Y:Manifest](block:CallContext=>ComputationBounds[Y]):
                                              ComputationBounds[Y] = 
         { 
           if (nesting > CallCC.MAX_NESTING) {
             throw new CallCCThrowable(
-                    Call{ (ctx:CallContext) => ctx.withCall(block) })(this);
+                    Call{ (ctx:CallContext) => ctx.withCall(block) })(this,manifest[Y]);
           } else {
             block(this.next); 
           }

@@ -68,7 +68,7 @@ trait Term extends TValue
 
   def onTermCompare[T](t:Term)
                       (cont:(Int,CallContext) => ComputationBounds[T]) 
-                      (implicit ctx:CallContext) : ComputationBounds[T] =
+                      (implicit ctx:CallContext, mt: Manifest[T]) : ComputationBounds[T] =
      CallCC.compose(termCompare(t),cont);
 
   override def compare(that:Term):Int = fixTermCompare(that);

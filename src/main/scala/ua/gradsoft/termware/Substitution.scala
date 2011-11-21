@@ -17,10 +17,10 @@ trait Substitution[A] extends PartialFunction[A,A]
 
 object SimpleSubstitution
 {
-  def empty[A<:Unificable[A]] = new SimpleSubstitution[A](TreeMap.empty);
+  def empty[A<:Unificable[A]](implicit ma:Manifest[A]) = new SimpleSubstitution[A](TreeMap.empty);
 }
 
-class SimpleSubstitution[A<:Unificable[A]](val v: Map[A,A]) extends Substitution[A]
+class SimpleSubstitution[A<:Unificable[A]](val v: Map[A,A])(implicit ma:Manifest[A]) extends Substitution[A]
 {
 
   def +(kv:(A,A))(implicit ctx:CallContext): 
@@ -40,12 +40,13 @@ class SimpleSubstitution[A<:Unificable[A]](val v: Map[A,A]) extends Substitution
 
 object STMSubstitution
 {
-  def empty[A<:Unificable[A]] = new STMSubstitution[A](TreeMap[A,Pair[BigInt,A]](),BigInt(1));
+  def empty[A<:Unificable[A]](implicit ma:Manifest[A]) = new STMSubstitution[A](TreeMap[A,Pair[BigInt,A]](),BigInt(1));
 }
 
 
 class STMSubstitution[A<:Unificable[A]](val v: Map[A,Pair[BigInt,A]],
-                    val lastZipIndex: BigInt) extends Substitution[A]
+                    val lastZipIndex: BigInt)
+                    (implicit ma:Manifest[A]) extends Substitution[A]
 {
   def withIndex(newZipIndex:BigInt):STMSubstitution[A] = {
         val cmp = lastZipIndex.compare(newZipIndex);

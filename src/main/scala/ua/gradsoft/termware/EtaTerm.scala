@@ -88,9 +88,10 @@ class EtaTerm(vars:IndexedSeq[XTerm], l:Term, r:Term, rs:Option[Term], s:EtaTerm
        val substituted = CallCC.tuple(
                Call{ (ctx:CallContext)=>left.subst(s1)(ctx) },
                Call{ (ctx:CallContext)=>right.subst(s1)(ctx) },
-               Call{ (ctx:CallContext)=> rest match {
+               Call{ (ctx:CallContext)=> implicit val ictx = ctx;
+                                         rest match {
                                            case None => Done(None)
-                                           case Some(xRest) => CallCC.some(xRest.subst(s1))(ctx) 
+                                           case Some(xRest) => CallCC.some(xRest.subst(s1))
                                          } 
                    }
        );

@@ -15,7 +15,8 @@ class StandardTermSystem(
 
    def reduce(t:Term) : Pair[Term,Boolean] =
    {
-    val (cbt:ComputationBounds[Term],r:Boolean) = reduceStep(t);
+    //val (cbt:ComputationBounds[Term],r:Boolean) = reduceStep(t);
+    val (cbt,r) = reduceStep(t);
     return (CallCC.trampoline(cbt),r);
    }
 

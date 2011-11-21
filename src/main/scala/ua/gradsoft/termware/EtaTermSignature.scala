@@ -29,8 +29,14 @@ class EtaTermSignature(th:Theory) extends TermSignature
   override def createSpecial(args: Any*):Term = 
   {
     val v:IndexedSeq[XTerm]=args(0) match {
-                     case x:IndexedSeq[XTerm] => x
-                     case _                   => null
+                     case x:IndexedSeq[_] =>
+                                           if (x.isEmpty) 
+                                             IndexedSeq[XTerm]()
+                                           else if (x.head.isInstanceOf[XTerm]) 
+                                             x.asInstanceOf[IndexedSeq[XTerm]]
+                                           else
+                                             throwUOE;
+                     case _                   => throwUOE;
     };
     if (v==null) throwUOE;
     val l:Term = args(1) match {

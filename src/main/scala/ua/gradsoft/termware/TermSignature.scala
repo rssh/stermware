@@ -48,16 +48,7 @@ trait TermSignature
          = createTerm(name, args);
 
    def createTerm(name:Name, args: Term*): Term = {
-    args match {
-     case x: IndexedSeq[Term] => createTerm(name,x)
-     case _ => {
-       val arr = new Array[Term](args.length);
-       for( i <- 0 to args.length-1) {
-          arr.update(i,args(i));
-       }
-       createTerm(name,arr);
-     }
-    }
+          createTerm(name,args.toIndexedSeq)
    }
 
   /**

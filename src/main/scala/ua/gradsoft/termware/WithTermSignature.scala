@@ -49,7 +49,7 @@ class WithTermSignature(th:Theory) extends TermSignature
    **/
   override def createSpecial(args: Any*):Term = 
   {
-   if (args(0).isInstanceOf[IndexedSeq[XTerm]]
+   if (args(0).isInstanceOf[IndexedSeq[_]]
        &&
        args(1).isInstanceOf[Term]) {
      new WithTerm(args(0).asInstanceOf[IndexedSeq[XTerm]],

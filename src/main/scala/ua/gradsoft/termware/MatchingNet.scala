@@ -267,7 +267,8 @@ class MatchingNet(val theory:Theory)
       val node = cNodes.head;
       val check = node.check(cTerm,cSubst);
         cLastNode = Some(node);
-        var (cTest,nextSubst:STMSubstitution[Term],optBranch) = check;
+        //var (cTest,nextSubst:STMSubstitution[Term],optBranch) = check;
+        var (cTest,nextSubst,optBranch) = check;
         if (cTest) {
           cSubst=nextSubst; 
           node.zipIndexStep match {

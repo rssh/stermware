@@ -105,8 +105,8 @@ trait ProxyTerm  extends Term
 
    override def onTermCompare[T](t:Term)
                       (cont:(Int,CallContext) => ComputationBounds[T])
-                      (implicit ctx:CallContext) : ComputationBounds[T] =
-    proxy.onTermCompare(t)(cont)(ctx);
+                      (implicit ctx:CallContext, mt:Manifest[T]) : ComputationBounds[T] =
+    proxy.onTermCompare(t)(cont);
 
 
    override def termEq(t:Term)(implicit ctx:CallContext): ComputationBounds[Boolean] 

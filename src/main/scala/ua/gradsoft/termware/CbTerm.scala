@@ -21,7 +21,7 @@ trait CbTerm extends CbTValue
   def arity(implicit ctx:CallContext): ComputationBounds[Int];
 
   def patternArity(implicit ctx: CallContext):ComputationBounds[Option[Int]] = 
-       CallCC.some(arity)(ctx);
+       CallCC.some(arity);
 
   def subterm(i:Int)(implicit ctx:CallContext): CbTerm;
 
@@ -62,8 +62,10 @@ trait CbTerm extends CbTValue
 
   def onTermCompare[T](t:CbTerm)
                       (cont:(Int,CallContext) => ComputationBounds[T]) 
-                      (implicit ctx:CallContext) : ComputationBounds[T] =
-     CallCC.compose(termCompare(t),cont);
+                      (implicit ctx:CallContext,mt:Manifest[T]) : ComputationBounds[T] =
+  {
+   CallCC.compose(termCompare(t),cont);
+  }
 
   def termEq(t:CbTerm)(implicit ctx:CallContext): ComputationBounds[Boolean] = {
     CallCC.compose(termCompare(t),
