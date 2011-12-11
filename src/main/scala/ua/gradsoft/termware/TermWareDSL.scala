@@ -12,13 +12,14 @@ trait TermWareDSL extends DefaultTermNames
 
   /**
    *Functionl term represented as
+   *<pre>
    * Name `with` (x1,...xN) 
    *  or
    * Name with_ Seq(  )
    *
    * '*' can be used instead `with`
+   *</pre>
    **/
-
   class NameVerb(fn:Name)
   {
      def with_ (x:Seq[Term]): Term = theory.funSignature(fn).createTerm(fn,x:_*); 

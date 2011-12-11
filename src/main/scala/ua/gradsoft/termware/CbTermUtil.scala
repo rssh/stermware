@@ -26,6 +26,10 @@ object CbTermUtil
             def apply(x:CbTerm) =
                    s.apply(x.toTerm).toCbTerm
 
+            def  lastZipIndex = s.lastZipIndex;
+
+            def  withIndex(zi:BigInt) = cb(s.withIndex(zi));
+
             def +(kv:(CbTerm,CbTerm))(implicit ctx:CallContext)
                                : ComputationBounds[(Boolean,Substitution[CbTerm])] =
                CallCC.compose(
@@ -57,6 +61,10 @@ object CbTermUtil
 
             def apply(x:Term) =
                    s.apply(x.toCbTerm).toTerm
+
+            def lastZipIndex = s.lastZipIndex;
+
+            def withIndex(zi:BigInt) = uncb(s.withIndex(zi));
 
             def +(kv:(Term,Term))(implicit ctx:CallContext)
                                : ComputationBounds[(Boolean,Substitution[Term])] =

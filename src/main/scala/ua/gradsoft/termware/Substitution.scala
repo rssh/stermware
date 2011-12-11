@@ -9,33 +9,13 @@ trait Substitution[A] extends PartialFunction[A,A]
 {
 
   def +(kv:(A,A))(implicit ctx:CallContext)
-                               : ComputationBounds[(Boolean,Substitution[A])] ;
+                           : ComputationBounds[(Boolean,Substitution[A])] ;
 
+  def withIndex(newZipIndex:BigInt): Substitution[A]
+
+  def lastZipIndex: BigInt;
 
 }
-
-
-object SimpleSubstitution
-{
-  def empty[A<:Unificable[A]](implicit ma:Manifest[A]) = new SimpleSubstitution[A](TreeMap.empty);
-}
-
-class SimpleSubstitution[A<:Unificable[A]](val v: Map[A,A])(implicit ma:Manifest[A]) extends Substitution[A]
-{
-
-  def +(kv:(A,A))(implicit ctx:CallContext): 
-                            ComputationBounds[(Boolean,Substitution[A])] = {
-    val r = v.get(kv._1);
-    if (r==None) 
-       Done(true,new SimpleSubstitution[A](v+kv))
-     else 
-       r.get.unify(kv._2,new SimpleSubstitution[A](v+kv));
-  } 
-
-  override def isDefinedAt(a:A) = v.isDefinedAt(a);
-  override def apply(a:A):A = v.apply(a);
-
-};
 
 
 object STMSubstitution
@@ -60,7 +40,7 @@ class STMSubstitution[A<:Unificable[A]](val v: Map[A,Pair[BigInt,A]],
   }
                     
   def +(kv:(A,A))(implicit ctx:CallContext):
-                              ComputationBounds[(Boolean,Substitution[A])] = {
+                            ComputationBounds[(Boolean,Substitution[A])] = {
     val r = v.get(kv._1);
     val zkv = kv._1->Pair(lastZipIndex,kv._2);
     if (r==None) 

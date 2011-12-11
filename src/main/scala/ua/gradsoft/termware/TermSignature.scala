@@ -5,43 +5,46 @@ import ua.gradsoft.termware.flow._;
 /**
  * Term signature. Can be interpreted as behaviourial definition
  * for family of some kinds of term.
- */
+ **/
 trait TermSignature
 {
 
   /**
+   * if term -- arity
    * @return fixed arity (or None if getFixedArity)
-   */
+   **/
   def fixedArity: Option[Int];
 
   /**
+   * get index of subterm by name.
    * @param name = name of subterm.
    * @return index of subterm with name, or null if isNamedSubterm is false
-   *  or name is not found.
-   */
+   * or name is not found.
+   **/
   def indexByName: Option[Name => Option[Int]];
 
   /**
    * return index-name of subterm.
    * @param index
    * @return name of subterm, if names by indexes are defined. 
-   */
+   **/
   def nameByIndex: Option[Int => Option[Name]];
 
   /**
    * @return fixed name of objects with such signature or none if one 
    * does not exists
-   */
+   **/
   def  fixedName: Option[Name];
 
 
   /**
+   * create term.
    * @param name - name of term to create. if isFixedName is true, than
    *  must be same, as getFixedName
    * @param args - arguments to create.
    * @return newly-created term if signature restrictions
    *  allow one. Otherwise - throw UnsupportedOperationException.
-   */
+   **/
    def createTerm(name:Name, args: IndexedSeq[Term]): Term;
 
    def fixCreate(name:Name, args:IndexedSeq[Term]): Term 
@@ -53,7 +56,7 @@ trait TermSignature
 
   /**
    * create term in computation bounds.
-   */
+   **/
    def createTerm(name:Name, args:IndexedSeq[ComputationBounds[Term]])
                  (implicit ctx:CallContext):ComputationBounds[Term] = 
      CallCC.compose(CallCC.seq(args),
@@ -93,12 +96,12 @@ trait TermSignature
     
    /**
     * get constant, defined by object
-    */
+    **/
    def createConstant(arg:Any): Term;
     
    /**
     * create special construct (names are difined in subclasses).
-    */
+    **/
    def createSpecial(args: Any*): Term;
 
    /**

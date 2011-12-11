@@ -6,30 +6,50 @@ import scala.collection.mutable.ArrayBuffer;
 import scala.collection.immutable.TreeMap;
 import ua.gradsoft.termware.flow._;
 
+
 object MatchingNet
 {
   def apply(th:Theory)=new MatchingNet(th);
 
 }
 
+/**
+ * abstraction of checker function, which called inside matching-net for 
+ * getting result of unifications and checking of conditions.
+ **/
 trait MatchingCondition
 {
-  def check(t:Term,s:STMSubstitution[Term]):(Boolean,STMSubstitution[Term],Option[Term])
+  /**
+   *Check - if current term satisficy part of rule.
+   *input
+   *@param t -- term to check.
+   *@param s -- substitution.
+   *output:
+   *@return result of check: tuple(r,s,b) where
+   *<ul>
+   * <li> r -- result of check </li>
+   * <li> s -- substitution (may be changed if result was successfull) </li>
+   * <li> b -- if check was successfull, than branch of rule, which satisficy condition.
+   *     (in case of simple rule -- just right part)
+   * </li>
+   *</ul> 
+   **/
+  def check(t:Term,s:Substitution[Term]):(Boolean,Substitution[Term],Option[Term])
 }
 
 object TrueMatchingCondition extends MatchingCondition
 {
-  def check(t:Term,s:STMSubstitution[Term]) = (true,s,None);
+  def check(t:Term,s:Substitution[Term]) = (true,s,None);
 }
 
 class  RuleBranchMatchingCondition(branches:List[TermRuleBranch]) extends MatchingCondition
 {
 
-  def check(t:Term,s:STMSubstitution[Term]) =
+  def check(t:Term,s:Substitution[Term]) =
   {
     var ct=branches;
     var resBranch: Option[Term] = None;
-    var resSubst:STMSubstitution[Term] = s;
+    var resSubst:Substitution[Term] = s;
     while( ct!=Nil && resBranch==None) {
       ct match {
         case branch::rest =>
@@ -43,6 +63,63 @@ class  RuleBranchMatchingCondition(branches:List[TermRuleBranch]) extends Matchi
     }
     (resBranch!=None,resSubst,resBranch);
   }
+
+}
+
+/**
+ * matching condition
+ **/
+class  XMatchingCondition(val pattern:Term, branches:List[TermRuleBranch]) extends MatchingCondition
+{
+
+  def check(t:Term,s:Substitution[Term]) =
+  {
+   val xc = CallCC.trampoline(
+              Call { (ctx:CallContext) => implicit val ictx = ctx;
+                                          s+(pattern->t) }
+            );
+   if (xc._1) {
+      branchesCondition.check(t,xc._2);
+   } else {
+      (false, s, None);
+   }
+  }
+
+  val branchesCondition = new RuleBranchMatchingCondition(branches);
+  
+}
+
+class SeqMatchingCondition(val seq:Seq[MatchingCondition])
+                                          extends MatchingCondition
+{
+
+  def this() = this(Seq[MatchingCondition]());
+   
+  def check(t:Term,s:Substitution[Term]):(Boolean,Substitution[Term],Option[Term]) =
+  {
+    var c = seq;
+    var found = false;
+    var ls = s;
+    var rt:Option[Term]=None;
+    while(!c.isEmpty && !found) {
+       val h = c.head;
+       c = c.tail;
+       val zi = ls.lastZipIndex;
+       val r = h.check(t,ls);
+       if (r._1) {
+          found=true;
+          ls = r._2;
+          rt = r._3;
+       } else {
+          ls = ls.withIndex(zi);
+       }
+    }
+    (found,ls,rt);
+  }
+
+  def :+(c:MatchingCondition): SeqMatchingCondition =
+     new SeqMatchingCondition(seq:+c);
+
 
 }
 
@@ -84,7 +161,7 @@ class MatchingNet(val theory:Theory)
                  zipIndexOnFail,
                  getAutoStateIndex(nextFailState,zi));
     
-       def check(t:Term,s:STMSubstitution[Term]):(Boolean,STMSubstitution[Term],Option[Term])
+       def check(t:Term,s:Substitution[Term]):(Boolean,Substitution[Term],Option[Term])
              =condition.check(t,s);
 
        def isFinal:Boolean = (zipIndexStep==ZI_FINAL);
@@ -223,7 +300,7 @@ class MatchingNet(val theory:Theory)
   val allRules = new ArrayBuffer[TermRule];
 
   case class Failure(val t:Term, val m:String)
-  case class Success(val s:STMSubstitution[Term], val node:Node, val result:Option[Term])
+  case class Success(val s:Substitution[Term], val node:Node, val result:Option[Term])
 
 
   def doMatch(t:Term):Either[Failure,Success]=
@@ -243,7 +320,7 @@ class MatchingNet(val theory:Theory)
                   begTerm: Term,
                   inTerm: Term,
                   inZi: BigInt,
-                  inSubst: STMSubstitution[Term],
+                  inSubst: Substitution[Term],
                   inUpTerm: Option[Term],
                   inChildIndex: Int,
                   inStateIndex: Int,
@@ -447,7 +524,6 @@ class MatchingNet(val theory:Theory)
     }
    }
 
-
    def buildFailState(zi:BigInt,
             prevState:OutState,nextState:OutState,
             prevFailState:OutState,prevFailZi:BigInt,
@@ -530,8 +606,25 @@ class MatchingNet(val theory:Theory)
    def buildRuleTermCondition(ruleIndexes: Set[Int]): MatchingCondition =
    {
      checkUnreachable(ruleIndexes);
-     new RuleBranchMatchingCondition(ruleIndexes.toList.flatMap(allRules(_).branches));
+     buildRuleTermCondition(ruleIndexes.toList.map(allRules(_)));
+     //new RuleBranchMatchingCondition(ruleIndexes.toList.flatMap(allRules(_).branches));
    }
+
+   def buildRuleTermCondition(rules: List[TermRule]): MatchingCondition =
+   {
+     val s0 = new SeqMatchingCondition();
+     val l:List[MatchingCondition] = rules map { 
+             (r:TermRule) => if (r.pattern.isX)
+                                   new XMatchingCondition(r.pattern,r.branches)
+                             else
+                                   new RuleBranchMatchingCondition(r.branches)
+                };
+     l.foldRight(s0)(
+                     (c:MatchingCondition, s: SeqMatchingCondition) =>
+                            s:+c
+                ) ;
+   }
+
 
    def checkUnreachable(ruleIndexes: Set[Int]): Unit =
    {

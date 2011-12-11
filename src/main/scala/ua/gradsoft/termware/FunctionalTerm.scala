@@ -18,7 +18,7 @@ abstract class FunctionalTerm(s:TermSignature) extends Term
   def isError: Boolean = false;
 
   def unify(t:Term, s: Substitution[Term])(implicit ctx:CallContext):
-                                ComputationBounds[(Boolean,Substitution[Term])] =
+                           ComputationBounds[(Boolean,Substitution[Term])] =
      ctx.withCall{
       (ctx:CallContext) => implicit val ictx = ctx;
         if (patternName==t.patternName && arity==t.arity) {

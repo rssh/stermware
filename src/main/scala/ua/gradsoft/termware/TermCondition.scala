@@ -21,7 +21,7 @@ trait TermCondition
   /**
    * eval condition with given substitution
    **/
-  def eval(s:STMSubstitution[Term]): (Boolean, STMSubstitution[Term])
+  def eval(s:Substitution[Term]): (Boolean, Substitution[Term])
 
   /**
    * logical and 
@@ -31,9 +31,16 @@ trait TermCondition
   @inline
   final def and (c: TermCondition) = &&(c);
 
+  /**
+   * logical or
+   **/
   def || (c: TermCondition) = OrTermCondition(this,c);
 
+  @inline
+  final def or (c: TermCondition) = ||(c);
+
   def unary_! = NotTermCondition(this);
+
 
 }
 
@@ -42,7 +49,7 @@ object TrueTermCondition extends TermCondition
 
   def isQuickTrue=true;
   def isQuickFalse=false;
-  def eval(s:STMSubstitution[Term]) = (true, s);
+  def eval(s:Substitution[Term]) = (true, s);
 
 }
 
@@ -51,7 +58,7 @@ object FalseTermCondition extends TermCondition
 
   def isQuickTrue=false;
   def isQuickFalse=true;
-  def eval(s:STMSubstitution[Term]) = (false, s);
+  def eval(s:Substitution[Term]) = (false, s);
 
 }
 
@@ -61,7 +68,7 @@ case class AndTermCondition(val frs:TermCondition, val snd:TermCondition) extend
   def isQuickTrue=(frs.isQuickTrue && snd.isQuickTrue);
   def isQuickFalse=(frs.isQuickFalse || snd.isQuickFalse);
 
-  def eval(s:STMSubstitution[Term]) = 
+  def eval(s:Substitution[Term]) = 
     frs.eval(s) match {
       case (true,s1) => snd.eval(s1)
       case (false,s1) => (false,s)
@@ -75,11 +82,42 @@ case class OrTermCondition(val frs:TermCondition, val snd:TermCondition) extends
   def isQuickTrue=(frs.isQuickTrue || snd.isQuickTrue);
   def isQuickFalse=(frs.isQuickFalse && snd.isQuickFalse);
 
-  def eval(s:STMSubstitution[Term]) = 
+  def eval(s:Substitution[Term]) = 
     frs.eval(s) match {
       case (true,s1) => (true, s1)
       case (false,s1) => snd.eval(s)
     }
+
+}
+
+abstract class CbTermCondition extends TermCondition
+{
+  def isQuickTrue=false;
+  def isQuickFalse=false;
+
+  def cbEval(s:Substitution[Term])(implicit ctx:CallContext):
+             ComputationBounds[(Boolean,Substitution[Term])]
+
+  def eval(s:Substitution[Term])=
+     CallCC.trampoline(Call{(ctx:CallContext)=>cbEval(s)(ctx)});
+
+}
+
+case class EqTermCondition(val frs:Term, val snd:Term) extends CbTermCondition
+{
+  override def isQuickTrue=false;
+  override def isQuickFalse=false;
+
+  def cbEval(s:Substitution[Term])(implicit ctx:CallContext) = 
+  {
+    import CallCC._;
+    pair(
+          compose(pair(frs.subst(s),snd.subst(s)),
+              { (xy:Pair[Term,Term],ctx:CallContext) => implicit val ictx = ctx;
+                                                        xy._1.termEq(xy._2) }),
+          Done(s)
+    );
+  }
 
 }
 
@@ -89,7 +127,7 @@ case class NotTermCondition(val frs:TermCondition) extends TermCondition
   def isQuickTrue=(frs.isQuickFalse);
   def isQuickFalse=(frs.isQuickTrue);
 
-  def eval(s:STMSubstitution[Term]) = 
+  def eval(s:Substitution[Term]) = 
     frs.eval(s) match {
       case (true, s1) => (false, s1)
       case (false, s1) => (true, s1)
@@ -97,7 +135,7 @@ case class NotTermCondition(val frs:TermCondition) extends TermCondition
 
 }
 
-class FunTermCondition(
+class FunSeqTermCondition(
                         val fun: (Seq[Term]=>Boolean),
                         val args:Seq[Term]
                        ) extends TermCondition
@@ -106,10 +144,11 @@ class FunTermCondition(
   def isQuickTrue=false;
   def isQuickFalse=false;
    
-  def eval(s:STMSubstitution[Term]) =
+  def eval(s:Substitution[Term]) =
                 (fun(args.map(_.fixSubst(s))),s)
 
 }
+
 
 object TermCondition
 {
