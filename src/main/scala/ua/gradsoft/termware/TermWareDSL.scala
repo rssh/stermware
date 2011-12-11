@@ -24,7 +24,7 @@ trait TermWareDSL extends DefaultTermNames
   {
      def with_ (x:Seq[Term]): Term = theory.funSignature(fn).createTerm(fn,x:_*); 
      def `with` (x:Term*): Term = theory.funSignature(fn).createTerm(fn,x:_*); 
-     def * (x:Term*): Term = theory.funSignature(fn).createTerm(fn,x:_*); 
+     def apply(x:Term*): Term = theory.funSignature(fn).createTerm(fn,x:_*); 
   };
 
   def FN(fn:Name) = new NameVerb(fn);

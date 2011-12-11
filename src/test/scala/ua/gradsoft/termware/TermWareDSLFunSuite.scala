@@ -24,10 +24,10 @@ class TermWareDSLFunSuite extends FunSuite {
 
      val t1: Term = FN(fn1) with_ Seq[Term](1,2);
      val t2: Term = FN(fn1) `with` (1,2);
-     val t3: Term = <>(fn1) * (1,2);
-     val t4: Term = <>("fn2") * (1,2);
+     val t3: Term = <>(fn1)(1,2);
+     val t5: Term = <>("fn2")(1,2);
 
-     t4 match {
+     t5 match {
         case Term(n,subterms,theory) =>
                                       assert(n.string=="fn2");
                                       assert(subterms.length==2);
@@ -40,7 +40,7 @@ class TermWareDSLFunSuite extends FunSuite {
   test("unfix operations on terms") {
      import TermWareDSL._;
 
-     val t: Term = (FN("f")*(1,2) + a("x")) * a("y");
+     val t: Term = (FN("f")(1,2) + a("x")) * a("y");
 
      t match {
        case Term(Name("multiply"),Seq(x1,x2),_) =>
@@ -55,6 +55,18 @@ class TermWareDSLFunSuite extends FunSuite {
      }
 
   }
+
+  test("apply on names") {
+     import TermWareDSL._;
+     val t: Term = FN("f")(1,2);
+     t match {
+       case Term(Name("f"),Seq(x1,x2),_) =>
+                 assert(x1.getInt==1,"first arg of fn must be 1");
+                 assert(x2.getInt==2,"secod arg of fn must be 2");
+       case _ => assert(false,"term must be matched to f");
+     }
+  }
+
 
   test("build rule without vars") {
      import TermWareDSL._;
