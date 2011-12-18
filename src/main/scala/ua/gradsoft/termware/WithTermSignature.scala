@@ -127,6 +127,10 @@ class WithTermSignature(th:Theory) extends TermSignature
       (seq,m);
   }
 
+  def to[T](t:Term)(implicit mt:Manifest[T]):Option[T] = None;
+  
+  def from[T](x:T)(implicit mt:Manifest[T]):Option[Term] = None;
+  
 
 
 }

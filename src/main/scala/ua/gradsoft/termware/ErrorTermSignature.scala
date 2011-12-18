@@ -48,7 +48,27 @@ class ErrorTermSignature(th:Theory) extends TermSignature
       case _ => None
     }
 
+  override def to[T](t:Term)(implicit mt:Manifest[T]): Option[T] = 
+  {
+    if ( mt <:< manifest[Exception] ) {
+    	Some(t.getException.asInstanceOf[T])
+    } else {
+    	None
+    }
+  }
+  
+  override def from[T](x:T)(implicit mt:Manifest[T]): Option[Term] = 
+  {
+  	if (mt <:< manifest[Exception]) {
+  		Some(new ErrorTerm(x.asInstanceOf[Exception],this))
+  	}else{
+  		fromAnyRef(x.asInstanceOf[AnyRef])
+  	}
+  }
 
+  
+
+  
   lazy val typeTerm = theory.atomSignature(theory.symbolTable.ERROR).createConstant(theory.symbolTable.ERROR);
   val theory = th;
 

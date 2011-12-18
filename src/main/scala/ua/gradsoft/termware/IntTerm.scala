@@ -2,6 +2,9 @@ package ua.gradsoft.termware;
 
 import java.lang.Number;
 
+/**
+ * Class of names, which represents Int-s
+ */
 final case class IntName(v: Int) extends Name
 {
  def kindIndex: Int = NameKindIndex.INT.id;
@@ -17,54 +20,57 @@ final case class IntName(v: Int) extends Name
 
 }
 
-case class IntTerm(v:Int, s:IntTermSignature) 
+/**
+ * Term, represented int values
+ */
+case class IntTerm(override val v:Int, s:IntTermSignature) 
                                extends NumberPrimitiveTerm[Int](v,s)
 {
 
   override def isByte: Boolean =
-           (value.toByte.toInt == value);
+           (v.toByte.toInt == v);
   override def getByte: Byte =
-      if (isByte) value.toByte else throwUOE;
+      if (isByte) v.toByte else throwUOE;
 
   override def isShort: Boolean =
-           (value.toShort.toInt == value);
+           (v.toShort.toInt == v);
   override def getShort: Short =
-      if (isShort) value.toShort else throwUOE;
+      if (isShort) v.toShort else throwUOE;
 
   override def isInt: Boolean = true;
-  override def getInt: Int = value;
+  override def getInt: Int = v;
 
   override def isLong: Boolean = true;
-  override def getLong: Long = value.toLong;
+  override def getLong: Long = v.toLong;
 
   override def isFloat: Boolean = true;
-  override def getFloat: Float = value.toFloat;
+  override def getFloat: Float = v.toFloat;
 
   override def isDouble: Boolean = true;
-  override def getDouble: Double = value.toDouble;
+  override def getDouble: Double = v.toDouble;
 
   override def isBigInt:  Boolean = true;
   override def getBigInt: BigInt =
-     new BigInt(java.math.BigInteger.valueOf(value));
+     new BigInt(java.math.BigInteger.valueOf(v));
 
   override def isBigDecimal:  Boolean = true;
   override def getBigDecimal: BigDecimal =
-     new BigDecimal(new java.math.BigDecimal(value));
+     new BigDecimal(new java.math.BigDecimal(v));
 
-  override def getNumber: Number = new java.lang.Integer(value);
+  override def getNumber: Number = new java.lang.Integer(v);
   override def getNumberKind: Int = NumberKind.INT.id;
 
-  def fixTermEq(t:Term):Boolean = t.isInt && t.getInt == value ;
+  def fixTermEq(t:Term):Boolean = t.isInt && t.getInt == v ;
 
   def fixTermCompare(t: Term):Int = {
     var c = termClassIndex - t.termClassIndex;
     if (c!=0) return c;
-    return (value - t.getInt);
+    return (v - t.getInt);
   }
 
   override def toString = value.toString;
 
-  lazy val name = new IntName(value);
-  lazy val termHashCode = value.toInt;
+  lazy val name = new IntName(v);
+  lazy val termHashCode = v.toInt;
 }
 

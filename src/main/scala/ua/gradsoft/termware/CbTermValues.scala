@@ -10,6 +10,8 @@ import ua.gradsoft.termware.flow._;
 trait CbTValue extends GeneralUtil
 {
 
+  def optValue[T](implicit mt:Manifest[T]): ComputationBounds[Option[T]];	
+	
   /**
    * is this is boolean ?
    */

@@ -11,6 +11,8 @@ import java.io.StringWriter;
  **/
 class TermCbTerm(val term:Term) extends CbTerm 
 {
+	
+  def optValue[T](implicit mt: Manifest[T]) = Done(term.optValue[T](mt));	
 
   def isBoolean: ComputationBounds[Boolean] = Done(term.isBoolean);
 

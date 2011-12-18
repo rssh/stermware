@@ -8,11 +8,13 @@ class FreeFunctionalTerm(n:Name,ts:IndexedSeq[Term],
                                s:FunctionalTermSignature) 
                                      extends FunctionalTerm(s)
 {
+	
+	
 
   def arity: Int = subterms.length;
 
   def subterm(i:Int):Term = subterms(i);
-  
+    
   lazy val termHashCode = name.hashCode+subterms.
                               foldLeft(0)((x:Int,y:Term)=>x+y.termHashCode);
 

@@ -37,6 +37,28 @@ class CharTermSignature(th:Theory) extends PrimitiveTermSignature(th)
       case _ => None
    }
 
+  override def to[T](t:Term)(implicit mt:Manifest[T]):Option[T] =
+  {
+  	if (mt <:< Manifest.Char) {
+  		Some(t.getChar).asInstanceOf[Option[T]]
+  	} else if (mt <:< manifest[java.lang.Character]) {
+  		Some(java.lang.Character.valueOf(t.getChar)).asInstanceOf[Option[T]]
+  	} else {
+  		None
+  	}
+  }
+  
+  override def from[T](x:T)(implicit mt:Manifest[T]): Option[Term] =
+  {
+  	if (mt <:< Manifest.Char) {
+  		Some(CharTerm(x.asInstanceOf[Char],this));
+  	} else if (mt <:< manifest[java.lang.Character]) {	
+  		Some(CharTerm(x.asInstanceOf[java.lang.Character].charValue(),this));
+  	} else {
+  		None
+  	}
+  }
+  
 
 
 }

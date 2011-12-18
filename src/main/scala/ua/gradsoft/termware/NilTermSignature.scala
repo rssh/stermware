@@ -35,5 +35,14 @@ class NilTermSignature(th:Theory) extends PrimitiveTermSignature(th)
       case _ => None
     }
 
+  def to[T](t:Term)(implicit mt:Manifest[T]):Option[T] =
+  {
+  	if (mt <:< manifest[List[_]]) {
+  		return Some(Nil.asInstanceOf[T])
+  	}else{
+  		None;
+  	}
+  }
 
+  
 }

@@ -20,6 +20,12 @@ class XTerm(override val name: Name,
                                                with NonBooleanTerm
 {
 
+	
+   /**
+    * xtern can't represent value	
+    */
+   def optValue[T](implicit mt:Manifest[T]):Option[T] = None	
+	
    /**
     * arity of eta-x term is always 0
     **/

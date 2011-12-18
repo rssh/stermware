@@ -38,6 +38,29 @@ class ByteTermSignature(th:Theory) extends PrimitiveTermSignature(th)
       case _ => None
    }
 
+  override def to[T](t:Term)(implicit mt:Manifest[T]):Option[T] =
+  {
+  	if (mt <:< Manifest.Byte) {
+  		Some(t.getByte).asInstanceOf[Option[T]]
+  	} else if (mt <:< manifest[java.lang.Byte]) {
+  		Some(java.lang.Byte.valueOf(t.getByte)).asInstanceOf[Option[T]]
+  	} else {
+  		None
+  	}
+  }
+  
+  override def from[T](x:T)(implicit mt:Manifest[T]): Option[Term] =
+  {
+  	if (mt <:< Manifest.Byte) {
+  		Some(ByteTerm(x.asInstanceOf[Byte],this));
+  	} else if (mt <:< manifest[java.lang.Byte]) {	
+  		Some(ByteTerm(x.asInstanceOf[java.lang.Byte].byteValue(),this));
+  	} else {
+  		None
+  	}
+  }
+  
+  
 
 
 

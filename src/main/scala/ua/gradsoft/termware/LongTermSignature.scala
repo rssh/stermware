@@ -39,5 +39,27 @@ class LongTermSignature(th:Theory) extends PrimitiveTermSignature(th)
       case _ => None
    }
 
+  override def to[T](t:Term)(implicit mt:Manifest[T]): Option[T] = 
+  {
+  	if (mt <:< manifest[Long]) {
+  		Some(t.getLong.asInstanceOf[T])
+  	}else if (mt <:< manifest[BigInt]) {
+  		Some(BigInt(t.getLong).asInstanceOf[T])
+  	}else{
+  		None
+  	}
+  }
+  
+  override def from[T](x:T)(implicit mt:Manifest[T]): Option[Term] = 
+  {
+  	if (mt <:< manifest[Long]) {
+  		Some(new LongTerm(x.asInstanceOf[Long],this))
+  	} else if (mt <:< manifest[Int]) {
+  		Some(new LongTerm(x.asInstanceOf[Int].toLong,this))
+  	}else{
+  		None
+  	}
+  }
+  
 
 }

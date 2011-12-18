@@ -22,8 +22,27 @@ class CharTerm(v:Char, s: CharTermSignature) extends PrimitiveTerm(s)
                                                   with NonBooleanTerm
 {
 
+  /**
+   * true	
+   */
   override def isChar: Boolean = true;
+  
+  /**
+   * char value
+   */
   override def getChar: Char = v;
+  
+  /**
+   * can be represented as Char
+   */
+  override def optValue[T](implicit mt:Manifest[T]):Option[T] =
+  {
+  	if (mt <:< Manifest.Char) {
+  		Some(v.asInstanceOf[T])
+  	}else{
+  		None
+  	}
+  }
 
   def fixTermEq(t:Term):Boolean = t.isChar && t.getChar == v;
 
@@ -45,5 +64,6 @@ class CharTerm(v:Char, s: CharTermSignature) extends PrimitiveTerm(s)
 object CharTerm
 {
    def apply(v:Char, s: CharTermSignature):CharTerm = new CharTerm(v,s);
+   def unapply(x:Term):Option[Pair[Char,TermSignature]] = if (x.isChar) Some((x.getChar,x.signature)) else None;
 }
 

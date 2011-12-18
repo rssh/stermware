@@ -31,5 +31,8 @@ trait FunctionalTermSignature extends TermSignature
       case  t: Term => Some(t)
       case _ => None
    }
+  
+  //def to[T](implicit mt: Manifest[T]) = None;
+  
 
 }

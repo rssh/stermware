@@ -7,8 +7,17 @@ class NilTerm(s:NilTermSignature) extends PrimitiveTerm(s)
                                     with NonBooleanTerm
 {
 
+	
   override def isNil = true;
 
+  /**
+   * can represent empty list.
+   */
+  override def optValue[T](implicit mt: Manifest[T]) =
+  {
+  	if (mt <:< manifest[List[_]]) Some(Nil.asInstanceOf[T]) else None 
+  }
+  
   override def isAtom = false;
   
   def termClassIndex=TermClassIndex.NIL;

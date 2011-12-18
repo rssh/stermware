@@ -7,6 +7,27 @@ class ListTerm(h:Term, t:Term, s:ListTermSignature)
                                         extends FunctionalTerm(s)
 {
 
+  override def optValue[T](implicit mt:Manifest[T]):Option[T]=
+  {
+  	if (mt <:< manifest[List[_]]) {
+  	    val hv = h.optValue(mt.typeArguments(0));
+  	    if (hv !=None ) {
+  	    	if (t.isNil) {
+  	    		Some(List(hv.get).asInstanceOf[T])
+  	    	}else{
+  	            val tv = t.optValue(mt.typeArguments(0));
+  	            if (tv!=None) {
+  	            	Some((hv.get :: tv.get.asInstanceOf[List[_]]).asInstanceOf[T])
+  	            } else {
+  	            	None
+  	            }
+  	    	}
+  	    } else None
+  	} else {
+  		None
+  	}
+  }
+	
   def arity: Int = 2;
 
   def subterm(i:Int):Term = 

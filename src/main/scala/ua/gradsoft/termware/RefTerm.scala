@@ -6,22 +6,38 @@ case class RefTerm(v:AnyRef, s: RefTermSignature) extends PrimitiveTerm(s)
                                            with NonBooleanTerm
 {
 
+  	
+	
   override def isRef: Boolean = true;
 
-  override def getRef: AnyRef = value;
+  override def getRef: AnyRef = _value;
+  
+  override def optValue[T](implicit mt:Manifest[T]):Option[T] = 
+  {
+  	if (mt <:< Manifest.Object) {
+  	  // do approx	
+  	   val cm: Class[_] = mt.erasure;
+  	   val vm: Class[_] = _value.getClass();
+  	   if (vm.isAssignableFrom(cm)) {
+  	  	 Some(_value.asInstanceOf[T]) 
+  	   } else {
+  	  	 None 
+  	   }	
+  	} else None
+  }
 
   def fixTermCompare(t: Term):Int = {
     var c = termClassIndex - t.termClassIndex;
     if (c!=0) return 0;
-    if (value!=null) {
-      if (value eq t.getRef) {
+    if (!(_value eq null)) {
+      if (_value eq t.getRef) {
          return 0;
       }
-      c = value.hashCode - t.getRef.hashCode;
+      c = _value.hashCode - t.getRef.hashCode;
       if (c!=0) return c;
       // equal hash codes with special names: near impossible, but can be specially constructed.
       // in such (very rare) case compare string representations.
-      return value.toString.compare(t.getRef.toString);
+      return _value.toString.compare(t.getRef.toString);
     } else {
       return if (t.getRef==null)  0 else -1 ;
     }
@@ -32,11 +48,11 @@ case class RefTerm(v:AnyRef, s: RefTermSignature) extends PrimitiveTerm(s)
   def termClassIndex: Int = TermClassIndex.REF;
 
   lazy val name = signature.theory.symbolTable.getOrCreate(
-                                                      "@"+value.hashCode
+                                                      "@"+_value.hashCode
                                                           );
 
   lazy val termHashCode = v.hashCode;
 
-  val value = v;
+  private[this] val _value = v;
 }
 

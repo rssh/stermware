@@ -5,9 +5,33 @@ import java.lang.Number;
 /**
  * API for access values, wrapped in terms.
  */
-trait TValue extends GeneralUtil
+trait TermValue extends GeneralUtil
 {
 
+  /**
+   * is this is a value term of type t ?	
+   */
+  @inline	
+  def isValue[T](implicit mt:Manifest[T]) : Boolean = optValue[T].isDefined
+  
+  /**
+   * get the value of type T, if term holds one
+   * otherwise throws UnsupportedOperationException
+   */
+  def value[T](implicit mt:Manifest[T]): T =
+  {
+    optValue[T] match {
+  	  case Some(x) => x
+  	  case None => throwUOE
+    }
+  }
+  
+  /**
+   * get the value of type t if term holds one
+   * otherwise - nothing.
+   */
+  def optValue[T](implicit mt:Manifest[T]): Option[T]
+	
   /**
    * is this is boolean ?
    */

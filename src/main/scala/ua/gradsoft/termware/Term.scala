@@ -9,7 +9,7 @@ import java.io.StringWriter;
 /**
  * Uniform representation of term object.
  **/
-trait Term extends TValue 
+trait Term extends TermValue 
         with Ordered[Term]
         with Unificable[Term]
         with TermAttributed

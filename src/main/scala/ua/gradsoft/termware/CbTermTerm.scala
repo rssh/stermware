@@ -9,7 +9,8 @@ class CbTermTerm(cb:CbTerm, implicit val ctx:CallContext) extends Term
                                                            with ComplexSubst
                                                            with ComplexCompare
 {
-
+	
+	
   def arity: Int = CallCC.trampoline(cb.arity);
 
   override def patternArity: Option[Int] = CallCC.trampoline(cb.patternArity);
@@ -41,6 +42,8 @@ class CbTermTerm(cb:CbTerm, implicit val ctx:CallContext) extends Term
 
   def isError: Boolean = CallCC.trampoline(cb.isError);
 
+  def optValue[T](implicit mt:Manifest[T]) = CallCC.trampoline(cb.optValue[T](mt))
+  
   override def isBoolean: Boolean = CallCC.trampoline(cb.isBoolean);
 
   override def getBoolean: Boolean = CallCC.trampoline(cb.getBoolean);

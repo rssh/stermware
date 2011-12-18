@@ -20,6 +20,25 @@ class ErrorTerm(m:String, e:Exception, s: ErrorTermSignature) extends Term
     this(m,null,s);
   }
 
+  def optValue[T](implicit mt:Manifest[T])= {
+  	if (mt <:< manifest[Exception]) {
+  	    if (!(e eq null)) {
+  	    	if (mt.erasure.isAssignableFrom(e.getClass())) {
+  	    		Some(e.asInstanceOf[T])
+  	    	}else{
+  	    		None
+  	    	}
+  	    } else {
+  	    	if (!(s eq null)) {
+  	    		Some((new TermWareException(m)).asInstanceOf[T])
+  	    	} else {
+  	    		None
+  	    	}
+  	    }	
+  	} else {
+  		None
+  	}
+  }
 
   def arity: Int = 0;
 

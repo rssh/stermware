@@ -39,5 +39,24 @@ class BigDecimalTermSignature(th:Theory) extends PrimitiveTermSignature(th)
       case _ => None
    }
 
+  override def to[T](t:Term)(implicit mt:Manifest[T]): Option[T] = 
+  {
+  	if (mt <:< manifest[BigDecimal]) {
+  		Some(t.getBigDecimal.asInstanceOf[T])
+  	}else{
+  		None
+  	}
+  }
+  
+  override def from[T](x:T)(implicit mt:Manifest[T]): Option[Term] = 
+  {
+  	if (mt <:< manifest[BigDecimal]) {
+  		Some(new BigDecimalTerm(x.asInstanceOf[BigDecimal],this))
+  	}else{
+  		None
+  	}
+  }
+  
+  
 
 }

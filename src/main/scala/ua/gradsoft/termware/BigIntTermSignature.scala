@@ -37,5 +37,26 @@ class BigIntTermSignature(th:Theory) extends PrimitiveTermSignature(th)
       case _ => None
    }
 
+  override def to[T](t:Term)(implicit mt:Manifest[T]): Option[T] = 
+  {
+  	if (mt <:< manifest[BigInt]) {
+  		Some(t.getBigInt.asInstanceOf[T])
+  	}else if (mt <:< manifest[Long]) {
+  		Some(t.getBigInt.longValue().asInstanceOf[T])
+  	}else{
+  		None
+  	}
+  }
+  
+  override def from[T](x:T)(implicit mt:Manifest[T]): Option[Term] = 
+  {
+  	if (mt <:< manifest[BigInt]) {
+  		Some(new BigIntTerm(x.asInstanceOf[BigInt],this))
+  	}else{
+  		None
+  	}
+  }
+  
+  
 
 }

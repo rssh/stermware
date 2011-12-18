@@ -8,9 +8,14 @@ case class StringTerm(v:String, s: StringTermSignature)
                                                with NonNumberTerm
                                                with NonBooleanTerm
 {
+	
+  def optValue[T](implicit mt:Manifest[T]):Option[T] =
+  {
+  	if (mt <:< ClassManifest.fromClass(classOf[java.lang.String])) Some(v.asInstanceOf[T]) else None ;
+  }
 
   override def isString: Boolean = true;
-  override def getString: String = value;
+  override def getString: String = v;
 
   def fixTermCompare(t: Term):Int = {
     var c = termClassIndex - t.termClassIndex;

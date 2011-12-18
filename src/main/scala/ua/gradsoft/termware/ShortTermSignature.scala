@@ -7,6 +7,26 @@ package ua.gradsoft.termware;
 class ShortTermSignature(th:Theory) extends PrimitiveTermSignature(th)
 {
 
+  override def to[T](t:Term)(implicit mt:Manifest[T]) =
+  {
+  	if (mt <:< Manifest.Short) {
+  		Some(t.getShort.asInstanceOf[T])
+  	}else{
+  		None
+  	}
+  }
+  
+  override def from[T](x:T)(implicit mt:Manifest[T]):Option[Term] =
+  {
+  	if (mt <:< Manifest.Short) {
+  		Some(new ShortTerm(x.asInstanceOf[Short],this));
+  	} else if (mt <:< manifest[Number]) {
+  	    Some(new ShortTerm(x.asInstanceOf[Number].shortValue(),this));
+  	} else {
+  		None
+  	}
+  }
+	
   override def createConstant(arg:Any):Term = arg match {
     case x:Short => ShortTerm(x,this)
     case _ => throwUOE;

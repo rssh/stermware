@@ -7,8 +7,25 @@ class BooleanTerm(v:Boolean, s: BooleanTermSignature)
                                             with NonNumberTerm
 {
 
+  override def optValue[T](implicit mt:Manifest[T]):Option[T] =
+  {
+  	if (mt <:< manifest[Boolean]) {
+  		Some(v.asInstanceOf[T])
+  	}else if (mt <:< manifest[java.lang.Boolean]) {
+  		Some(java.lang.Boolean.valueOf(v).asInstanceOf[T])
+  	}else{
+  		None
+  	}
+  }
+  	
+  /**
+   * true	
+   */
   override def isBoolean: Boolean = true;
 
+  /**
+   * get boolean value
+   */
   override def getBoolean: Boolean = v;
 
   def fixTermEq(t:Term) = t.isBoolean && t.getBoolean == v ;

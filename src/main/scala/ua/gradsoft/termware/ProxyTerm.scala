@@ -10,6 +10,8 @@ trait ProxyTerm  extends Term
 {
 
   def proxy: Term ;
+  
+  override def optValue[T](implicit mt:Manifest[T]):Option[T] = proxy.optValue[T](mt);
 
   override def isBoolean: Boolean = proxy.isBoolean;
 

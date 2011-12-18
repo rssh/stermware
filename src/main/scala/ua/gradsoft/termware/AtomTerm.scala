@@ -6,10 +6,13 @@ case class AtomTerm(val name:Name,s:AtomTermSignature) extends PrimitiveTerm(s)
                                             with NonNumberTerm
                                             with NonBooleanTerm
 {
+	
 
   override def isAtom = true;
 
   override def isNil = false;
+  
+  override def optValue[T](implicit mt:Manifest[T]):Option[T] = s.to[T](this);
   
   def termClassIndex=TermClassIndex.ATOM;
 

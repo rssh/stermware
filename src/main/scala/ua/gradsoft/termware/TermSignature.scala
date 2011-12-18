@@ -105,7 +105,7 @@ trait TermSignature
    def createSpecial(args: Any*): Term;
 
    /**
-    * calcultate type of term 
+    * calculatate type of term 
     **/
    def termType(t:Term): Term;
 
@@ -133,6 +133,16 @@ trait TermSignature
     * transform native language object to term.
     **/
    def fromAny(x:Any):Option[Term];
+   
+   /**
+    * transform term to native language object.
+    */
+   def to[T](t:Term)(implicit mt:Manifest[T]):Option[T];
 
+  /**
+    * transform native language object to term.
+    **/
+   def from[T](x:T)(implicit mt:Manifest[T]):Option[Term];
+      
 
 }

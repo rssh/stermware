@@ -37,6 +37,27 @@ class FloatTermSignature(th:Theory) extends PrimitiveTermSignature(th)
       case _ => None
    }
 
+  override def to[T](t:Term)(implicit mt:Manifest[T]): Option[T] = 
+  {
+    if ( mt <:< manifest[Float] ) {
+    	Some(t.getFloat.asInstanceOf[T])
+    } else if (mt <:< manifest[Double]) {
+    	Some(t.getFloat.toDouble.asInstanceOf[T])
+    } else if (mt <:< manifest[java.lang.Float]) {
+    	Some(java.lang.Float.valueOf(t.getFloat).asInstanceOf[T])
+    } else {
+    	None
+    }
+  }
+  
+  override def from[T](x:T)(implicit mt:Manifest[T]): Option[Term] = 
+  {
+  	if (mt <:< manifest[Float]) {
+  		Some(new FloatTerm(x.asInstanceOf[Float],this))
+  	}else{
+  		fromAnyRef(x.asInstanceOf[AnyRef])
+  	}
+  }
 
 
 

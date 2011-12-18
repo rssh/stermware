@@ -8,7 +8,7 @@ class FreeTermWithFixedNameAnyArity(
                                         with
                                           FixedNameTerm
 {
-
+	
   def arity: Int = subterms.length;
 
   def subterm(i:Int):Term = subterms(i);

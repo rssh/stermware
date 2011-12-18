@@ -9,6 +9,8 @@ class ComputationBoundsTerm(val cbt: ComputationBounds[Term]) extends Term
    private var isComputed = false;
    lazy val term = { val x=CallCC.trampoline(cbt); isComputed=true; x; }
 
+   def optValue[T](implicit mt:Manifest[T]) = term.optValue[T](mt);
+   
    def isBoolean: Boolean = term.isBoolean;
 
    def getBoolean: Boolean = term.getBoolean;

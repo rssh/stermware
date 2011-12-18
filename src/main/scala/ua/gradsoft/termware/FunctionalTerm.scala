@@ -16,6 +16,8 @@ abstract class FunctionalTerm(s:TermSignature) extends Term
   def isAtom: Boolean = false;
   def isEta: Boolean = false;
   def isError: Boolean = false;
+  
+  def optValue[T](implicit mt:Manifest[T]) = s.to[T](this);
 
   def unify(t:Term, s: Substitution[Term])(implicit ctx:CallContext):
                            ComputationBounds[(Boolean,Substitution[Term])] =

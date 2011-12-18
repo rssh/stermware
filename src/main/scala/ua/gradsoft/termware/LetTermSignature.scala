@@ -111,7 +111,9 @@ class LetTermSignature(th:Theory) extends TermSignature
       case _ => None
     }
 
-
+  def to[T](t:Term)(implicit mt:Manifest[T]):Option[T] = None;
+  
+  def from[T](x:T)(implicit mt:Manifest[T]):Option[Term] = None;
 
 
 }

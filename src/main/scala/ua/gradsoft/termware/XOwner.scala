@@ -8,6 +8,10 @@ abstract class XOwner(val vars:IndexedSeq[XTerm]) extends Term
 {
   for(x <- vars) x.xOwner = this;
 
+  /**
+   * usually XOwner have no value representations.
+   */
+  def optValue[T](implicit mt:Manifest[T]):Option[T] = None;
 
   def copyVarFun(s:PartialFunction[Term,Term]): 
                     (IndexedSeq[XTerm], PartialFunction[Term,Term]) =
