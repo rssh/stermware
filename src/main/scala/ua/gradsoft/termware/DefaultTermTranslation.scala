@@ -1,6 +1,9 @@
 package ua.gradsoft.termware;
 
-// TODO: think about pluggable complex transformations.
+
+/**
+ * translations from scala objects to terms.
+ */
 trait DefaultTermTranslation
 {
    this: Theory =>
@@ -46,5 +49,9 @@ trait DefaultTermTranslation
      }
    }
 
+// TODO: think about pluggable complex transformations.
+//  (may be theory will hold instance of package prefixes
+//   to match classes)
+  
    
 }

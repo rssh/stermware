@@ -131,7 +131,6 @@ class TermWareParser(th:Theory, fname:String) extends TokenParsers
        case x ~ y => if (y==None) {
                        x;
                      } else {
-                        //TODO: define apply/unapply for term
                       val n = y.get.name;
                        if (n==simpleRuleTailName) {
                            theory.createFunTerm(ruleName,x,y.get.subterm(0))
