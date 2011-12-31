@@ -41,6 +41,7 @@ trait FreeAlgebra extends Theory
 
   val withSignature = new WithTermSignature(this);
 
+  lazy val letSignature = new LetTermSignature(this);
 
   def funSignature(name:Name): TermSignature 
                = if (name==symbolTable.CONS)  {

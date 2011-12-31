@@ -50,10 +50,14 @@ trait Term extends TermValue
 
   def isError: Boolean;
 
+  /**
+   * do substitution of term.
+   **/
   def subst(s: PartialFunction[Term,Term])(implicit ctx:CallContext): 
                                                      ComputationBounds[Term];
 
   def fixSubst(s: PartialFunction[Term,Term]): Term;
+
 
   def unify(t:Term, s: Substitution[Term])(implicit ctx:CallContext):
                               ComputationBounds[(Boolean,Substitution[Term])];

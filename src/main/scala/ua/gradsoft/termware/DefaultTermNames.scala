@@ -3,11 +3,13 @@ package ua.gradsoft.termware;
 trait DefaultTermNames
 {
 
-   def theory: Theory;
+   this : { def symbolTable: SymbolTable; }  =>
 
-   lazy val Rule = theory.symbolTable.getOrCreate("rule");
-   lazy val ConditionalRule = theory.symbolTable.getOrCreate("conditionalRule");
-   lazy val With = theory.symbolTable.getOrCreate("with");
-   lazy val Eta = theory.symbolTable.getOrCreate("eta");
+   lazy val Rule = symbolTable.getOrCreate("rule");
+   lazy val ConditionalRule = symbolTable.getOrCreate("conditionalRule");
+   lazy val With = symbolTable.getOrCreate("with");
+   lazy val Eta = symbolTable.getOrCreate("eta");
+   lazy val Let = symbolTable.getOrCreate("let");
+   lazy val Where = symbolTable.getOrCreate("where");
     
 }

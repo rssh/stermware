@@ -10,12 +10,12 @@ case class TermRule(val pattern:Term, branches: List[TermRuleBranch])
 
 }
 
-class TermRuleBuilder(ts:TermSystem) extends DefaultTermNames
+class TermRuleBuilder(val ts:TermSystem) 
 {
 
-  def theory = ts.theory;
-
-  def build(t:Term):Seq[TermRule] = {
+  def build(t:Term):List[TermRule] = {
+    val theory = ts.theory;
+    import theory._;
     t match {
        case Term(Rule, Seq(pattern,destination), _) =>
                 val condition=TermCondition(true);
@@ -30,9 +30,13 @@ class TermRuleBuilder(ts:TermSystem) extends DefaultTermNames
                   cb=cb.subterm(1);
                 }
                 TermRule(pattern, rbranches.reverse)::Nil
-       //case Term(Eta,Seq(left, right), _) =>
-       //case Term(Eta,Seq(left, right,cont), _) => TermRule(left,right)::build(cont)
-       //case Term(Let,Seq(assignments,term),_) => build(term,TermBinding(assigments))::Nil
+       case Term(Eta,Seq(left, right), _) => TermRule(left, 
+                                                      TermRuleBranch(TermCondition(true),right)::Nil)::Nil
+        //  note, we assume that in eta=terms, each next patter is less specifics than previous.
+        //  TODO: provide automatic check fot this requirement in next version
+       case Term(Eta,Seq(left, right,cont), _) => TermRule(left,
+                                                      TermRuleBranch(TermCondition(true),right)::Nil)::build(cont)
+       case Term(Let,Seq(assignments,term),_) => build(LetTerm.build(assignments,term,theory))
        case _ =>
                 throw new IllegalArgumentException("Invalid term for building rule:"+t.toString);
     }

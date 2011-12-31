@@ -73,3 +73,41 @@ class LetTerm(val vars:IndexedSeq[TermBinding],
   private lazy val hash: Int = p.hashCode;
 
 }
+
+object LetTerm
+{
+
+   /**
+    * build let term from 'let' functional term, readed by parser.
+    * on error during attempt to build let term throw IllegalArgumentException
+    **/
+   def build(letFun:Term): LetTerm =
+   {
+     val theory = letFun.signature.theory;
+     import theory._;
+     letFun match {
+        case Term(Let, IndexedSeq(assigments,body), _) => build(assigments,body,theory)
+        case Term(Where, IndexedSeq(assigments,body),_) => build(assigments,body,theory)
+     }
+   }
+
+   /**
+    * build let term from 'let' functional term, readed by parser.
+    * we can look on it as on 'let-0rransform'
+    *   let (assigments) z = let-transform(binging, z)
+    *   let-transform(binding, f(x1,..xN)) = f(let-transform(x1),...let-transform(xN))
+    *   let-transform(binding, name) = binding(name) if name in binding 
+    *                                          name  otherwise.
+    *   let-transform(binding, let(assigments1, name)) = let-transform(binding,let-transform(binding1, name))
+    *   let-transform(binding, eta(vars, z)) = let-transform(binding,eta-transform(vars, z))
+    *   let-transform(binding, with(vars, z)) = let-transform(binding,with-transform(vars, z))
+    **/
+   def build(assigments:Term, main:Term, theory: Theory): LetTerm =
+   {
+     //TODO: implement
+     throw new RuntimeException("not implemented");
+   }
+
+
+}
+

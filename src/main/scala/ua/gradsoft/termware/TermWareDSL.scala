@@ -3,7 +3,9 @@ package ua.gradsoft.termware;
 trait TermWareDSL extends DefaultTermNames
 {
 
+
   def theory: Theory;
+  def symbolTable: SymbolTable = theory.symbolTable;
 
   implicit def intToTerm(x:Int):Term = theory.intSignature.createConstant(x);
   implicit def longToTerm(x:Long):Term = theory.longSignature.createConstant(x);

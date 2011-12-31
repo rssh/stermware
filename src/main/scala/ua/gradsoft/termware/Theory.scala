@@ -3,6 +3,7 @@ package ua.gradsoft.termware;
 import ua.gradsoft.termware.parser.OperatorSyntax;
 
 trait Theory extends TermWareInstance
+                      with DefaultTermNames
 {
 
  def booleanSignature: BooleanTermSignature;
@@ -49,6 +50,8 @@ trait Theory extends TermWareInstance
 
  def etaSignature: EtaTermSignature; 
  def xSignature: XTermSignature; 
+
+ def letSignature: LetTermSignature;
 
  def refSignature: TermSignature;
 

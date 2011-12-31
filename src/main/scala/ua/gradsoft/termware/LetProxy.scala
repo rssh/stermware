@@ -10,7 +10,7 @@ import ua.gradsoft.termware.flow._;
  **/
 case class LetProxy(val letName: Name, 
                val letLabel:Int, 
-               val letOwner :LetTerm) extends Term
+               var letOwner :LetTerm) extends Term
                       with ProxyTerm
 {
 
@@ -35,7 +35,6 @@ case class LetProxy(val letName: Name,
 
 
    def proxy: Term = letOwner.vars(letLabel).value;
-
 
 }
 

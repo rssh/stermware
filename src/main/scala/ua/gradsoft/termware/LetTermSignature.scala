@@ -5,7 +5,7 @@ import ua.gradsoft.termware.flow._;
 import ua.gradsoft.termware.util.TermOrdering;
 
 
-class LetTermSignature(th:Theory) extends TermSignature
+class LetTermSignature(val theory:Theory) extends TermSignature
                                     with TheoryTermConversions
                                     with GeneralUtil
 {
@@ -54,9 +54,6 @@ class LetTermSignature(th:Theory) extends TermSignature
 
   def apply(s:TermSignature):TermSignature = s;
 
-  val theory=th;
-
-  
   /**
    * accep list of 'assignments'
    **/
