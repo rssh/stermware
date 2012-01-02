@@ -93,7 +93,7 @@ object LetTerm
     * build let term from 'let' functional term, readed by parser.
     * on error during attempt to build let term throw IllegalArgumentException
     **/
-   def build(letFun:Term): LetTerm =
+   def build(letFun:Term): Term =
    {
      val theory = letFun.signature.theory;
      import theory._;
@@ -152,8 +152,8 @@ object LetTerm
                                              transform(bindings, bindingNames,
                                                      x, owner);
                                             } catch {
-                                             case ex: CallCCThrowable[Term] =>
-                                                                       ex.current
+                                             case ex: CallCCThrowable[_] if ex.aManifest <:< manifest[Term] =>
+                                                            ex.current.asInstanceOf[ComputationBounds[Term]]
                                             }
                              }
                              signature.createTerm(name,transformed)
@@ -172,11 +172,9 @@ object LetTerm
    }
 
 
-   def build(assigments:Term, main:Term, theory: Theory): LetTerm =
+   def build(assignments:Term, main:Term, theory: Theory): Term =
    {
-
-     //TODO: implement
-     throw new RuntimeException("not implemented");
+     theory.letSignature.createTerm(theory.symbolTable.LET, assignments, main);
    }
 
 

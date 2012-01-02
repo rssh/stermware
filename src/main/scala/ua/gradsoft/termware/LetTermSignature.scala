@@ -28,19 +28,12 @@ class LetTermSignature(val theory:Theory) extends TermSignature
     if (args.length!=3) {
        throw new IllegalArgumentException("args length must be 3");
     }
-    val vNames:(IndexedSeq[TermBinding],Map[Name,Int]) = parseNames(args(0));
+    val bindings:IndexedSeq[TermBinding] = parseAssignments(args(0));
     val t = args(1);
-    if (vNames._1.isEmpty) {
+    if (bindings.isEmpty) {
        t;   
     } else {
-        val s = new PartialFunction[Term,Term]{
-           def isDefinedAt(x:Term) = x.isAtom;
-           def apply(t:Term):Term = vNames._2.get(t.name) match {
-                                      case Some(x) => LetProxy(t.name,x,null)
-                                      case None    => t
-                                    };
-        };
-        new LetTerm(vNames._1,t.fixSubst(s),this);
+       new LetTerm(bindings,t,this);
     }
   }
 
@@ -57,8 +50,7 @@ class LetTermSignature(val theory:Theory) extends TermSignature
   /**
    * accep list of 'assignments'
    **/
-  private def parseNames(t:Term):(IndexedSeq[TermBinding],Map[Name,Int]) = {
-      var m = Map[Name,Int]();
+  private def parseAssignments(t:Term):IndexedSeq[TermBinding] = {
       val assignName = theory.symbolTable.getOrCreate("assign");
       var i=0;
       var seq = indexedSeqFromTermList(theory, t) map { (x:Term)=>
@@ -67,14 +59,13 @@ class LetTermSignature(val theory:Theory) extends TermSignature
                  val letKind = t.subterm(1);
                  val letValue = t.subterm(2);
                  val binding = TermBinding(letName,letKind.getInt,letValue);
-                 m=m.updated(letName,i);
                  i = i+1;
                  binding;
              } else {
                  throw new IllegalArgumentException("assign required");
              }
       };
-      (seq,m);
+      seq;
   }
 
   override def createConstant(arg:Any) = throwUOE;
