@@ -163,3 +163,14 @@ class EtaTerm(vars:IndexedSeq[XTerm], l:Term, r:Term, rs:Option[Term], s:EtaTerm
   private lazy val hash: Int = left.hashCode+right.hashCode+rest.hashCode;
 
 }
+
+object EtaTerm
+{
+
+    def build(vardefs:Term, rule:Term, theory: Theory): EtaTerm =
+    {
+     //TODO: implement
+     throw new RuntimeException("not implemented");
+    }
+
+}

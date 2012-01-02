@@ -3,29 +3,37 @@ package ua.gradsoft.termware;
 import ua.gradsoft.termware.flow._;
 import java.io.PrintWriter;
 import scala.collection.mutable.{HashMap => MutableHashMap};
+import scala.collection.immutable.TreeMap;
 
 /**
- * term, which store bindings.
+ * term, which store bindings and let exression.
+ * i. e. 
+ * <pre>  
+ *   let (x1 <- v1,... xN <- vN) p
+ * </pre>
+ *@param vars -- table of variables, which consists from index, name and actual term value.
+ *@param p -- term inside let expression. (where x1 ... xN - atoms with appropriative names).
  **/
 class LetTerm(val vars:IndexedSeq[TermBinding], 
-              val p:Term, 
-              val ls: LetTermSignature)  
+              p:Term, 
+              signature: LetTermSignature)  
                              extends ProxyTerm
 {
 
-  def proxy = p;
+  def proxy = letTransformed;
 
   override def subst(s:PartialFunction[Term,Term])
                     (implicit ctx: CallContext) :
                                            ComputationBounds[Term] = 
-    ctx.withCall { 
+   ctx.withCall { 
+       // TODO: rewrite.
        (ctx:CallContext) => implicit val ictx = ctx;
        val newVars = vars.map(_.subst(s)(ctx));
        val s1 = bindingSubstitution(newVars).andThen(s);
        // todo: refresh let in all subterms of p.
        CallCC.compose(p.subst(s1),
               { (t:Term) => Done(
-                             new LetTerm(newVars,t,ls)
+                             new LetTerm(newVars,t,signature)
                             ) }
        );
     }
@@ -66,11 +74,15 @@ class LetTerm(val vars:IndexedSeq[TermBinding],
     }
   }
 
-  override def signature = ls.apply(p.signature);
+  override def signature = signature.apply(p.signature);
 
   override val attributes=new MutableHashMap[Name,Term]();
 
-  private lazy val hash: Int = p.hashCode;
+  private[this] lazy val hash: Int = letTransformed.hashCode;
+
+  private[this] lazy val letTransformed = CallCC.trampoline(
+                          Call{ (ctx:CallContext) => LetTerm.transform(vars,p,this)(ctx); }
+                         );
 
 }
 
@@ -86,8 +98,8 @@ object LetTerm
      val theory = letFun.signature.theory;
      import theory._;
      letFun match {
-        case Term(Let, IndexedSeq(assigments,body), _) => build(assigments,body,theory)
-        case Term(Where, IndexedSeq(assigments,body),_) => build(assigments,body,theory)
+        case Term(Let, Seq(assigments,body), _) => build(assigments,body,theory)
+        case Term(Where, Seq(assigments,body),_) => build(assigments,body,theory)
      }
    }
 
@@ -102,8 +114,67 @@ object LetTerm
     *   let-transform(binding, eta(vars, z)) = let-transform(binding,eta-transform(vars, z))
     *   let-transform(binding, with(vars, z)) = let-transform(binding,with-transform(vars, z))
     **/
+   def transform(bindings:IndexedSeq[TermBinding],
+                 internalTerm: Term,
+                 owner: LetTerm)(implicit ctx:CallContext):ComputationBounds[Term] = 
+      transform(bindings, bindingNames(bindings), internalTerm, owner)(ctx);
+    
+   def transform(bindings:IndexedSeq[TermBinding],
+                 bindingNames:Map[Name,Int],
+                 internalTerm:Term,
+                 owner:LetTerm)(implicit ctx:CallContext):ComputationBounds[Term] =
+   {
+     val theory = internalTerm.signature.theory;
+     import theory._;
+     internalTerm match {
+        case AtomTerm(name,signature) => 
+                 bindingNames.get(name) match {
+                    case Some(i) => Done(new LetProxy(name,i,owner))
+                    case None  => Done(internalTerm)
+                 }
+        case FunctionalTerm(Let,Seq(assignments,term),_) =>
+                 // at first crealte LetTerm inside.
+                 transform(bindings, bindingNames, 
+                           build(assignments, term, theory),
+                           owner)
+        case FunctionalTerm(With,Seq(vars,term),_) =>
+                 transform(bindings, bindingNames, 
+                           WithTerm.build(vars, term, theory),
+                           owner)
+        case FunctionalTerm(Eta,Seq(vars,ruleTerm),_) =>
+                 transform(bindings, bindingNames, 
+                           EtaTerm.build(vars, ruleTerm, theory),
+                           owner)
+        case FunctionalTerm(name,subterms,signature) =>
+                           ctx.withCall { (ctx:CallContext) => implicit val ictx = ctx;
+                             val transformed = subterms.map {
+                                (x:Term) => try {
+                                             transform(bindings, bindingNames,
+                                                     x, owner);
+                                            } catch {
+                                             case ex: CallCCThrowable[Term] =>
+                                                                       ex.current
+                                            }
+                             }
+                             signature.createTerm(name,transformed)
+                           }
+        case x => Done(x)
+     }
+   }
+
+   def bindingNames(bindings:IndexedSeq[TermBinding]):Map[Name,Int] =
+   {
+    var retval = TreeMap[Name,Int]();
+    for(i <- 0 until bindings.length) {
+        retval = retval.updated(bindings(i).name,i);
+    }
+    retval;
+   }
+
+
    def build(assigments:Term, main:Term, theory: Theory): LetTerm =
    {
+
      //TODO: implement
      throw new RuntimeException("not implemented");
    }

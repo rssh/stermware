@@ -32,3 +32,4 @@ case class AtomTerm(val name:Name,s:AtomTermSignature) extends PrimitiveTerm(s)
 
 }
 
+

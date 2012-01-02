@@ -26,7 +26,7 @@ class LetTermSignature(val theory:Theory) extends TermSignature
        throw new IllegalArgumentException("name of let-term must be 'let'");
     }
     if (args.length!=3) {
-       throw new IllegalArgumentException("args lenght must be 3");
+       throw new IllegalArgumentException("args length must be 3");
     }
     val vNames:(IndexedSeq[TermBinding],Map[Name,Int]) = parseNames(args(0));
     val t = args(1);

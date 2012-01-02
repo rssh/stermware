@@ -49,3 +49,14 @@ class WithTerm(vars:IndexedSeq[XTerm], val p:Term, ws: WithTermSignature)
   private lazy val hash: Int = p.hashCode;
 
 }
+
+object WithTerm
+{
+
+  def build(vardefs:Term, main: Term, theory: Theory):WithTerm =
+  {
+   //TODO: implement
+   throw new RuntimeException("not implemented");
+  }
+
+}
