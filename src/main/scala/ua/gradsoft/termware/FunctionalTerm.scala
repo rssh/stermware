@@ -135,8 +135,19 @@ abstract class FunctionalTerm(s:TermSignature) extends Term
 object FunctionalTerm
 {
 
-   def unapply(t:FunctionalTerm):Option[Tuple3[Name,IndexedSeq[Term],TermSignature]] =
-     Some((t.name,t.subterms,t.signature));
+   def unapply(t:Term):Option[Tuple3[Name,IndexedSeq[Term],TermSignature]] =
+     if (t.arity > 0) {
+       Some((t.name,t.subterms,t.signature));
+     } else {
+       None;
+     }
 
 }
+
+object StrictFunctionalTerm
+{
+   def unapply(t:FunctionalTerm):Option[Tuple3[Name,IndexedSeq[Term],TermSignature]] =
+     Some((t.name,t.subterms,t.signature));
+}
+
 

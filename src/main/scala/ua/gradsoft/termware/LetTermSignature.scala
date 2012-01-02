@@ -25,8 +25,8 @@ class LetTermSignature(val theory:Theory) extends TermSignature
     if (name != theory.symbolTable.LET) {
        throw new IllegalArgumentException("name of let-term must be 'let'");
     }
-    if (args.length!=3) {
-       throw new IllegalArgumentException("args length must be 3");
+    if (args.length!=2) {
+       throw new IllegalArgumentException("args length must be 2");
     }
     val bindings:IndexedSeq[TermBinding] = parseAssignments(args(0));
     val t = args(1);
@@ -54,10 +54,10 @@ class LetTermSignature(val theory:Theory) extends TermSignature
       val assignName = theory.symbolTable.getOrCreate("assign");
       var i=0;
       var seq = indexedSeqFromTermList(theory, t) map { (x:Term)=>
-             if (t.name == assignName) {
-                 val letName = t.subterm(0).name;
-                 val letKind = t.subterm(1);
-                 val letValue = t.subterm(2);
+             if (x.name == assignName) {
+                 val letName = x.subterm(0).name;
+                 val letKind = x.subterm(1);
+                 val letValue = x.subterm(2);
                  val binding = TermBinding(letName,letKind.getInt,letValue);
                  i = i+1;
                  binding;
