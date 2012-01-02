@@ -103,6 +103,11 @@ object LetTerm
      }
    }
 
+   def unapply(letTerm:LetTerm):Option[Tuple3[IndexedSeq[TermBinding],Term,TermSignature]] =
+    Some((letTerm.vars,letTerm.proxy,letTerm.signature));
+
+  
+
    /**
     * build let term from 'let' functional term, readed by parser.
     * we can look on it as on 'let-0rransform'
