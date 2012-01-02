@@ -2,12 +2,11 @@ package ua.gradsoft.termware;
 
 import java.io.PrintWriter;
 
-case class AtomTerm(val name:Name,s:AtomTermSignature) extends PrimitiveTerm(s)
+class AtomTerm(val name:Name,s:AtomTermSignature) extends PrimitiveTerm(s)
                                             with NonNumberTerm
                                             with NonBooleanTerm
 {
 	
-
   override def isAtom = true;
 
   override def isNil = false;
@@ -29,6 +28,20 @@ case class AtomTerm(val name:Name,s:AtomTermSignature) extends PrimitiveTerm(s)
   override def toString = name.toString;
 
   override def print(out:PrintWriter): Unit = out.print(name.string); 
+
+}
+
+object AtomTerm
+{
+
+   def apply(name:Name, signature:AtomTermSignature) = new AtomTerm(name,signature);
+
+   def unapply(t:Term): Option[Pair[Name,TermSignature]] =
+    if (t.isAtom) 
+      Some((t.name,t.signature))
+    else
+      None
+    ;
 
 }
 
