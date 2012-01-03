@@ -141,8 +141,8 @@ object LetTerm
                     case None  => Done(internalTerm)
                  }
         case LetTerm(bindings1,body1,letSignature1) => 
-                 val ca = transform(bindings, bindingNames, body1, owner);
-                 CallCC.compose( ca,
+                 CallCC.compose( 
+                      transform(bindings, bindingNames, body1, owner),
                       { (t:Term) => 
                         Done(new LetTerm(bindings1,
                                       t, false,
