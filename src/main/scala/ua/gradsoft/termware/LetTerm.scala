@@ -1,9 +1,9 @@
 package ua.gradsoft.termware;
 
-import ua.gradsoft.termware.flow._;
 import java.io.PrintWriter;
 import scala.collection.mutable.{HashMap => MutableHashMap};
 import scala.collection.immutable.TreeMap;
+import ua.gradsoft.termware.flow._;
 
 /**
  * term, which store bindings and let exression.
@@ -15,8 +15,8 @@ import scala.collection.immutable.TreeMap;
  *@param p -- term inside let expression. (where x1 ... xN - atoms with appropriative names).
  **/
 class LetTerm(val vars:IndexedSeq[TermBinding], 
-              p:Term, 
-              signature: LetTermSignature)  
+              p:Term, doTransformation: Boolean,
+              val letSignature: LetTermSignature)  
                              extends ProxyTerm
 {
 
@@ -33,7 +33,7 @@ class LetTerm(val vars:IndexedSeq[TermBinding],
        // todo: refresh let in all subterms of p.
        CallCC.compose(p.subst(s1),
               { (t:Term) => Done(
-                             new LetTerm(newVars,t,signature)
+                             new LetTerm(newVars,t,false,letSignature)
                             ) }
        );
     }
@@ -74,15 +74,18 @@ class LetTerm(val vars:IndexedSeq[TermBinding],
     }
   }
 
-  override def signature = signature.apply(p.signature);
+  override def signature = letSignature.apply(letTransformed.signature);
 
   override val attributes=new MutableHashMap[Name,Term]();
 
   private[this] lazy val hash: Int = letTransformed.hashCode;
 
-  private[this] lazy val letTransformed = CallCC.trampoline(
+  private[this] lazy val letTransformed = 
+                  if (doTransformation) {
+                        CallCC.trampoline(
                           Call{ (ctx:CallContext) => LetTerm.transform(vars,p,this)(ctx); }
                          );
+                  } else p;
 
 }
 
@@ -103,8 +106,8 @@ object LetTerm
      }
    }
 
-   def unapply(letTerm:LetTerm):Option[Tuple3[IndexedSeq[TermBinding],Term,TermSignature]] =
-    Some((letTerm.vars,letTerm.proxy,letTerm.signature));
+   def unapply(letTerm:LetTerm):Option[Tuple3[IndexedSeq[TermBinding],Term,LetTermSignature]] =
+    Some((letTerm.vars,letTerm.proxy,letTerm.letSignature));
 
   
 
@@ -137,6 +140,15 @@ object LetTerm
                     case Some(i) => Done(new LetProxy(name,i,owner))
                     case None  => Done(internalTerm)
                  }
+        case LetTerm(bindings1,body1,letSignature1) => 
+                 val ca = transform(bindings, bindingNames, body1, owner);
+                 CallCC.compose( ca,
+                      { (t:Term) => 
+                        Done(new LetTerm(bindings1,
+                                      t, false,
+                                      letSignature1))
+                      }
+                  );
         case FunctionalTerm(Let,Seq(assignments,term),_) =>
                  // at first crealte LetTerm inside.
                  transform(bindings, bindingNames, 

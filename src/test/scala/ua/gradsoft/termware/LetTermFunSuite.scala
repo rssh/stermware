@@ -1,9 +1,10 @@
 package ua.gradsoft.termware;
 
 import org.scalatest.FunSuite;
+import org.scalatest.matchers.ShouldMatchers;
 
 class LetTermFunSuite extends FunSuite 
-                         //with ShouldMatches
+                         with ShouldMatchers
 {
 
   test("let term must be able to be created from assignmetns and main term") {
@@ -46,7 +47,36 @@ class LetTermFunSuite extends FunSuite
   }
 
   test("internal variable in internal let must hide one in external let") {
-    pending;
+    val r = parser.phrase(parser.term)(new parser.lexical.Scanner("""
+                 let (x<-f(1)) g(x,let (x<-f(2)) x )
+            """));
+    r match {
+       case parser.Success(t,_) => {
+         t match {
+           case FunctionalTerm(theory.Let, Seq(assignments, body), _) =>
+           val letTerm = LetTerm.build(assignments,body,theory);
+           val proxyName = letTerm.name;
+           letTerm match {
+             case LetTerm(bindings0, body0, _) =>
+               bindings0.length should be (1)
+               bindings0(0).name.string should be("x");
+               letTerm.subterm(0).name.string should be("f");
+               letTerm.subterm(0).subterm(0).getInt should be(1);
+               val letTerm1 = letTerm.subterm(1);
+               letTerm1 match {
+                  case LetTerm(bindings1, body1, _) =>
+                    bindings1.length should be (1)
+                    bindings1(0).name.string should be("x");
+                    body1.arity should be (1);
+                    body1.name.string should be ("f");
+                    body1.subterm(0).getInt should be (2);
+               }
+           }
+           case _ => fail("let term must be parset to 'let' functional term");
+         }
+       }
+       case _ => fail("let term with let-term inside must be parsed");
+    }
   }
 
   test("substitution on let must be anoter let") {
