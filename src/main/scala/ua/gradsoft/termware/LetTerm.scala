@@ -27,16 +27,25 @@ class LetTerm(val vars:IndexedSeq[TermBinding],
                                            ComputationBounds[Term] = 
    ctx.withCall { 
        // TODO: rewrite.
+       System.err.println("let term.subst :1");
        (ctx:CallContext) => implicit val ictx = ctx;
        val newVars = vars.map(_.subst(s)(ctx));
+       System.err.println("let term.subst :3");
        val s1 = bindingSubstitution(newVars).andThen(s);
+       System.err.println("let term.subst :4");
+       val p1 = proxy.subst(s1);
+       System.err.println("let term.subst :5");
+        
        // todo: refresh let in all subterms of p.
-       CallCC.compose(p.subst(s1),
+       CallCC.compose(p1,
               { (t:Term) => Done(
                              new LetTerm(newVars,t,false,letSignature)
                             ) }
        );
     }
+
+  override def fixSubst(s: PartialFunction[Term,Term]): Term =
+              CallCC.trampoline(Call{(ctx:CallContext)=>subst(s)(ctx)});
 
 
   override def print(out:PrintWriter):Unit = {
