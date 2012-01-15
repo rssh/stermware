@@ -62,15 +62,16 @@ abstract class FunctionalTerm(s:TermSignature) extends Term
         Done(s(this));
      } else {
        val nSubterms = for(st <-subterms) yield {
-                       if (s.isDefinedAt(st)) {
-                          Done(s(st)); 
-                       } else {
-                         st.subst(s);
-                       }
+                         if (s.isDefinedAt(st)) {
+                            Done(s(st)); 
+                         } else {
+                            st.subst(s);
+                         }
                      }
        val seqCb = CallCC.seq(nSubterms);
-       CallCC.compose(seqCb,
+       val retval = CallCC.compose(seqCb,
              { x:IndexedSeq[Term] => Done(signature.createTerm(name,x)) });
+       retval;
      }
   };
 

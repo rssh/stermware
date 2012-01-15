@@ -91,11 +91,6 @@ class LetTermFunSuite extends FunSuite
          }
        case _ => fail("let term r1  must be parsed");
     }
-    val z = theory.freeAtomSignature.createConstant("z");
-    object s1 extends PartialFunction[Term,Term] {
-      def isDefinedAt(x:Term):Boolean = x.isAtom && x.name.string == "y";
-      def apply(x:Term):Term = z ;       
-    }
     val st1 = t1.fixSubst(s1); 
     st1.name.string should equal("g");
     st1.subterm(0) match {
@@ -110,8 +105,30 @@ class LetTermFunSuite extends FunSuite
     st1.subterm(1).name.string should equal("z");
   }
 
-  test("substitution on let must change internal let's") {
-    pending;
+  test("substitution on let must change atoms in internal let's") {
+    val r1 = parser.phrase(parser.term)(new parser.lexical.Scanner(
+                         "let (x<-f(1,y)) g(x,let (q <- a(x)) g(q,y) )"));
+    val t1 = r1 match {
+       case parser.Success(t,_) => 
+         t match {
+           case FunctionalTerm(theory.Let, Seq(assignments, body), _) =>
+                                LetTerm.build(assignments,body,theory)
+           case _ => fail("let term must be parsed to 'let' functional term")
+         }
+       case _ => fail("let term r1  must be parsed");
+    }
+    val st1 = t1.fixSubst(s1); 
+    st1.name.string should equal("g");
+    st1.subterm(0).name.string should equal("f");
+    st1.subterm(1).name.string should equal("g");
+    st1.subterm(1).subterm(0).name.string should equal("a");
+    st1.subterm(1).subterm(1).name.string should equal("z");
+  }
+
+  object s1 extends PartialFunction[Term,Term] {
+      def isDefinedAt(x:Term):Boolean = x.isAtom && x.name.string == "y";
+      def apply(x:Term):Term = z ;       
+      val z = theory.freeAtomSignature.createConstant("z");
   }
 
   val theory = TermWare.instance.freeTheory;

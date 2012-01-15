@@ -34,7 +34,12 @@ abstract class PrimitiveTerm(s:TermSignature) extends Term
   override def getMessage = throwUOE;
 
   def fixSubst(s:PartialFunction[Term,Term]):Term = 
-    if (s.isDefinedAt(this)) s.apply(this) else this;
+  {
+    if (s.isDefinedAt(this)) 
+       s.apply(this) 
+    else 
+       this;
+  }
 
   def unify(t: Term, s: Substitution[Term])(implicit ctx:CallContext)
    =

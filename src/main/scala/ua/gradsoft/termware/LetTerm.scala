@@ -31,9 +31,10 @@ class LetTerm(val vars:IndexedSeq[TermBinding],
    ctx.withCall { 
        (ctx:CallContext) => implicit val ictx = ctx;
        val newVars = vars.map(_.subst(s)(ictx));
-       Done( new LetTerm(newVars, proxy, 
+       val retval = Done( new LetTerm(newVars, proxy, 
                          TermConstructorTransformParams((s,this)),
                          letSignature) )
+       retval;
     }
 
   override def fixSubst(s: PartialFunction[Term,Term]): Term =
@@ -74,11 +75,12 @@ class LetTerm(val vars:IndexedSeq[TermBinding],
                          );
                   } else if (transformParams.substParams!=None) {
                       val substParams = transformParams.substParams.get;
-                      transformParams.releaseRefs;
                       CallCC.trampoline(
                          Call{ (ctx:CallContext) =>
-		           iniBody.subst(LetTerm.bindingSubstitution(vars,substParams._1,
+		           val retval = iniBody.subst(LetTerm.bindingSubstitution(vars,substParams._1,
                                                                           substParams._2, this))(ctx);
+                           transformParams.releaseRefs;
+                           retval;
                          }
                       );
                   } else {
