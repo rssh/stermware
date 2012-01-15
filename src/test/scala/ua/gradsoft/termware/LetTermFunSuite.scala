@@ -80,10 +80,37 @@ class LetTermFunSuite extends FunSuite
   }
 
   test("substitution on let must be anoter let") {
-    pending;
+    val r1 = parser.phrase(parser.term)(new parser.lexical.Scanner(
+                         "let (x<-f(1,y)) g(x,y)"));
+    val t1 = r1 match {
+       case parser.Success(t,_) => 
+         t match {
+           case FunctionalTerm(theory.Let, Seq(assignments, body), _) =>
+                                LetTerm.build(assignments,body,theory)
+           case _ => fail("let term must be parsed to 'let' functional term")
+         }
+       case _ => fail("let term r1  must be parsed");
+    }
+    val z = theory.freeAtomSignature.createConstant("z");
+    object s1 extends PartialFunction[Term,Term] {
+      def isDefinedAt(x:Term):Boolean = x.isAtom && x.name.string == "y";
+      def apply(x:Term):Term = z ;       
+    }
+    val st1 = t1.fixSubst(s1); 
+    st1.name.string should equal("g");
+    st1.subterm(0) match {
+       case LetProxy(name,index,owner) =>
+                 name.string should equal("x")
+                 assert(owner eq st1,"owner should be same as st1")
+       case _ => fail("first argument must be let-proxy")
+    }
+    st1.subterm(0).name.string should equal("f");
+    st1.subterm(0).subterm(0).value[Int] should equal(1);
+    st1.subterm(0).subterm(1).name.string should equal("z");
+    st1.subterm(1).name.string should equal("z");
   }
 
-  test("substitution on let must double internal let's") {
+  test("substitution on let must change internal let's") {
     pending;
   }
 

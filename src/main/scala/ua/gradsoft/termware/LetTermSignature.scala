@@ -33,7 +33,7 @@ class LetTermSignature(val theory:Theory) extends TermSignature
     if (bindings.isEmpty) {
        t;   
     } else {
-       new LetTerm(bindings,t,true,this);
+       new LetTerm(bindings,t,TermConstructorTransformParams(true),this);
     }
   }
 

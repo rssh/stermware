@@ -13,7 +13,7 @@ case class TermBinding(val name: Name, val kind:Int, var value: Term)
         TermBinding(name, kind, ComputationBoundsTerm(value.subst(s)(ctx)))
      case TermBinding.LAZY =>
         TermBinding(name, kind, ComputationBoundsTerm(
-                              Call{ (ctx:CallContext) => value.subst(s)(ctx) }
+                          Call{ (ctx:CallContext) => value.subst(s)(ctx) }
                                                      ))
     }
 

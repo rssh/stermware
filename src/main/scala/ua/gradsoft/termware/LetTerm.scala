@@ -12,10 +12,13 @@ import ua.gradsoft.termware.flow._;
  *   let (x1 <- v1,... xN <- vN) p
  * </pre>
  *@param vars -- table of variables, which consists from index, name and actual term value.
- *@param p -- term inside let expression. (where x1 ... xN - atoms with appropriative names).
+ *@param iniBody -- term inside let expression. (where x1 ... xN - atoms with appropriative names).
+ *@param transformParams -- operations, which must be done before first usage.
+ *@param letSignature -- let signature.
  **/
 class LetTerm(val vars:IndexedSeq[TermBinding], 
-              p:Term, doTransformation: Boolean,
+              iniBody:Term, 
+              private val transformParams:TermConstructorTransformParams[LetTerm],
               val letSignature: LetTermSignature)  
                              extends ProxyTerm
 {
@@ -26,22 +29,11 @@ class LetTerm(val vars:IndexedSeq[TermBinding],
                     (implicit ctx: CallContext) :
                                            ComputationBounds[Term] = 
    ctx.withCall { 
-       // TODO: rewrite.
-       System.err.println("let term.subst :1");
        (ctx:CallContext) => implicit val ictx = ctx;
-       val newVars = vars.map(_.subst(s)(ctx));
-       System.err.println("let term.subst :3");
-       val s1 = bindingSubstitution(newVars).andThen(s);
-       System.err.println("let term.subst :4");
-       val p1 = proxy.subst(s1);
-       System.err.println("let term.subst :5");
-        
-       // todo: refresh let in all subterms of p.
-       CallCC.compose(p1,
-              { (t:Term) => Done(
-                             new LetTerm(newVars,t,false,letSignature)
-                            ) }
-       );
+       val newVars = vars.map(_.subst(s)(ictx));
+       Done( new LetTerm(newVars, proxy, 
+                         TermConstructorTransformParams((s,this)),
+                         letSignature) )
     }
 
   override def fixSubst(s: PartialFunction[Term,Term]): Term =
@@ -60,41 +52,38 @@ class LetTerm(val vars:IndexedSeq[TermBinding],
        x.print(out);
     }
     out.print("):");
-    p.print(out);
+    proxy.print(out);
   }
 
-  def bindingSubstitution(newVars:IndexedSeq[TermBinding]):PartialFunction[Term,Term]={
-    new PartialFunction[Term,Term]{
 
-       def isDefinedAt(t:Term):Boolean =
-           t match {
-              case x:LetProxy =>
-                  (x.letOwner eq LetTerm.this)
-              case _ =>
-                    false;
-           }
-
-       def apply(t:Term):Term =
-       {
-         val lt = t.asInstanceOf[LetProxy];
-         LetProxy(lt.name,lt.letLabel,null);
-       }
-
-    }
-  }
 
   override def signature = letSignature.apply(letTransformed.signature);
 
-  override val attributes=new MutableHashMap[Name,Term]();
+  override lazy val attributes=new MutableHashMap[Name,Term]();
 
   private[this] lazy val hash: Int = letTransformed.hashCode;
 
   private[this] lazy val letTransformed = 
-                  if (doTransformation) {
+                  if (transformParams.isDoTransformation) {
                         CallCC.trampoline(
-                          Call{ (ctx:CallContext) => LetTerm.transform(vars,p,this)(ctx); }
+                          Call{ (ctx:CallContext) => 
+                                 val retval = LetTerm.transform(vars,iniBody,this)(ctx); 
+                                 transformParams.releaseRefs;
+                                 retval;
+                          }
                          );
-                  } else p;
+                  } else if (transformParams.substParams!=None) {
+                      val substParams = transformParams.substParams.get;
+                      transformParams.releaseRefs;
+                      CallCC.trampoline(
+                         Call{ (ctx:CallContext) =>
+		           iniBody.subst(LetTerm.bindingSubstitution(vars,substParams._1,
+                                                                          substParams._2, this))(ctx);
+                         }
+                      );
+                  } else {
+                      iniBody;
+                  }
 
 }
 
@@ -154,7 +143,10 @@ object LetTerm
                       transform(bindings, bindingNames, body1, owner),
                       { (t:Term) => 
                         Done(new LetTerm(bindings1,
-                                      t, false,
+                                      t, 
+                                      TermConstructorTransformParams((Map[Term,Term](),
+                                                                     // TODO: rethink
+                                                                     internalTerm.asInstanceOf[LetTerm])),
                                       letSignature1))
                       }
                   );
@@ -203,6 +195,28 @@ object LetTerm
      theory.letSignature.createTerm(theory.symbolTable.LET, assignments, main);
    }
 
+   def bindingSubstitution(newVars:IndexedSeq[TermBinding], 
+                           nextSubst: PartialFunction[Term,Term],
+                           oldOwner: LetTerm,  newOwner: LetTerm):PartialFunction[Term,Term]={
+    new PartialFunction[Term,Term]{
+       def isDefinedAt(t:Term):Boolean =
+           t match {
+              case x:LetProxy =>
+                  (x.letOwner eq oldOwner)
+              case _ => nextSubst.isDefinedAt(t)
+           }
+       def apply(t:Term):Term =
+       {
+         t match {
+              case x:LetProxy if (x.letOwner eq oldOwner) =>
+                    LetProxy(x.letName,x.letLabel, newOwner);
+              case _ => if (nextSubst.isDefinedAt(t)) 
+                           nextSubst(t)
+                        else t
+         }
+       }
+    }
+  }
 
 }
 
