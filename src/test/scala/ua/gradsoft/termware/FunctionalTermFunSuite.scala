@@ -34,11 +34,21 @@ class FunctionalTermFunSuite extends FunSuite
       def isDefinedAt(x:Term):Boolean = x.isAtom && x.name.string == "y";
       def apply(x:Term):Term = z ;       
     }
-    pending;
+    val t1 = t.fixSubst(s1)
+    assert(t.arity == t1.arity);
+    t1 match {
+       case Term(Name("f"),Seq(a1,a2,a3),_) =>
+              a1.name.string should equal("x")
+              a3.name.string should equal("z")
+              a2.name.string should equal("g")
+              a2.subterms(0).name.string should equal("x")
+              a2.subterms(1).name.string should equal("z")
+       case _ => fail("substitutd term must be matched");
+    }
   }
 
 
   val theory = TermWare.instance.freeTheory;
-  val parser = new TermWareParser(theory,"inside-LetTermFunSuite");
+  val parser = new TermWareParser(theory,"inside-FunctionalTermFunSuite");
 
 }
