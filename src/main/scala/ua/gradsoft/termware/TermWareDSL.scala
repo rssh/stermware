@@ -36,7 +36,43 @@ trait TermWareDSL extends DefaultTermNames
   def f_ (fn:String) =  <>(fn);
 
   def a(n:String) = theory.atomSignature(n).createConstant(n);
+  def a(n:Name) = theory.atomSignature(n).createConstant(n);
   
+  case class XVarVerb(val n:Name)
+  {
+     def <-- (t:Term) = new AssignmentVerb(n,t);
+     def <~ (t:Term) = new AssignmentVerb(n,t);
+     def := (t:Term) = new AssignmentVerb(n,t);
+  }
+  implicit def toAtom(xv: XVarVerb): Term = a(xv.n);
+
+  def x(n:Name) = new XVarVerb(n);
+  def x(n:String) = new XVarVerb(theory.symbolTable.getOrCreate(n));
+
+  class AssignmentVerb(val left:Name, val right:Term);
+
+  class AssignmentLeftVerb(val a:AtomTerm)
+  {
+    def <-- (t:Term) = new AssignmentVerb(a.name,t);
+    def <~ (t:Term) = new AssignmentVerb(a.name,t);
+    def := (t:Term) = new AssignmentVerb(a.name,t);
+  }
+  implicit def toAssignmentLetfVerm(a:AtomTerm):AssignmentLeftVerb =
+     new AssignmentLeftVerb(a);
+
+
+  class LetVerb(val assignments: Seq[AssignmentVerb])
+  {
+    def apply(t:Term): LetTerm = createLetTerm(t);
+
+    def createLetTerm(t:Term):LetTerm =
+    {
+      throw new RuntimeException("Not implemented");
+    }
+
+  }
+
+  def let(a:AssignmentVerb*) = new LetVerb(a);
 
 }
 

@@ -1,11 +1,15 @@
 package ua.gradsoft.termware;
 
-import org.scalatest.FunSuite;
+import org.scalatest._;
+import org.scalatest.matchers._;
+import TermWareDSL._;
 
-class TermWareDSLFunSuite extends FunSuite {
+class TermWareDSLFunSuite extends FunSuite 
+                            //  can't use shouldmatchers, becouse they use 'a' as in our dsl
+                            // with ShouldMatchers
+{
 
   test("creation of int term") {
-     import TermWareDSL._;
 
      val t:Term = 5;
      
@@ -18,7 +22,6 @@ class TermWareDSLFunSuite extends FunSuite {
   }
 
   test("creation of fun term with name") {
-     import TermWareDSL._;
 
      val fn1:Name = theory.symbolTable.getOrCreate("fn1");
 
@@ -38,7 +41,6 @@ class TermWareDSLFunSuite extends FunSuite {
   }
 
   test("unfix operations on terms") {
-     import TermWareDSL._;
 
      val t: Term = (FN("f")(1,2) + a("x")) * a("y");
 
@@ -57,7 +59,6 @@ class TermWareDSLFunSuite extends FunSuite {
   }
 
   test("apply on names") {
-     import TermWareDSL._;
      val t: Term = FN("f")(1,2);
      t match {
        case Term(Name("f"),Seq(x1,x2),_) =>
@@ -67,9 +68,23 @@ class TermWareDSLFunSuite extends FunSuite {
      }
   }
 
+  test("let expressions") {
+    val t = let( x("a") <~ a("y"), x("b") <~ a("b"))(
+                            FN("f")(a("a"),x("a"),x("b")) 
+               );
+    System.err.println("received:"+t.toString);
+    t match {
+      case LetTerm(bindings,body,_) =>
+                 assert(body.name.string == "f" ,"body.name.string shoud equal f");
+                 assert(body.subterm(0).name.string == "a", "body.subterm(0).name.string equal('a')");
+                 assert(body.subterm(1).name.string == "y", "body.subterm(1).name.string == \"y\" " );
+                 assert(body.subterm(2).name.string == "b", "body.subterm(2).name.string == \"b\" " );
+       case _ => fail("let expression mut be matched to LetTerm");
+
+    }
+  }
 
   test("build rule without vars") {
-     import TermWareDSL._;
 
      val t1:Term = a("a1");
      val t2:Term = a("a2");
