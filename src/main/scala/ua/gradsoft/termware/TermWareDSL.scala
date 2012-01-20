@@ -35,8 +35,8 @@ trait TermWareDSL extends DefaultTermNames
   def <>(fn:String) =  new NameVerb(theory.symbolTable.getOrCreate(fn));
   def f_ (fn:String) =  <>(fn);
 
-  def a(n:String) = theory.atomSignature(n).createConstant(n);
-  def a(n:Name) = theory.atomSignature(n).createConstant(n);
+  def atom(n:String) = theory.atomSignature(n).createConstant(n);
+  def atom(n:Name) = theory.atomSignature(n).createConstant(n);
   
   case class XVarVerb(val n:Name)
   {
@@ -44,7 +44,7 @@ trait TermWareDSL extends DefaultTermNames
      def <~ (t:Term) = new AssignmentVerb(n,t);
      def := (t:Term) = new AssignmentVerb(n,t);
   }
-  implicit def toAtom(xv: XVarVerb): Term = a(xv.n);
+  implicit def toAtom(xv: XVarVerb): Term = atom(xv.n);
 
   def x(n:Name) = new XVarVerb(n);
   def x(n:String) = new XVarVerb(theory.symbolTable.getOrCreate(n));
@@ -67,7 +67,13 @@ trait TermWareDSL extends DefaultTermNames
 
     def createLetTerm(t:Term):LetTerm =
     {
-      throw new RuntimeException("Not implemented");
+      new LetTerm( (assignments map ( 
+                      x => new TermBinding(x.left, TermBinding.EAGER, x.right)
+                    )).toIndexedSeq,
+                    t,
+                    TermConstructorTransformParams(true),
+                    theory.letSignature
+                 );
     }
 
   }
