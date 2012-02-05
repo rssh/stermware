@@ -28,19 +28,18 @@ class WithTermSignature(th:Theory) extends TermSignature
     if (args.length!=2) {
        throw new IllegalArgumentException("args lenght must be 2");
     }
-    val vNames:(IndexedSeq[XTerm],Map[Name,Int]) = parseNames(args(0));
-    val t = args(1);
+    createWithTerm(args(0), args(1));
+  }
+
+  private[termware] def createWithTerm(vardefs: Term, body: Term):Term =
+  {
+    val vNames:(IndexedSeq[XTerm],Map[Name,Int]) = parseNames(vardefs);
     if (vNames._1.isEmpty) {
-       t;   
+       body
     } else {
-        val s = new PartialFunction[Term,Term]{
-           def isDefinedAt(x:Term) = x.isAtom;
-           def apply(t:Term):Term = vNames._2.get(t.name) match {
-                                      case Some(x) => vNames._1(x)
-                                      case None    => t
-                                    };
-        };
-        new WithTerm(vNames._1,t.fixSubst(s),this);
+       CallCC.trampoline(
+           Call{ (ctx:CallContext) => WithTerm.transform(vNames._1,vNames._2,body)(ctx) }
+       );
     }
   }
 

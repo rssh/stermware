@@ -140,6 +140,11 @@ object LetTerm
                     case Some(i) => Done(new LetProxy(name,i,owner))
                     case None  => Done(internalTerm)
                  }
+        case WithTerm(bindings1,body1,withSignature1) => 
+                 CallCC.compose( 
+                      transform(bindings, bindingNames, body1, owner),
+                      (t:Term) => Done(new WithTerm(bindings1,t,withSignature1))
+                  )
         case LetTerm(bindings1,body1,letSignature1) => 
                  CallCC.compose( 
                       transform(bindings, bindingNames, body1, owner),
