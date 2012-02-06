@@ -13,7 +13,7 @@ trait Strategy
    
 }
 
-class FirstLeft extends Strategy
+object FirstLeft extends Strategy
 {
 
  def apply(t:Term,matchingNet:MatchingNet)(implicit ctx:CallContext):ComputationBounds[Pair[ComputationBounds[Term],Boolean]] =

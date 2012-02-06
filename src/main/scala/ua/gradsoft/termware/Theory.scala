@@ -29,6 +29,15 @@ trait Theory extends TermWareInstance
  def bigDecimalSignature: TermSignature;
 
  def atomSignature(name:Name): TermSignature;
+ 
+ def atomSignature(name:String): TermSignature =
+       atomSignature(symbolTable.getOrCreate(name));
+
+ @inline
+ def createAtom(name:Name) = atomSignature(name).createConstant(name);
+
+ @inline
+ def createAtom(name:String) = atomSignature(name).createConstant(name);
 
  def freeAtomSignature: TermSignature;
 
@@ -38,8 +47,6 @@ trait Theory extends TermWareInstance
 
  def typeAlgebra: TypeAlgebra;
 
- def atomSignature(name:String): TermSignature =
-       atomSignature(symbolTable.getOrCreate(name));
 
  def funSignature(name:Name): TermSignature;
  def funSignature(name:String): TermSignature =

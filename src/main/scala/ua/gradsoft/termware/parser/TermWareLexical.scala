@@ -210,7 +210,7 @@ class TermWareLexical(s:OperatorSyntax) extends Lexical
            KeywordDef("else",None),
            KeywordDef("let",None),
            KeywordDef("where",None),
-           KeywordDef("whith",None)
+           KeywordDef("with",None)
   );
   private var normalStateKeywordParser: Parser[KeywordToken] = null;
 

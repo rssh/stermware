@@ -14,6 +14,6 @@ class TermWare extends TermWareInstance
  def symbolTable = TermWare.symbolTable; 
  val freeTheory = this;
 
- def typeAlgebra = { throw new RuntimeException("not implemented"); }
+ override lazy val typeAlgebra = new DefaultTypeAlgebra(this);
 
 }

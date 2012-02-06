@@ -23,7 +23,7 @@ class WithTermSignature(th:Theory) extends TermSignature
   override def createTerm(name:Name, args: IndexedSeq[Term]):Term = 
   {
     if (name != theory.symbolTable.WITH) {
-       throw new IllegalArgumentException("name of with-term must be 'with'");
+       throw new IllegalArgumentException("name of with-term must be 'with', have "+name);
     }
     if (args.length!=2) {
        throw new IllegalArgumentException("args lenght must be 2");
@@ -37,8 +37,11 @@ class WithTermSignature(th:Theory) extends TermSignature
     if (vNames._1.isEmpty) {
        body
     } else {
-       CallCC.trampoline(
-           Call{ (ctx:CallContext) => WithTerm.transform(vNames._1,vNames._2,body)(ctx) }
+       new WithTerm(vNames._1,
+             CallCC.trampoline(
+                Call{ (ctx:CallContext) =>   WithTerm.transform(vNames._1,vNames._2,body)(ctx) }
+             ),
+             this
        );
     }
   }
@@ -111,7 +114,7 @@ class WithTermSignature(th:Theory) extends TermSignature
       var m = Map[Name,Int]();
       val vardefName = theory.symbolTable.getOrCreate("vardef");
       var i=0;
-      var seq = indexedSeqFromTermList(theory, t) map { (x:Term)=>
+      var seq = indexedSeqFromTermList(theory, t) map { (t:Term)=>
              if (t.name == vardefName) {
                  val varName = t.subterm(0);
                  val varType = t.subterm(1);
@@ -120,7 +123,7 @@ class WithTermSignature(th:Theory) extends TermSignature
                  i = i+1;
                  x;
              } else {
-                 throw new IllegalArgumentException("vardef required");
+                 throw new IllegalArgumentException("vardef required, have "+t.name);
              }
       };
       (seq,m);

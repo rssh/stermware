@@ -54,6 +54,11 @@ class XTerm(override val name: Name,
             def xOwner_=(owner:XOwner):Unit =
                 { xOwner_ = owner; }
 
+   /**
+    * true if this is X-term.
+    **/
+   override def isX = true;
+
    override def unify(t:Term, s:Substitution[Term])(implicit ctx:CallContext) 
                               : ComputationBounds[(Boolean, Substitution[Term])] = {
       if (t.isX && (t.xOwner eq xOwner) ) {
