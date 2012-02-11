@@ -101,6 +101,10 @@ class ComputationBoundsTerm(val cbt: ComputationBounds[Term]) extends Term
 
    def isEta: Boolean = term.isEta;
 
+   def isLet: Boolean = term.isLet;
+
+   def isWith: Boolean = term.isWith;
+
    def isError: Boolean = term.isError;
 
    def subst(s: PartialFunction[Term,Term])(implicit ctx:CallContext):

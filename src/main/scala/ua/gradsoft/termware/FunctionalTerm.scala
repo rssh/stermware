@@ -15,6 +15,8 @@ abstract class FunctionalTerm(s:TermSignature) extends Term
   def isNil: Boolean = false;
   def isAtom: Boolean = false;
   def isEta: Boolean = false;
+  def isLet: Boolean = false;
+  def isWith: Boolean = false;
   def isError: Boolean = false;
   
   def optValue[T](implicit mt:Manifest[T]) = s.to[T](this);

@@ -56,6 +56,10 @@ class ErrorTerm(m:String, e:Exception, s: ErrorTermSignature) extends Term
 
   def isEta: Boolean = false;
 
+  def isLet: Boolean = false;
+
+  def isWith: Boolean = false;
+
   def isError: Boolean = true;
 
   override def isException: Boolean = true;

@@ -25,6 +25,8 @@ class LetTerm(val vars:IndexedSeq[TermBinding],
 
   def proxy = letTransformed;
 
+  override def isLet: Boolean = true;
+
   override def subst(s:PartialFunction[Term,Term])
                     (implicit ctx: CallContext) :
                                            ComputationBounds[Term] = 

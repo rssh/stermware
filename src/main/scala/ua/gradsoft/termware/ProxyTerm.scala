@@ -93,6 +93,10 @@ trait ProxyTerm  extends Term
 
    override def isEta: Boolean = proxy.isEta;
 
+   override def isLet: Boolean = proxy.isLet;
+
+   override def isWith: Boolean = proxy.isWith;
+
    override def isAtom: Boolean = proxy.isAtom;
 
    override def isNil: Boolean = proxy.isNil;

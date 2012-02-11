@@ -16,6 +16,8 @@ class WithTerm(override val vars:IndexedSeq[XTerm], val p:Term, val ws: WithTerm
 
   def proxy = p;
 
+  override def isWith: Boolean = true;
+
   override def subst(s:PartialFunction[Term,Term])
                     (implicit ctx: CallContext) :
                                                   ComputationBounds[Term] = 

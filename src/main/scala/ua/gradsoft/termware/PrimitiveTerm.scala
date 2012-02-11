@@ -29,6 +29,10 @@ abstract class PrimitiveTerm(s:TermSignature) extends Term
 
   override def isEta = false;
 
+  override def isLet = false;
+
+  override def isWith = false;
+
   override def isError = false;
 
   override def getMessage = throwUOE;

@@ -48,6 +48,10 @@ trait CbTerm extends CbTValue
 
   def isEta(implicit ctx:CallContext): ComputationBounds[Boolean];
 
+  def isLet(implicit ctx:CallContext): ComputationBounds[Boolean];
+
+  def isWith(implicit ctx:CallContext): ComputationBounds[Boolean];
+
   def isError(implicit ctx:CallContext): ComputationBounds[Boolean];
 
   def subst(s: PartialFunction[CbTerm,CbTerm])(implicit ctx:CallContext): 

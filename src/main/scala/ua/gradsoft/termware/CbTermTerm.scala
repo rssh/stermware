@@ -40,6 +40,10 @@ class CbTermTerm(cb:CbTerm, implicit val ctx:CallContext) extends Term
 
   def isEta: Boolean = CallCC.trampoline(cb.isEta);
 
+  def isLet: Boolean = CallCC.trampoline(cb.isLet);
+
+  def isWith: Boolean = CallCC.trampoline(cb.isWith);
+
   def isError: Boolean = CallCC.trampoline(cb.isError);
 
   def optValue[T](implicit mt:Manifest[T]) = CallCC.trampoline(cb.optValue[T](mt))

@@ -24,6 +24,10 @@ class EtaTerm(vars:IndexedSeq[XTerm], l:Term, r:Term, rs:Option[Term], s:EtaTerm
 
   def isEta = true;
 
+  def isLet = false;
+
+  def isWith = false;
+
   def isError = false;
 
   override def name = signature.fixedName.get;

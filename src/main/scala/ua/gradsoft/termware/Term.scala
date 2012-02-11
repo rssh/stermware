@@ -48,6 +48,10 @@ trait Term extends TermValue
 
   def isEta: Boolean;
 
+  def isWith: Boolean;
+
+  def isLet: Boolean;
+
   def isError: Boolean;
 
   /**

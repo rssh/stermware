@@ -87,6 +87,8 @@ class XTerm(override val name: Name,
    
    override def isError: Boolean = false;
    override def isEta: Boolean = false;
+   override def isLet: Boolean = false;
+   override def isWith: Boolean = false;
    override def isAtom: Boolean = false;
    override def isNil: Boolean = false;
 

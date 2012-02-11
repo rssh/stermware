@@ -104,6 +104,10 @@ class TermCbTerm(val term:Term) extends CbTerm
 
   def isEta(implicit ctx:CallContext): ComputationBounds[Boolean] = Done(term.isEta);
 
+  def isWith(implicit ctx:CallContext): ComputationBounds[Boolean] = Done(term.isWith);
+
+  def isLet(implicit ctx:CallContext): ComputationBounds[Boolean] = Done(term.isLet);
+
   def isError(implicit ctx:CallContext): ComputationBounds[Boolean] = Done(term.isError);
 
   def subst(s: PartialFunction[CbTerm,CbTerm])(implicit ctx:CallContext): 
