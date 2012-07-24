@@ -1,5 +1,7 @@
 package com.github.termware
 
+import scala.reflect.runtime.universe._
+
 trait Term
 {
 
@@ -42,7 +44,7 @@ trait TermWrapper[T]
 
    def isAtom(t:T):Boolean;
 
-   def is[X](t:T)(implicit mt:Manifest[T], mx:Manifest[X]):Boolean
+   def is[X](t:T)(implicit ttag:TypeTag[T], xtag:TypeTag[X]):Boolean
 
    def value[X](t:T)(implicit mt:Manifest[T], mx:Manifest[X]):Option[X]
 
@@ -67,7 +69,6 @@ class WrappedTerm[T](x:T, tw: TermWrapper[T]) extends BaseWrap
 {
 
    type ValueType = T;
-   //type WrapperType = typeOf(tw);
 
    def name:Name = tw.name(x)
          
@@ -96,8 +97,8 @@ object IntTermWrapper extends TermWrapper[Int]
 
    def isAtom(t:Int) = false
 
-   def is[X](t:Int)(implicit mt:Manifest[Int], mx:Manifest[X]):Boolean =
-                               (mx <:< implicitly[Manifest[Int]]) 
+   def is[X](t:Int)(implicit ttag:TypeTag[Int], xtag:TypeTag[X]):Boolean =
+                               (typeOf[X] <:< typeOf[Int]) 
      
    def value[X](t:Int)(implicit mt:Manifest[Int], mx:Manifest[X]):Option[X] =
       if (mx <:< implicitly[Manifest[Int]]) {
