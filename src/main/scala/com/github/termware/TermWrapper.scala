@@ -46,7 +46,7 @@ trait TermWrapper[T]
 
    def is[X](t:T)(implicit ttag:TypeTag[T], xtag:TypeTag[X]):Boolean
 
-   def value[X](t:T)(implicit mt:Manifest[T], mx:Manifest[X]):Option[X]
+   def value[X](t:T)(implicit ttag:TypeTag[T], xtag:TypeTag[X]):Option[X]
 
    def isX(t:T):Boolean = false
 
@@ -100,8 +100,8 @@ object IntTermWrapper extends TermWrapper[Int]
    def is[X](t:Int)(implicit ttag:TypeTag[Int], xtag:TypeTag[X]):Boolean =
                                (typeOf[X] <:< typeOf[Int]) 
      
-   def value[X](t:Int)(implicit mt:Manifest[Int], mx:Manifest[X]):Option[X] =
-      if (mx <:< implicitly[Manifest[Int]]) {
+   def value[X](t:Int)(implicit ttag:TypeTag[Int], xtag:TypeTag[X]):Option[X] =
+      if (typeOf[X] <:< typeOf[Int]) {
          Some(t.asInstanceOf[X])
       } else {
          None
