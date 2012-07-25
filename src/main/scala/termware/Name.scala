@@ -1,4 +1,4 @@
-package com.github.termware
+package termware
 
 sealed trait Name
 

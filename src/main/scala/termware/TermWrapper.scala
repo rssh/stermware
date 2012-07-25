@@ -1,4 +1,4 @@
-package com.github.termware
+package termware
 
 import scala.reflect.runtime.universe._
 
