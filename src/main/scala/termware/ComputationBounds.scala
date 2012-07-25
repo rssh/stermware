@@ -15,7 +15,7 @@ sealed abstract class ComputationBounds[+A]
   def result: Option[A]
 
   // receive next computation bounds if we not done.
-  def step(ctx:CallContext): ComputationBounds[A]
+  def step(ctx:CallNesting): ComputationBounds[A]
 
   def aTag: TypeTag[_ <: A]
 
@@ -31,7 +31,7 @@ case class Done[A](val r: A)(implicit m:TypeTag[A]) extends ComputationBounds[A]
 {
   def isDone: Boolean = true;
   def result: Option[A] = Some(r);
-  def step(ctx:CallContext) = this;
+  def step(ctx:CallNesting) = this;
   def aTag = m;
   def aType = typeOf[A]
 }
@@ -40,12 +40,12 @@ case class Done[A](val r: A)(implicit m:TypeTag[A]) extends ComputationBounds[A]
  * when we need to call net thunk
  **/
 case class Call[A](
-             thunk: (CallContext) => ComputationBounds[A]
+             thunk: (CallNesting) => ComputationBounds[A]
            )(implicit m:TypeTag[A]) extends ComputationBounds[A]
 {
   def isDone: Boolean = false;
   def result: Option[A] = None;
-  def step(ctx:CallContext) = {
+  def step(ctx:CallNesting) = {
       thunk(ctx);
   }
   def aTag = m;
@@ -56,8 +56,8 @@ case class Call[A](
  * Compose two computations
  **/
 case class ContCall[A,B,XA <: A](
-             thunk: (CallContext) => ComputationBounds[XA],
-             cont: (XA,CallContext) => ComputationBounds[B]
+             thunk: (CallNesting) => ComputationBounds[XA],
+             cont: (XA,CallNesting) => ComputationBounds[B]
              )
              (implicit ma:TypeTag[A],
                        mb:TypeTag[B],
@@ -66,13 +66,13 @@ case class ContCall[A,B,XA <: A](
 {
   def isDone: Boolean = false;
   def result: Option[B] = None;
-  def step(ctx:CallContext): ComputationBounds[B]={
+  def step(ctx:CallNesting): ComputationBounds[B]={
         val s = try {
                  thunk(ctx);
                 } catch {
                   case ex: CallCCThrowable[_] if (ex.aType <:< typeOf[A]) =>
                    {
-                    throw new CallCCThrowable(Call{ (ctx:CallContext) => step(ctx) });
+                    throw new CallCCThrowable(Call{ ctx => step(ctx) });
                    }
                 }
           if (s.isDone) {

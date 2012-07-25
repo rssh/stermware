@@ -16,7 +16,7 @@ object CallCC
              quit=true;
          } else {
              try {
-               current = current.step(CallContext.empty);
+               current = current.step(CallNesting.empty);
              } catch {
                 case ex : CallCCThrowable[_] if (ex.aType <:< typeOf[A])
                     => current = ex.current.asInstanceOf[ComputationBounds[A]]
@@ -27,11 +27,11 @@ object CallCC
   }
 
   def compose[A,B](ca:ComputationBounds[A],
-                  cont:(A,CallContext)=>ComputationBounds[B])
-                (implicit ctx:CallContext,aTag:TypeTag[A],bTag:TypeTag[B]):
+                  cont:(A,CallNesting)=>ComputationBounds[B])
+                (implicit ctx:CallNesting,aTag:TypeTag[A],bTag:TypeTag[B]):
                                                ComputationBounds[B] = 
        ctx.withCall {
-         (ctx:CallContext)=> implicit val ictx = ctx; 
+         (ctx:CallNesting)=> implicit val ictx = ctx; 
          var current = ca;
          var quit = false;
          var result: Option[ComputationBounds[B]] = None;
@@ -49,7 +49,7 @@ object CallCC
                 val sa = cont(current.result.get,ctx);
                 throw new CallCCThrowable[B](sa);
              } else {
-                throw new CallCCThrowable[B](Call{ (ctx:CallContext)=> 
+                throw new CallCCThrowable[B](Call{ (ctx:CallNesting)=> 
                                                     compose(ca,cont)(ctx,aTag,bTag); });
              }
            }
@@ -58,20 +58,20 @@ object CallCC
        }
 
   def fcompose[A:TypeTag,B:TypeTag](ca:ComputationBounds[A],
-                    cont:(A,CallContext)=>ComputationBounds[B]):
+                    cont:(A,CallNesting)=>ComputationBounds[B]):
                                                  ComputationBounds[B]=
     Call { implicit ctx => compose(ca,cont); }
 
   @inline
   def compose[A,B](ca:ComputationBounds[A],
                    cont:A=>ComputationBounds[B])
-                   (implicit ctx:CallContext, aTag: TypeTag[A], bTag: TypeTag[B]):
+                   (implicit ctx:CallNesting, aTag: TypeTag[A], bTag: TypeTag[B]):
                                                ComputationBounds[B] = 
-    compose(ca,{ (x:A,ctx:CallContext) => cont(x) });
+    compose(ca,{ (x:A,ctx:CallNesting) => cont(x) });
 
 
   def pair[A,B](ca:ComputationBounds[A],cb:ComputationBounds[B])
-               (implicit ctx:CallContext, aTag: TypeTag[A], bTag: TypeTag[B]):
+               (implicit ctx:CallNesting, aTag: TypeTag[A], bTag: TypeTag[B]):
                                            ComputationBounds[(A,B)] =
      ctx.withCall {
        implicit ctx =>  
@@ -86,7 +86,7 @@ object CallCC
               case ex: CallCCThrowable[_] if ex.aType <:< typeOf[A] => {
                 cca = ex.current.asInstanceOf[ComputationBounds[A]];
                 throw new CallCCThrowable(
-                   Call{ implicit ctx:CallContext => pair(cca,ccb) });
+                   Call{ implicit ctx:CallNesting => pair(cca,ccb) });
               }
             }
           } else if (ccb.isDone) {
@@ -99,7 +99,7 @@ object CallCC
               case ex: CallCCThrowable[_] if ex.aType <:< typeOf[B] => {
                 ccb = ex.current.asInstanceOf[ComputationBounds[B]];
                 throw new CallCCThrowable(
-                    Call{ implicit ctx:CallContext => pair(cca,ccb); });
+                    Call{ implicit ctx:CallNesting => pair(cca,ccb); });
               }
             }
           }
@@ -108,21 +108,21 @@ object CallCC
    }
 
    def tuple[A:TypeTag,B:TypeTag](ca:ComputationBounds[A],cb:ComputationBounds[B])
-                                                        (implicit ctx:CallContext) = pair(ca,cb);
+                                                        (implicit ctx:CallNesting) = pair(ca,cb);
               
 
 
    def tuple[A:TypeTag,B:TypeTag,C:TypeTag](ca:ComputationBounds[A],
                                             cb:ComputationBounds[B], 
                                             cc:ComputationBounds[C])(
-                                              implicit ctx:CallContext):ComputationBounds[(A,B,C)] =
+                                              implicit ctx:CallNesting):ComputationBounds[(A,B,C)] =
                 compose(pair(ca,pair(cb,cc)),
                         { (x:(A,(B,C))) => Done((x._1, x._2._1, x._2._2)) }
                        );
                          
 
    @inline
-   def reduce[A](cba: ComputationBounds[A])(implicit ctx:CallContext)
+   def reduce[A](cba: ComputationBounds[A])(implicit ctx:CallNesting)
                                          :(ComputationBounds[A],Boolean) = {
       var inex = false;
       var current=cba;
@@ -140,7 +140,7 @@ object CallCC
    }
 
   def seq[A:TypeTag](l:IndexedSeq[ComputationBounds[A]]) 
-                         (implicit ctx:CallContext):ComputationBounds[IndexedSeq[A]] =  
+                         (implicit ctx:CallNesting):ComputationBounds[IndexedSeq[A]] =  
                                               seq1(l.companion[A](),l);
                               
 
@@ -150,13 +150,13 @@ object CallCC
                           );
 
   def seq1[A:TypeTag](l1:IndexedSeq[A],l2:IndexedSeq[ComputationBounds[A]])
-                     (implicit ctx:CallContext):ComputationBounds[IndexedSeq[A]] =
+                     (implicit ctx:CallNesting):ComputationBounds[IndexedSeq[A]] =
   {
     if (l2.isEmpty) {
       Done(l1);
     }else{
       ctx.withCall {
-         (ctx:CallContext) => implicit val ictx = ctx;
+         (ctx:CallNesting) => implicit val ictx = ctx;
          var s = LState(l1,l2,false);
          while(!s.lInProcess.isEmpty) {
            s = s.lInProcess.map{
@@ -173,7 +173,7 @@ object CallCC
                }
            if (s.wasException) {
               throw new CallCCThrowable(Call{
-                 (ctx:CallContext) => implicit val ictx = ctx; 
+                 (ctx:CallNesting) => implicit val ictx = ctx; 
                                       seq1(s.lDone,s.lInProcess)
               })
            }
@@ -183,16 +183,16 @@ object CallCC
    }
   }
 
-  def onProgress[A:TypeTag](ca:ComputationBounds[A])(action:CallContext=>Unit)
-                                                 (implicit ctx:CallContext):
+  def onProgress[A:TypeTag](ca:ComputationBounds[A])(action:CallNesting=>Unit)
+                                                 (implicit ctx:CallNesting):
                                                               ComputationBounds[A]=
   {
-    compose(ca,{ (x:A,ctx:CallContext) => action(ctx); Done(x) });
+    compose(ca,{ (x:A, nesting: CallNesting) => action(nesting); Done(x) });
   }
 
-  def some[A](ca:ComputationBounds[A])(implicit ctx:CallContext, aTag:TypeTag[A]): ComputationBounds[Option[A]] =
+  def some[A](ca:ComputationBounds[A])(implicit ctx:CallNesting, aTag:TypeTag[A]): ComputationBounds[Option[A]] =
   {
-    compose(ca,{ (x:A,ctx:CallContext) => Done(Some(x)) });
+    compose(ca,{ (x:A,ctx:CallNesting) => Done(Some(x)) });
   }
 
   final val MAX_NESTING=100;

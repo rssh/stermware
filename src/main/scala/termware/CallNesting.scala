@@ -3,28 +3,28 @@ package termware;
 import scala.reflect.runtime.universe._
 
 /**
- * CallContext
+ * CallNesting
  *  passed in each call, used for tracking recursion depth in trampoline
  *  implementation.
  **/
-case class CallContext(val nesting: Int=0) extends AnyVal
+case class CallNesting(val nesting: Int=0) extends AnyVal
 {
 
   /**
    * generate new context with increased level of nesting.
    **/
-  def next:CallContext = CallContext(nesting+1);
+  def next:CallNesting = CallNesting(nesting+1);
 
   /**
    * call block in next level of nesting
    **/
   @inline
-  def withCall[Y:TypeTag](block:CallContext=>ComputationBounds[Y]):
+  def withCall[Y:TypeTag](block:CallNesting=>ComputationBounds[Y]):
                                              ComputationBounds[Y] = 
         { 
           if (nesting > CallCC.MAX_NESTING) {
             throw new CallCCThrowable[Y](
-                         Call{ (ctx:CallContext) => ctx.withCall(block) });
+                         Call{ ctx:CallNesting => ctx.withCall(block) });
           } else {
             block(this.next); 
           }
@@ -38,10 +38,10 @@ case class CallContext(val nesting: Int=0) extends AnyVal
 
 }
 
-object CallContext
+object CallNesting
 {
   /**
    * initial empty context.
    **/
-  val empty = CallContext();
+  val empty = CallNesting();
 }
