@@ -11,8 +11,8 @@ version:="0.0.1"
 
 libraryDependencies += "org.scala-lang" % "scala-reflect" % "2.10.0-M5"
 
-
-//libraryDependencies += "org.scalatest" %% "scalatest" % "2.0.M2" intransitive()
+// hack to support scalatest
+libraryDependencies += "org.scalatest" %% "scalatest" % "1.9-2.10.0-M5-B2" % "test"
 
 
 
