@@ -23,10 +23,16 @@ sealed abstract class ComputationBounds[+A:TypeTag]
   // type of computation bounds
   def aType: Type = typeOf[A]
 
-  def andThen[B:TypeTag](f: A => B): ComputationBounds[B] = Call{ nesting => CallCC.compose(this, (a:A) => Done(f(a)))(nesting) }
 
   def toFuture(implicit executor:ExecutionContext): Future[A] = future{ CallCC.trampoline(this); }
                             
+  // Monadic syntax
+  def get: A = CallCC.trampoline(this);
+
+  def map[B:TypeTag](f: A => B): ComputationBounds[B] = Call{ nesting => CallCC.compose(this, (a:A) => Done(f(a)))(nesting) }
+
+  def flatMap[B:TypeTag](f: A => ComputationBounds[B]) = 
+     Call { nesting => CallCC.compose(this, (a:A)=>f(a))(nesting) }
 
 }
 
