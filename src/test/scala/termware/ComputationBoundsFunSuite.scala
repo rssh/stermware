@@ -8,7 +8,7 @@ class ComputationBoundsFunSuite extends FunSuite
                                     with ShouldMatchers
 {
 
-  test("1000 recursive calls must be handled") {
+  test("100000 recursive calls must be handled") {
     def f1(n:Int): ComputationBounds[Int] = Call{ (tid,depth) =>
       //System.err.println("f1(%d), nesting=%s".format(n,depth.toString));
       if (n==0) Done(0)
@@ -47,6 +47,25 @@ class ComputationBoundsFunSuite extends FunSuite
     val x2 = f2(100000)
     x1 should equal(x2)
   }
+
+  test("inProcess shoud show depth and trampolineId") {
+     var maxDepth: Int = 0;
+     def f(n:Int):ComputationBounds[Int] = Call{ (tid, depth) =>
+        System.err.println("f1(%d), depth=%d".format(n,depth));
+        if (n > 1) {
+          for(x <- f(n-1).inProcess) yield {
+            (tid,depth) => System.err.println("tid="+tid+", depth="+depth)
+            if (n > maxDepth) {
+              maxDepth = n
+            }
+            n + depth
+          }
+        } else Done(1)
+     }
+     val x = f(10).get
+     maxDepth should be >(0)
+  }
+
 
 }
 

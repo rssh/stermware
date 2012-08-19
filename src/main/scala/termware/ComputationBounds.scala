@@ -10,6 +10,7 @@ import scala.concurrent._
 sealed abstract class ComputationBounds[+A]
 {
 
+  thisComputationBounds =>
 
   /**
    * true when we have result.
@@ -28,14 +29,35 @@ sealed abstract class ComputationBounds[+A]
   def toFuture(implicit executor:ExecutionContext): Future[A] = future{ CallCC.trampoline(this); }
                             
   // Monadic syntax
+
+
   def get: A = CallCC.trampoline(this);
 
-  def map[B](f: A => B): ComputationBounds[B] = flatMap(x => Done(f(x)))
+  def map[B](f: A => B): ComputationBounds[B] = flatMap((x:A) => Done(f(x)))
+
 
   def flatMap[B](f: A => ComputationBounds[B]) = 
             CallCC.compose(this, (a:A)=>f(a))
 
+  /**
+   *  monadic interface where client can see trampolineId and depth.
+   **/
+  class InProcess {
+     
+      def map[B](f: A => (TrampolineId,Int) => B): ComputationBounds[B] =
+                        flatMap(x => (tid,depth) => Done(f(x)(tid,depth)))
+
+      def flatMap[B](f: A => (TrampolineId,Int) => ComputationBounds[B]) = 
+            CallCC.compose(thisComputationBounds, (tid,depth,a:A)=>f(a)(tid,depth))
+
+
+  }
+
+  def inProcess = new InProcess
+
 }
+
+
 
 /**
  * when we have some result.
@@ -180,7 +202,5 @@ case class Compose[A,B] private[termware](source:ComputationBounds[A],
          case Compose(s,f1) =>  Compose(s,append(f1,conts))
        }     
   }
-
-  override def flatMap[C](f: B => ComputationBounds[C]) = Compose(source,append(conts,ContOne{(tid,depth,b:B)=>f(b)}))
 
 }
