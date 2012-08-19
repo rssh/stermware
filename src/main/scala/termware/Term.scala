@@ -20,26 +20,26 @@ trait Term
 /**
  * typeclass for term algebra.
  */
-trait TermWrapper[T]
+trait ToTerm[T]
 {
 
-   type TType = T
+   type Origin = T
 
    def name(t:T):Name
 
    def arity(t:T):Int
 
-   def subterms(t:T):IndexedSeq[BaseWrap]
+   def subterms(t:T):IndexedSeq[BaseAsTerm]
 
-   def subterm(t:T,i:Int): Option[BaseWrap] = 
+   def subterm(t:T,i:Int): Option[BaseAsTerm] = 
           if (i<arity(t)) 
                Some(subterms(t)(i))
           else
                None
    
-   def nameSubterms(t:T):Map[Name,BaseWrap]
+   def nameSubterms(t:T):Map[Name,BaseAsTerm]
 
-   def nameSubterm(t:T,n:Name): Option[BaseWrap] =
+   def nameSubterm(t:T,n:Name): Option[BaseAsTerm] =
                nameSubterms(t).get(n)
 
    def isAtom(t:T):Boolean;
@@ -53,47 +53,47 @@ trait TermWrapper[T]
    def xNum(t:T):Long = 0L
 
    def toTerm(t:T):Term = 
-                new WrappedTerm(t,this)
+                new AsTerm(t,this)
 
-   implicit def termWrapper:TermWrapper[T] = this;
+   implicit def toTerm:ToTerm[T] = this;
 
 }
 
-trait BaseWrap extends Term
+trait BaseAsTerm extends Term
 {
   type ValueType;
-  type WrapperType <: TermWrapper[ValueType];
+  type WrapperType <: ToTerm[ValueType];
 }
 
-class WrappedTerm[T](x:T, tw: TermWrapper[T]) extends BaseWrap 
+class AsTerm[T](x:T, tt: ToTerm[T]) extends BaseAsTerm 
 {
 
    type ValueType = T;
 
-   def name:Name = tw.name(x)
+   def name:Name = tt.name(x)
          
-   def arity:Int = tw.arity(x)
+   def arity:Int = tt.arity(x)
 
    def subterms: IndexedSeq[Term] = 
-                            tw.subterms(x)
+                            tt.subterms(x)
 
    def nameSubterms:Map[Name,Term] = 
-                            tw.nameSubterms(x)
+                            tt.nameSubterms(x)
 
 }
 
 
 
-object IntTermWrapper extends TermWrapper[Int]
+object IntToTerm extends ToTerm[Int]
 {
 
    def name(t:Int):Name = PrimitiveName[Int](t)
 
    def arity(t:Int) = 0
 
-   def subterms(t:Int):IndexedSeq[BaseWrap] = IndexedSeq()
+   def subterms(t:Int):IndexedSeq[BaseAsTerm] = IndexedSeq()
 
-   def nameSubterms(t:Int):Map[Name,BaseWrap] = Map()
+   def nameSubterms(t:Int):Map[Name,BaseAsTerm] = Map()
 
    def isAtom(t:Int) = false
 
