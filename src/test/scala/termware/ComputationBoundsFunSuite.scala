@@ -51,10 +51,10 @@ class ComputationBoundsFunSuite extends FunSuite
   test("inProcess shoud show depth and trampolineId") {
      var maxDepth: Int = 0;
      def f(n:Int):ComputationBounds[Int] = Call{ (tid, depth) =>
-        System.err.println("f1(%d), depth=%d".format(n,depth));
+        //System.err.println("f1(%d), depth=%d".format(n,depth));
         if (n > 1) {
           for(x <- f(n-1).inProcess) yield {
-            (tid,depth) => System.err.println("tid="+tid+", depth="+depth)
+            (tid,depth) => //System.err.println("tid="+tid+", depth="+depth)
             if (n > maxDepth) {
               maxDepth = n
             }
