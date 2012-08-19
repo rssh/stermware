@@ -1,14 +1,12 @@
 package termware;
 
 import scala.util.control.ControlThrowable;
-import scala.reflect.runtime.universe._
 
-class CallCCThrowable[A](val current:ComputationBounds[A])
-                        (implicit val aTag: TypeTag[A])
+class CallCCThrowable[A](val trampolineId:TrampolineId,
+                         val current:ComputationBounds[A])
                                              extends ControlThrowable
 {
-  type AType = A;
-  def aType = typeOf[A]
+   def tid = trampolineId
 }
 
 

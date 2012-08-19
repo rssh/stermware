@@ -7,97 +7,88 @@ import scala.collection.parallel._;
 object CallCC
 {
 
-  def trampoline[A:TypeTag](cb:ComputationBounds[A]):A = {
+  def trampoline[A](cb:ComputationBounds[A]):A = {
+       val trampolineId = TrampolineId.next
        var current = cb;
        while (!current.isDone) {
-         current = doStep(current)(CallNesting.empty);
+         current = try {
+           current.step(trampolineId, 0) 
+         } catch {
+           case ex : CallCCThrowable[_] if (ex.trampolineId == trampolineId)
+              => ex.current.asInstanceOf[ComputationBounds[A]]
+         }
        }
        current.result.get
   }
 
-  def doStep[A:TypeTag](cb:ComputationBounds[A])(nesting:CallNesting):ComputationBounds[A] =
+  def doStep[A](cb:ComputationBounds[A])(trampolineId: TrampolineId, depth:Int):ComputationBounds[A] =
   {
     if (cb.isDone) {
         cb
     } else {
        try {
-         cb.step(nesting) 
+         cb.step(trampolineId, depth) 
        } catch {
-         case ex : CallCCThrowable[_] if (ex.aType <:< typeOf[A])
+         case ex : CallCCThrowable[_] if (ex.trampolineId == trampolineId)
               => ex.current.asInstanceOf[ComputationBounds[A]]
        }
     }
   }
 
-  def compose[A:TypeTag,B:TypeTag](ca:ComputationBounds[A],
-                   cont:(A,CallNesting)=>ComputationBounds[B])
-                   (nesting: CallNesting):
-                                               ComputationBounds[B] = 
-       nesting.withCall { nesting =>
-         val s = doStep(ca)(nesting);
-         if (s.isDone) {
-            cont(s.result.get,nesting)
-         } else {
-            Call { nesting => compose(s,cont)(nesting) }
-         }
-       }
+  // TODO:  check case when ca is composed
+  @inline
+  def compose[A,B](ca:ComputationBounds[A],
+             cont:(TrampolineId,Int,A)=>ComputationBounds[B]): ComputationBounds[B] =
+       Compose(ca,ContOne(cont))         
 
-  def fcompose[A:TypeTag,B:TypeTag](ca:ComputationBounds[A],
-                    cont:(A,CallNesting)=>ComputationBounds[B]):
-                                                 ComputationBounds[B]=
-    Call { nesting => compose(ca,cont)(nesting); }
 
   @inline
-  def compose[A:TypeTag,B:TypeTag](ca:ComputationBounds[A],
-                   cont:A=>ComputationBounds[B])
-                   (nesting:CallNesting):    ComputationBounds[B] = 
-    compose(ca,{ (x:A, nesting:CallNesting) => cont(x)})(nesting);
+  def compose[A,B](ca:ComputationBounds[A], cont:A=>ComputationBounds[B]): ComputationBounds[B] =
+    compose(ca,{ (tid:TrampolineId, nesting:Int, x:A) => cont(x)});
 
 
-  def pair[A:TypeTag,B:TypeTag](ca:ComputationBounds[A],cb:ComputationBounds[B])
-                                          (nesting:CallNesting):    ComputationBounds[(A,B)] =
-     nesting.withCall { nesting =>
+  def pair[A,B](ca:ComputationBounds[A],cb:ComputationBounds[B])
+                (tid:TrampolineId, nesting:Int):    ComputationBounds[(A,B)] =
+     if (nesting > MAX_NESTING) {
+         throw new CallCCThrowable(tid,Call{ (tid,n) => pair(ca,cb)(tid, n) })
+     } else {
        // TODO" rewrite without seq (via future ?)
-       val s = Seq(ca,cb).par.map( doStep(_)(nesting) )
+       val s = Seq(ca,cb).par.map( doStep(_)(tid,nesting) )
        val cas = s.head.asInstanceOf[ComputationBounds[A]];
        val cbs = s.tail.head.asInstanceOf[ComputationBounds[B]];
        if (cas.isDone) {
          if (cbs.isDone) {
            Done((cas.result.get,cbs.result.get))
          } else {
-           Call{ (nesting) => compose(cbs, { (b:B) => Done(cas.result.get,b) })(nesting) }
+           compose(cbs, { (b:B) => Done(cas.result.get,b) }).step(tid,nesting)
          }
        } else {
          if (cbs.isDone) {
-           Call{ (nesting) => compose(cas, { (a:A) => Done(a,cbs.result.get) })(nesting) }
+           compose(cas, { (a:A) => Done(a,cbs.result.get) }).step(tid,nesting)
          } else {
-           Call{ (nesting) => pair(cas,cbs)(nesting) }
+           Call{ (tid,nesting) => pair(cas,cbs)(tid,nesting) }
          }
        }
      }
 
-  def seqp[A:TypeTag](l:IndexedSeq[ComputationBounds[A]]) 
-                         (nesting:CallNesting):ComputationBounds[IndexedSeq[A]] =  
-     compose( Call{ nesting => seqp(l.par)(nesting) }, (x:ParSeq[A]) => Done(x.toIndexedSeq) )(nesting)
+  def seqp[A](l:IndexedSeq[ComputationBounds[A]]) 
+                         (tid:TrampolineId, nesting:Int):ComputationBounds[IndexedSeq[A]] =  
+     compose( Call{ (tid, nesting) => seqp(l.par)(tid, nesting) }, 
+              (x:ParSeq[A]) => Done(x.toIndexedSeq) 
+            ).step(tid,nesting)
 
-
-  def seqp[A:TypeTag](l:ParSeq[ComputationBounds[A]])(nesting:CallNesting):ComputationBounds[ParSeq[A]] =
-   { val s1 = l.map(doStep(_)(nesting))
+  def seqp[A](l:ParSeq[ComputationBounds[A]])(tid:TrampolineId, nesting:Int):ComputationBounds[ParSeq[A]] =
+   { val s1 = l.map(doStep(_)(tid,nesting))
      if (s1.forall(_.isDone)) {
         Done(s1.map(_.result.get))
      } else {
-        Call{ (nesting) => seqp(s1)(nesting) }
+        Call{ (tid,nesting) => seqp(s1)(tid,nesting) }
      }
    }
 
-  def onProgress[A:TypeTag](ca:ComputationBounds[A],nesting:CallNesting)(action:CallNesting=>Unit):
-                                                              ComputationBounds[A]=
-  {
-    compose(ca,{ (x:A, nesting: CallNesting) => action(nesting); Done(x) })(nesting);
-  }
 
+  final val MAX_NESTING=500;
 
-  final val MAX_NESTING=100;
 
 }
 

@@ -3,16 +3,16 @@ name:="termware"
 
 organization:="com.github.termware"
 
-scalaVersion := "2.10.0-M5"
+scalaVersion := "2.10.0-M6"
 
 scalacOptions ++= Seq("-unchecked","-deprecation")
 
 version:="0.0.1"
 
-libraryDependencies += "org.scala-lang" % "scala-reflect" % "2.10.0-M5"
+libraryDependencies += "org.scala-lang" % "scala-reflect" % "2.10.0-M6"
 
 // hack to support scalatest
-libraryDependencies += "org.scalatest" %% "scalatest" % "1.9-2.10.0-M5-B2" % "test"
+libraryDependencies += "org.scalatest" %% "scalatest" % "1.9-2.10.0-M6-B2" % "test"
 
 
 
