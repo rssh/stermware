@@ -51,14 +51,13 @@ case class Done[A](val r: A) extends ComputationBounds[A]
  * when we need to call net thunk
  **/
 case class Call[A](
-             thunk: (TrampolineId, Int) => ComputationBounds[A],
-             val depth: Int = 0
+             thunk: (TrampolineId, Int) => ComputationBounds[A]
            ) extends ComputationBounds[A]
 {
   def isDone: Boolean = false;
   def result: Option[A] = None;
   def step(tId:TrampolineId,depth:Int) = {
-      thunk(tId, depth);
+      thunk(tId,depth);
   }
 }
 
@@ -164,18 +163,18 @@ case class Compose[A,B] private[termware](source:ComputationBounds[A],
                               }
                       s match {
                        case Done(_) => Compose(s,g)
-                       case Call(_,_) => Compose(s,g)
+                       case Call(_) => Compose(s,g)
                        case Compose(s,f1) => Compose(s,append(f1,g))
                      }
                    case ContCons(f1,f2) =>
                      Compose(source,ContCons(f1,ContCons(f2,g)))  
                  }
             }
-         case Call(_,_) =>
+         case Call(_) =>
             val r = source.step(tid,depth);
             r match {
               case Done(x) => Compose(r,conts)
-              case Call(_,_) => Compose(r,conts)
+              case Call(_) => Compose(r,conts)
               case Compose(s,f1) => Compose(s,append(f1,conts))
             }
          case Compose(s,f1) =>  Compose(s,append(f1,conts))
