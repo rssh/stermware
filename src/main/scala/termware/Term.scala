@@ -14,48 +14,64 @@ trait Term
   def subterm(i:Int): Option[Term] = 
        if (i<arity) Some(subterms(i)) else None 
 
+  def isAtom:Boolean;
+
+  def isPrimitive:Boolean;
+
+  def is[T](implicit ttag:TypeTag[T]):Boolean
+
+  def value[T](implicit ttag:TypeTag[T]):Option[T]
+
+  def isX = false
+
+  //def subst(s:Substitution):ComputationBounds[Term]
+
 }
 
 
 /**
  * typeclass for term algebra.
  */
-trait ToTerm[T]
+abstract class ToTerm[X:TypeTag]
 {
 
-   type Origin = T
+   type Origin = X
 
-   def name(t:T):Name
+   def name(x:X):Name
 
-   def arity(t:T):Int
+   def arity(x:X):Int
 
-   def subterms(t:T):IndexedSeq[BaseAsTerm]
+   def subterms(x:X):IndexedSeq[BaseAsTerm]
 
-   def subterm(t:T,i:Int): Option[BaseAsTerm] = 
-          if (i<arity(t)) 
-               Some(subterms(t)(i))
+   def subterm(x:X,i:Int): Option[BaseAsTerm] = 
+          if (i<arity(x)) 
+               Some(subterms(x)(i))
           else
                None
    
-   def nameSubterms(t:T):Map[Name,BaseAsTerm]
+   def nameSubterms(x:X):Map[Name,BaseAsTerm]
 
-   def nameSubterm(t:T,n:Name): Option[BaseAsTerm] =
-               nameSubterms(t).get(n)
+   def nameSubterm(x:X,n:Name): Option[BaseAsTerm] =
+               nameSubterms(x).get(n)
 
-   def isAtom(t:T):Boolean;
+   def isAtom(x:X):Boolean;
 
-   def is[X](t:T)(implicit ttag:TypeTag[T], xtag:TypeTag[X]):Boolean
+   def isPrimitive(x:X):Boolean;
 
-   def value[X](t:T)(implicit ttag:TypeTag[T], xtag:TypeTag[X]):Option[X]
+   def is[T](x:X)(implicit ttag:TypeTag[T], xtag:TypeTag[X]):Boolean
 
-   def isX(t:T):Boolean = false
+   def value[T](x:X)(implicit ttag:TypeTag[T], xtag:TypeTag[X]):Option[T]
 
-   def xNum(t:T):Long = 0L
+   def isX(x:X):Boolean = false
 
-   def toTerm(t:T):Term = 
-                new AsTerm(t,this)
+   def xNum(x:X):Long = 0L
 
-   implicit def toTerm:ToTerm[T] = this;
+   def toTerm(x:X):Term = 
+                new AsTerm(x,this)
+
+   //def subst(x:X):ComputationBounds[Term]
+
+   //implicit def toTerm:ToTerm[X] = this;
 
 }
 
@@ -65,10 +81,10 @@ trait BaseAsTerm extends Term
   type WrapperType <: ToTerm[ValueType];
 }
 
-class AsTerm[T](x:T, tt: ToTerm[T]) extends BaseAsTerm 
+class AsTerm[X:TypeTag](x:X, tt: ToTerm[X]) extends BaseAsTerm 
 {
 
-   type ValueType = T;
+   type ValueType = X;
 
    def name:Name = tt.name(x)
          
@@ -80,35 +96,20 @@ class AsTerm[T](x:T, tt: ToTerm[T]) extends BaseAsTerm
    def nameSubterms:Map[Name,Term] = 
                             tt.nameSubterms(x)
 
-}
+   def isAtom: Boolean = tt.isAtom(x)
+
+   def isPrimitive: Boolean = tt.isPrimitive(x)
+
+   def is[T](implicit ttag: TypeTag[T]): Boolean = tt.is[T](x)
+
+   def value[T](implicit ttag: TypeTag[T]): Option[T] = tt.value[T](x)
 
 
-
-object IntToTerm extends ToTerm[Int]
-{
-
-   def name(t:Int):Name = PrimitiveName[Int](t)
-
-   def arity(t:Int) = 0
-
-   def subterms(t:Int):IndexedSeq[BaseAsTerm] = IndexedSeq()
-
-   def nameSubterms(t:Int):Map[Name,BaseAsTerm] = Map()
-
-   def isAtom(t:Int) = false
-
-   def is[X](t:Int)(implicit ttag:TypeTag[Int], xtag:TypeTag[X]):Boolean =
-                               (typeOf[X] <:< typeOf[Int]) 
-     
-   def value[X](t:Int)(implicit ttag:TypeTag[Int], xtag:TypeTag[X]):Option[X] =
-      if (typeOf[X] <:< typeOf[Int]) {
-         Some(t.asInstanceOf[X])
-      } else {
-         None
-      }
 
 
 }
+
+
 
 
 // vim: set ts=4 sw=4 et:
