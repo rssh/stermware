@@ -39,7 +39,10 @@ object CallCC
   @inline
   def compose[A,B](ca:ComputationBounds[A],
              cont:(TrampolineId,Int,A)=>ComputationBounds[B]): ComputationBounds[B] =
-       Compose(ca,ContOne(cont))         
+    ca match {
+      case Compose(x,xcont) => Compose(x,ComputationBoundsCont.append(xcont,ContOne(cont)))
+      case _ => Compose(ca,ContOne(cont))         
+    }
 
 
   @inline
