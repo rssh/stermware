@@ -1,6 +1,7 @@
 package termware
 
 import scala.reflect.runtime.universe._
+import scala.math._
 
 trait Term
 {
@@ -18,9 +19,13 @@ trait Term
 
   def isPrimitive:Boolean;
 
+  def isNumber: Boolean;
+
   def is[T](implicit ttag:TypeTag[T]):Boolean
 
   def value[T](implicit ttag:TypeTag[T]):Option[T]
+
+  def numberValue: Option[ScalaNumericConversions]
 
   def isX = false
 
@@ -58,9 +63,13 @@ abstract class ToTerm[X:TypeTag]
 
    def isPrimitive(x:X):Boolean;
 
-   def is[T](x:X)(implicit ttag:TypeTag[T], xtag:TypeTag[X]):Boolean
+   def isNumber(x:X):Boolean;
 
-   def value[T](x:X)(implicit ttag:TypeTag[T], xtag:TypeTag[X]):Option[T]
+   def is[T](x:X)(implicit ttag:TypeTag[T]):Boolean
+
+   def value[T](x:X)(implicit ttag:TypeTag[T]):Option[T]
+
+   def numberValue(x:X): Option[ScalaNumericConversions]
 
    def isX(x:X):Boolean = false
 
@@ -100,10 +109,13 @@ class AsTerm[X:TypeTag](x:X, tt: ToTerm[X]) extends BaseAsTerm
 
    def isPrimitive: Boolean = tt.isPrimitive(x)
 
+   def isNumber: Boolean = tt.isNumber(x)
+
    def is[T](implicit ttag: TypeTag[T]): Boolean = tt.is[T](x)
 
    def value[T](implicit ttag: TypeTag[T]): Option[T] = tt.value[T](x)
 
+   def numberValue: Option[ScalaNumericConversions] = tt.numberValue(x)
 
 
 
