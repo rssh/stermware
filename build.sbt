@@ -5,9 +5,9 @@ organization:="com.github.termware"
 
 scalaVersion := "2.10.0-M6"
 
-scalacOptions ++= Seq("-unchecked","-deprecation")
+scalacOptions ++= Seq("-unchecked","-deprecation","-feature")
 
-version:="0.0.1"
+version:="0.0.2"
 
 libraryDependencies += "org.scala-lang" % "scala-reflect" % "2.10.0-M6"
 
