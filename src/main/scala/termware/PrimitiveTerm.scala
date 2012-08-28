@@ -4,7 +4,7 @@ import scala.reflect.runtime.universe._
 import scala.math._
 
 
-abstract class PrimitiveToTerm[X:TypeTag] extends ToTerm[X]
+abstract class PrimitiveToTerm[X:TypeTag](implicit ord:Ordering[X]) extends ToTerm[X]
 {
 
    def name(x:X):Name = PrimitiveName[X](x)
@@ -34,7 +34,7 @@ abstract class PrimitiveToTerm[X:TypeTag] extends ToTerm[X]
 
 }
 
-class NumericToTerm[X <% ScalaNumericConversions](implicit xtag:TypeTag[X]) extends PrimitiveToTerm[X]
+class NumericToTerm[X <% ScalaNumericConversions](implicit xtag:TypeTag[X], ord:Ordering[X]) extends PrimitiveToTerm[X]
 {
 
    override def isNumber(x:X) = true
@@ -57,7 +57,7 @@ object DoubleToTerm extends NumericToTerm[Double]
 // 
 //object BigIntToTerm extends NumericToTerm[BigInt](typeTag[BigInt])
 
-class NonNumericPrimitiveToTerm[X:TypeTag] extends PrimitiveToTerm[X]
+class NonNumericPrimitiveToTerm[X:TypeTag](implicit ord:Ordering[X]) extends PrimitiveToTerm[X]
 {
 
    def isNumber(x:X) = false

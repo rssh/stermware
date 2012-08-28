@@ -3,7 +3,7 @@ package termware
 import scala.reflect.runtime.universe._
 import scala.math._
 
-trait Term
+trait Term 
 {
 
   def name: Name
@@ -30,6 +30,7 @@ trait Term
   def isX = false
 
   //def subst(s:Substitution):ComputationBounds[Term]
+
 
 }
 

@@ -18,4 +18,7 @@ package object termware {
   
  implicit val stringToTerm = new NonNumericPrimitiveToTerm[String]
 
+
+ implicit val termOrdering: Ordering[Term] = TermOrdering
+
 }
