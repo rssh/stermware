@@ -11,8 +11,11 @@ version:="0.0.2"
 
 libraryDependencies += "org.scala-lang" % "scala-reflect" % "2.10.0-M7"
 
+libraryDependencies += "org.scala-lang" % "scala-actors" % "2.10.0-M7"
+
 // hack to support scalatest
-libraryDependencies += "org.scalatest" %% "scalatest" % "1.9-2.10.0-M7-B1" % "test"
+//libraryDependencies += "org.scalatest" %% "scalatest" % "1.9-2.10.0-M7-B1" % "test"
+libraryDependencies += "org.scalatest" % "scalatest_2.10.0-M7" % "2.0.M4-2.10.0-M7-B1"
 
 
 
