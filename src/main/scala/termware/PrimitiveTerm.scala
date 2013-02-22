@@ -2,6 +2,7 @@ package termware
 
 import scala.reflect.runtime.universe._
 import scala.math._
+import scala.util.{Try => UTry}
 
 
 abstract class PrimitiveToTerm[X:TypeTag](implicit ord:Ordering[X]) extends ToTerm[X]
@@ -31,10 +32,17 @@ abstract class PrimitiveToTerm[X:TypeTag](implicit ord:Ordering[X]) extends ToTe
 
    def v(x:X):X = x
 
+   def subst(t:Term, s:Substitution): Term = 
+        s.getOrElse(t,t)
+
+   def unify(x:Term, y:Term): UTry[Substitution] = ???
+
+
+
 
 }
 
-class NumericToTerm[X <% ScalaNumericConversions](implicit xtag:TypeTag[X], ord:Ordering[X]) extends PrimitiveToTerm[X]
+class NumericToTerm[X <% ScalaNumericAnyConversions](implicit xtag:TypeTag[X], ord:Ordering[X]) extends PrimitiveToTerm[X]
 {
 
    override def isNumber(x:X) = true

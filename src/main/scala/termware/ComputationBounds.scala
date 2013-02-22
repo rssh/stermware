@@ -79,11 +79,10 @@ case class Call[A](
              thunk: (TrampolineId, Int) => ComputationBounds[A]
            ) extends ComputationBounds[A]
 {
-  def isDone: Boolean = false;
-  def result: Option[A] = None;
-  def step(tId:TrampolineId,depth:Int) = {
-      thunk(tId,depth);
-  }
+  def isDone: Boolean = false
+  def result: Option[A] = None
+  def step(tId:TrampolineId,depth:Int) = 
+      thunk(tId,depth)
 }
 
 object Call

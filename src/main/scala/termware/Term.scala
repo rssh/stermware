@@ -25,12 +25,11 @@ trait Term
 
   def value[T](implicit ttag:TypeTag[T]):Option[T]
 
-  def numberValue: Option[ScalaNumericConversions]
+  def numberValue: Option[ScalaNumericAnyConversions]
 
   def isX = false
 
-  //def subst(s:Substitution):ComputationBounds[Term]
-
+  def signature: TermSignature
 
 }
 
@@ -39,6 +38,7 @@ trait Term
  * typeclass for term algebra.
  */
 abstract class ToTerm[X:TypeTag]
+                    extends TermSignature
 {
 
    type Origin = X
@@ -70,7 +70,7 @@ abstract class ToTerm[X:TypeTag]
 
    def value[T](x:X)(implicit ttag:TypeTag[T]):Option[T]
 
-   def numberValue(x:X): Option[ScalaNumericConversions]
+   def numberValue(x:X): Option[ScalaNumericAnyConversions]
 
    def isX(x:X):Boolean = false
 
@@ -78,10 +78,6 @@ abstract class ToTerm[X:TypeTag]
 
    def toTerm(x:X):Term = 
                 new AsTerm(x,this)
-
-   //def subst(x:X):ComputationBounds[Term]
-
-   //implicit def toTerm:ToTerm[X] = this;
 
 }
 
@@ -116,9 +112,9 @@ class AsTerm[X:TypeTag](x:X, tt: ToTerm[X]) extends BaseAsTerm
 
    def value[T](implicit ttag: TypeTag[T]): Option[T] = tt.value[T](x)
 
-   def numberValue: Option[ScalaNumericConversions] = tt.numberValue(x)
+   def numberValue: Option[ScalaNumericAnyConversions] = tt.numberValue(x)
 
-
+   def signature = tt
 
 }
 
