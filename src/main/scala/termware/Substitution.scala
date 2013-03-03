@@ -2,6 +2,8 @@ package termware;
 
 import scala.collection.immutable.TreeMap
 import scala.util._
+import scala.reflect.runtime.universe._
+
 
 trait Substitution extends PartialFunction[Term,Term]
 {
@@ -16,9 +18,9 @@ trait Substitution extends PartialFunction[Term,Term]
        case None    => default
     }
 
-  def put(k:Term, v:Term): Try[Substitution]
+  def put(k:Term, v:Term): UnificationResult
 
-  def merge(s: Substitution): Try[Substitution]
+  def merge(s: Substitution): UnificationResult
                           
   def withIndex(newZipIndex:BigInt): Substitution
 
@@ -55,37 +57,17 @@ case class STMSubstitution(val map: Map[Term,Pair[BigInt,Term]],
 
   def get(k:Term) = map.get(k) map (_._2)
                     
-  def put(k:Term, v:Term): Try[Substitution] = {
+  def put(k:Term, v:Term): UnificationResult  = {
     map.get(k) match {
-       case None => Success(STMSubstitution(map.updated(k,(lastZipIndex,v)),lastZipIndex))
+       case None => UnificationSuccess(STMSubstitution(map.updated(k,(lastZipIndex,v)),lastZipIndex))
        case Some((v1,i1)) =>
-              v.signature.unify(v,v1) flatMap (merge(_))
+              v.unify(v1, this) flatMap (merge(_))
     }
   }
 
 
-  def merge(s:Substitution): Try[Substitution] = {
-    var l: List[Substitution] = s::Nil
-    var m = map
-    var optFailure: Option[Failure[Substitution]] = None
-    while(! l.isEmpty && optFailure.isEmpty) {
-      var c = l.head
-      l = l.tail
-      c.find { case (k,v) =>
-        m.get(k) match {
-          case None => m = m.updated(k,(lastZipIndex,v))
-                           false
-          case Some((v1,z1)) =>
-            v1.signature.unify(v1,v) match {
-              case f@Failure(ex) => optFailure = Some(f)
-                                    true
-              case Success(s1) => l = s1::l
-                                    false
-            }
-        }
-      }
-    }
-    optFailure.getOrElse(Success(STMSubstitution(m,lastZipIndex))) 
+  def merge(s:Substitution): UnificationResult = {
+    ???
   }
 
   override def find(f:((Term,Term))=>Boolean): Option[(Term,Term)] =

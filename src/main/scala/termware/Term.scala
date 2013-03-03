@@ -1,7 +1,8 @@
 package termware
 
-import scala.reflect.runtime.universe._
 import scala.math._
+import scala.util._
+import scala.reflect.runtime.universe._
 
 trait Term 
 {
@@ -27,9 +28,22 @@ trait Term
 
   def numberValue: Option[ScalaNumericAnyConversions]
 
-  def isX = false
+  def isX : Boolean
 
-  def signature: TermSignature
+  /**
+   * unify self with term <code> y </code>
+   */
+  def unify(y:Term, s: Substitution): UnificationResult
+
+  /**
+   * generic substitution, where in right part can be any term
+   */
+  def substg(s:Substitution): Term
+
+  /**
+   * substitution where in right part can be only variable definitions.
+   */
+  def substv(s:Substitution): Term
 
 }
 
@@ -38,7 +52,6 @@ trait Term
  * typeclass for term algebra.
  */
 abstract class ToTerm[X:TypeTag]
-                    extends TermSignature
 {
 
    type Origin = X
@@ -79,6 +92,14 @@ abstract class ToTerm[X:TypeTag]
    def toTerm(x:X):Term = 
                 new AsTerm(x,this)
 
+   // signature part
+
+   def  xunify(x: X, y: Term, s: Substitution): UnificationResult
+
+   def  xsubstg(x: X, s: Substitution): Term
+
+   def  xsubstv(x: X, s: Substitution): Term
+
 }
 
 trait BaseAsTerm extends Term
@@ -87,38 +108,53 @@ trait BaseAsTerm extends Term
   type WrapperType <: ToTerm[ValueType];
 }
 
-class AsTerm[X:TypeTag](x:X, tt: ToTerm[X]) extends BaseAsTerm 
+case class AsTerm[V:TypeTag](v:V, tt: ToTerm[V]) extends BaseAsTerm 
 {
 
-   type ValueType = X;
+   type ValueType = V;
 
-   def name:Name = tt.name(x)
+   def name:Name = tt.name(v)
          
-   def arity:Int = tt.arity(x)
+   def arity:Int = tt.arity(v)
 
    def subterms: IndexedSeq[Term] = 
-                            tt.subterms(x)
+                            tt.subterms(v)
 
    def nameSubterms:Map[Name,Term] = 
-                            tt.nameSubterms(x)
+                            tt.nameSubterms(v)
 
-   def isAtom: Boolean = tt.isAtom(x)
+   def isAtom: Boolean = tt.isAtom(v)
 
-   def isPrimitive: Boolean = tt.isPrimitive(x)
+   def isPrimitive: Boolean = tt.isPrimitive(v)
 
-   def isNumber: Boolean = tt.isNumber(x)
+   def isNumber: Boolean = tt.isNumber(v)
 
-   def is[T](implicit ttag: TypeTag[T]): Boolean = tt.is[T](x)
+   def is[T](implicit ttag: TypeTag[T]): Boolean = tt.is[T](v)
 
-   def value[T](implicit ttag: TypeTag[T]): Option[T] = tt.value[T](x)
+   def value[T](implicit ttag: TypeTag[T]): Option[T] = tt.value[T](v)
 
-   def numberValue: Option[ScalaNumericAnyConversions] = tt.numberValue(x)
+   def numberValue: Option[ScalaNumericAnyConversions] = tt.numberValue(v)
 
-   def signature = tt
+   def original: V = v
+
+   def isX: Boolean = false
+
+   def  unify(y: Term, s: Substitution): UnificationResult 
+     = tt.xunify(v,y,s)
+
+   def substg(s:Substitution): Term
+     = tt.xsubstg(v, s)
+
+   def substv(s:Substitution): Term
+     = tt.xsubstv(v, s)
 
 }
 
-
+object AsTerm
+{
+    // can't use apply, because signature will be the same as in default case-class apply
+   def create[X](x:X)(implicit tt:ToTerm[X], ttag:TypeTag[X]) = new AsTerm(x, tt)
+}
 
 
 // vim: set ts=4 sw=4 et:

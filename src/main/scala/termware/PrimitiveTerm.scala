@@ -5,7 +5,7 @@ import scala.math._
 import scala.util.{Try => UTry}
 
 
-abstract class PrimitiveToTerm[X:TypeTag](implicit ord:Ordering[X]) extends ToTerm[X]
+abstract class PrimitiveToTerm[X](implicit xtag: TypeTag[X], ord:Ordering[X]) extends ToTerm[X]
 {
 
    def name(x:X):Name = PrimitiveName[X](x)
@@ -30,15 +30,22 @@ abstract class PrimitiveToTerm[X:TypeTag](implicit ord:Ordering[X]) extends ToTe
          None
       }
 
+   type VType = X
+
+   def vTag: TypeTag[X] = xtag
+
    def v(x:X):X = x
 
-   def subst(t:Term, s:Substitution): Term = 
-        s.getOrElse(t,t)
+   def  xunify(x: X, y: Term, s: Substitution): UnificationResult = ???
 
-   def unify(x:Term, y:Term): UTry[Substitution] = ???
+   def  xsubstg(x: X, s: Substitution): Term =
+   {
+     val t = AsTerm[X](x,this)
+     s.getOrElse(t,t)
+   }
 
-
-
+   def  xsubstv(x: X, s: Substitution): Term
+        = AsTerm[X](x, this)
 
 }
 
