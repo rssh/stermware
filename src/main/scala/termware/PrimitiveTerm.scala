@@ -16,9 +16,11 @@ abstract class PrimitiveToTerm[X](implicit xtag: TypeTag[X], ord:Ordering[X]) ex
 
    def nameSubterms(x:X):Map[Name,BaseAsTerm] = Map()
 
-   def isAtom(x:X) = false
+   @inline def isAtom(x:X) = false
 
-   def isPrimitive(x:X) = true
+   @inline def isPrimitive(x:X) = true
+   
+   @inline def isComplex(x:X) = false
 
    def is[T](x:X)(implicit ttag:TypeTag[T]):Boolean =
                                (typeOf[T] <:< typeOf[X]) 

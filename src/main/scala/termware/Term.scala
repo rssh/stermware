@@ -22,13 +22,16 @@ trait Term
 
   def isNumber: Boolean;
 
+  def isX : Boolean
+
+  def isComplex: Boolean
+  
   def is[T](implicit ttag:TypeTag[T]):Boolean
 
   def value[T](implicit ttag:TypeTag[T]):Option[T]
 
   def numberValue: Option[ScalaNumericAnyConversions]
 
-  def isX : Boolean
 
   /**
    * unify self with term <code> y </code>
@@ -78,6 +81,8 @@ abstract class ToTerm[X:TypeTag]
    def isPrimitive(x:X):Boolean;
 
    def isNumber(x:X):Boolean;
+   
+   def isComplex(x:X): Boolean;
 
    def is[T](x:X)(implicit ttag:TypeTag[T]):Boolean
 
@@ -138,6 +143,8 @@ case class AsTerm[V:TypeTag](v:V, tt: ToTerm[V]) extends BaseAsTerm
    def original: V = v
 
    def isX: Boolean = false
+   
+   def isComplex: Boolean = tt.isComplex(v)
 
    def  unify(y: Term, s: Substitution): UnificationResult 
      = tt.xunify(v,y,s)

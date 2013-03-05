@@ -1,0 +1,68 @@
+\title{STermWare: brief semantics description}
+\author{
+        Ruslan Shevchenko \\
+                ruslan@shevchenko.kiev.ua\\
+        Kiev, Ukraine
+}
+\date{\today}
+
+
+
+\documentclass[12pt]{article}
+\usepackage{listings}
+
+% "define" Scala
+\lstdefinelanguage{scala}{
+  morekeywords={abstract,case,catch,class,def,%
+    do,else,extends,false,final,finally,%
+    for,if,implicit,import,match,mixin,%
+    new,null,object,override,package,%
+    private,protected,requires,return,sealed,%
+    super,this,throw,trait,true,try,%
+    type,val,var,while,with,yield},
+  otherkeywords={=>,<-,<\%,<:,>:,\#,@},
+  sensitive=true,
+  morecomment=[l]{//},
+  morecomment=[n]{/*}{*/},
+  morestring=[b]",
+  morestring=[b]',
+  morestring=[b]"""
+}
+
+
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+ Termware is a term rewriting system which implemented as internal and external DSL.
+\end{abstract}
+
+\section{Motivation}
+
+  Rule-based deduction and rewriting is well known
+
+ Let we have some big structure with some semantics, which can be expressed as expression in some DSL (in case of source code
+ analysis -- analysed language)
+
+ Rule rewriting allow to discover patternsm
+
+\section{Basic definitions}
+
+   Let's build term algebra on top of some set of constants, whuch constists from
+\begin{itemize}
+ \item original constants ${c_i} \in C$ Also we
+ will need to distinguish some special subset of constants: atoms ${a_i}$
+ \item functional term $f_i \in F$  i.e. if $f \in F, c_i \in C (i \in 1..n)$, then $f(c_{1} \dots c_{n}) \in T$
+ \item variable terms $x_{i}$ which can be inside variable-bound terms.
+ \item variable bounds term, i.e. so-called 'with-expressions': $with(x_1,\dots x_n):t$
+ \item let terms, i.e. so-called 'let expressions' $let \{ x_i \leftarrow t_i \}_{1\dots n} t  \in T$
+ \item rule terms, i. e. so-called 'rule expressions': $ruleset(p_1 \to r_1 ; p_2 \to r_2; .. p_n => r_n)$
+\end{itemize}
+
+
+
+\bibliographystyle{abbrv}
+\bibliography{stermware}
+
+\end{document}
