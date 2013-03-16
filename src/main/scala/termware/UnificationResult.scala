@@ -32,8 +32,6 @@ case class UnificationFailure(x:Term,y:Term,s:Substitution) extends UnificationR
   @inline def toOption: Option[Substitution] = None
   @inline def map(f: Substitution => Substitution) = this
   @inline def flatMap(f: Substitution => UnificationResult): UnificationResult = this
-
-
 }
 
 

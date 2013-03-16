@@ -28,16 +28,16 @@ trait ComplexTerm extends Term
 }
 
 
-abstract class ComplexToTerm[X](implicit xtag: TypeTag[X], ord:Ordering[X]) extends ToTerm[X]
+abstract class ComplexToTerm[X](implicit xtag: TypeTag[X]) extends ToTerm[X]
 {
 
    def name(x:X):Name
 
    def arity(x:X):Int
 
-   def subterms(x:X):IndexedSeq[BaseAsTerm]
+   def subterms(x:X):IndexedSeq[Term]
 
-   def nameSubterms(x:X):Map[Name,BaseAsTerm] 
+   def nameSubterms(x:X):Map[Name,Term] 
 
    def isAtom(x:X) = false
 

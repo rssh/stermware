@@ -63,17 +63,17 @@ abstract class ToTerm[X:TypeTag]
 
    def arity(x:X):Int
 
-   def subterms(x:X):IndexedSeq[BaseAsTerm]
+   def subterms(x:X):IndexedSeq[Term]
 
-   def subterm(x:X,i:Int): Option[BaseAsTerm] = 
+   def subterm(x:X,i:Int): Option[Term] = 
           if (i<arity(x)) 
                Some(subterms(x)(i))
           else
                None
    
-   def nameSubterms(x:X):Map[Name,BaseAsTerm]
+   def nameSubterms(x:X):Map[Name,Term]
 
-   def nameSubterm(x:X,n:Name): Option[BaseAsTerm] =
+   def nameSubterm(x:X,n:Name): Option[Term] =
                nameSubterms(x).get(n)
 
    def isAtom(x:X):Boolean;

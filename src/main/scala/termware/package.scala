@@ -17,11 +17,16 @@ package object termware {
  implicit val bigIntToTerm = new NumericToTerm[BigInt]
   
  implicit val stringToTerm = new NonNumericPrimitiveToTerm[String]
-
+ implicit val charToTerm = new NonNumericPrimitiveToTerm[Char]
+ implicit val booleanToTerm = new NonNumericPrimitiveToTerm[Boolean]
+ 
+ 
  implicit val atomTerm = AtomToTerm
 
  implicit val termOrdering: Ordering[Term] = TermOrdering
 
+ 
+ 
  @inline
  implicit class TermSymbolApply(s: Symbol)
  {
