@@ -1,6 +1,6 @@
 import language.implicitConversions
 
-import scala.reflect.runtime.universe._
+import scala.reflect.runtime.universe.TypeTag
 
 
 package object termware {
@@ -18,7 +18,15 @@ package object termware {
   
  implicit val stringToTerm = new NonNumericPrimitiveToTerm[String]
 
+ implicit val atomTerm = AtomToTerm
 
  implicit val termOrdering: Ordering[Term] = TermOrdering
 
+ @inline
+ implicit class TermSymbolApply(s: Symbol)
+ {
+   def apply(args:Term*): Term =
+     new FreeComplexTerm(SymbolName(s),args.toIndexedSeq)
+ }
+ 
 }

@@ -26,8 +26,20 @@ class BaseTermFunSuite extends FunSuite
     t.isNumber should be(true)
     t.numberValue.get.intValue() should be(5)
   }
+  
+  test("string term") {
+    val t: Term = "AAA"
+    t.arity should be(0)
+    t.is[String] should be(true)
+    t.value[String] should be(Some("AAA"))
+  }
 
-
+  test("atom term") {
+    val t:Term = 'a
+    t.arity should be(0)
+    t.isAtom should be(true)
+  }
+  
 
 }
 
