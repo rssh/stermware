@@ -49,8 +49,6 @@ object Reflect {
         ???
         // TODO: AnyRef term.
       }
-    } else if (ts.isErroneous) {
-      ???
     } else {
       ???
     }

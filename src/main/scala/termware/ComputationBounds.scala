@@ -29,7 +29,7 @@ sealed abstract class ComputationBounds[+A]
 
 
   def toFuture(implicit executor:ExecutionContext): Future[A] = 
-         future{ trampoline(this); }
+         Future{ trampoline(this); }
                             
   // Monadic syntax
 
@@ -186,8 +186,8 @@ object ComputationBounds
 
   sealed trait Cont[A,+B]
   {
-   type From = A;
-   type To = B;
+   //type From = A;
+   //type To = B;
   }
 
   case class ContOne[A,B](f: (TrampolineId,Int,A)=> ComputationBounds[B], n: Int = 0) extends Cont[A,B]

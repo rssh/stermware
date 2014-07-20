@@ -35,11 +35,11 @@ trait Substitution extends PartialFunction[Term,Term]
 
 object STMSubstitution
 {
-  def empty = new STMSubstitution(TreeMap[Term,Pair[BigInt,Term]](),BigInt(1));
+  def empty = new STMSubstitution(TreeMap[Term,Tuple2[BigInt,Term]](),BigInt(1));
 }
 
 
-case class STMSubstitution(val map: Map[Term,Pair[BigInt,Term]],
+case class STMSubstitution(val map: Map[Term,Tuple2[BigInt,Term]],
                       val lastZipIndex: BigInt)
                                         extends Substitution
 {
