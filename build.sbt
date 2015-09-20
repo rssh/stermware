@@ -3,7 +3,7 @@ name:="termware"
 
 organization:="com.github.termware"
 
-scalaVersion := "2.11.4"
+scalaVersion := "2.11.7"
 
 scalacOptions ++= Seq("-unchecked","-deprecation","-feature")
 

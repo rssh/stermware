@@ -1,62 +1,110 @@
 package termware
 
-import scala.reflect.runtime.universe.TypeTag
-import scala.reflect.runtime.universe.Type
-import scala.reflect.runtime.universe.typeOf
-
 
 sealed trait Name extends Ordered[Name]
-
-case class SymbolName(s:Symbol) extends Name
 {
+  def typeIndex: Int
+  def compare(that: Name): Int =
+  {
+    val cmp = typeIndex - that.typeIndex
+    if (cmp !=0) cmp else compareSameTypeIndex(that)
+  }
 
-   def compare(x:Name):Int =
-    x match {
-      case SymbolName(sx) => if (s eq sx) 0
-                             else {
-                               var c = s.hashCode - sx.hashCode
-                               if (c!=0) {
-                                  c
-                               } else {
-                                  s.toString.compare(sx.toString)
-                               }
-                             }
-      case PrimitiveName(v) => -1
-    }
+  def compareSameTypeIndex(that: Name): Int
 
 }
 
-case class PrimitiveName[V:TypeTag](v:V)(implicit ord:Ordering[V]) extends Name
+sealed abstract class StringLikeName(val value:String) extends Name
 {
- 
-   def valueType: Type = typeOf[V]
 
-   def compare(x:Name):Int =
-    x match {
-      case SymbolName(_) => 1
-      case xp@PrimitiveName(xv) =>
-             var c = valueType.hashCode - xp.valueType.hashCode
-             if (c != 0) 
-               c
-             else if (xp.valueType <:< valueType) 
-               ord.compare(v, xv.asInstanceOf[V])
-             else {
-               // hashCodes are equals but types are differeent
-               // very rare.
-               c = valueType.toString.compare(xp.valueType.toString)  
-               if ( c == 0) {
-                  // very-very-very rare. near newer
-                  c = v.hashCode - xp.v.hashCode
-                  if (c == 0) {
-                    c = v.toString.compare(xp.v.toString)
-                  }
-               }               
-               c
-             }
-              
-    }
+   def compareSameTypeIndex(that: Name) =
+     value compare that.asInstanceOf[StringLikeName].value
 
 }
 
+object NameTypeIndexes
+{
+  val ATOM = 1
+  val STRING = 2
+  val LONG = 3
+  val INT = 4
+  val CHAR = 5
+  val DOUBLE = 6
+  val OPAQUE = 7
+}
 
-// vim: set ts=4 sw=4 et:
+import NameTypeIndexes._
+
+case class AtomName(v:String) extends StringLikeName(v)
+{
+  def typeIndex = ATOM
+}
+
+case class StringName(v:String) extends StringLikeName(v)
+{
+  def typeIndex = STRING
+}
+
+sealed class CharLikeName(val value:Char) extends Name
+{
+  def typeIndex = CHAR
+
+  def compareSameTypeIndex(that: Name) =
+     value compare that.asInstanceOf[CharLikeName].value
+}
+
+case class CharName(v: Char) extends CharLikeName(v)
+
+case class LongName(val value:Long) extends Name
+{
+
+  def typeIndex = LONG
+
+  def compareSameTypeIndex(that: Name) =
+     value compare that.asInstanceOf[LongName].value
+
+}
+
+case class IntName(val value:Int) extends Name
+{
+
+  def typeIndex = INT
+
+  def compareSameTypeIndex(that: Name) =
+     value compare that.asInstanceOf[IntName].value
+
+}
+
+case class DoubleName(val value: Double) extends Name
+{
+
+  def typeIndex = DOUBLE
+
+  def compareSameTypeIndex(that: Name) =
+     value compare that.asInstanceOf[DoubleName].value
+
+}
+
+case class OpaqueName(val value: Array[Byte]) extends Name
+{
+
+  def typeIndex = OPAQUE
+
+  def compareSameTypeIndex(that: Name) =
+  {
+    val other = that.asInstanceOf[OpaqueName]
+    var c = value.length - other.value.length
+    if (c!=0) {
+      c
+    } else {
+      var i=0;
+      while(c!=0 && i<value.length) {
+        c = value(i) - other.value(i)
+        i += 1
+      }
+      c
+    }
+  }
+
+}
+
