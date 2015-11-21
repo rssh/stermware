@@ -11,7 +11,9 @@ trait PrimitiveTermOps
 
   override def component(i:Int) = None
 
-  override def componentNames : IndexedSeq[Name] = IndexedSeq()
+  override def componentName(i:Int) = None
+
+  override def componentIndex(n:Name) = None
 
   override def isVar = false
 

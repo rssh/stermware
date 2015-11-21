@@ -67,12 +67,19 @@ case class OpaqueTerm(value: Array[Byte],
   override val name = OpaqueName(value)
 }
 
-case class StructuredTerm(termStructure: TermStructure, 
+case class StructuredTerm(
+                          termStructure: TermStructure, 
                           components: IndexedSeq[Term],
                           override val scope: Option[Term] = None,
                           override val attributes: Map[Name,Term] = Map(), 
                           override val termSystem: TermSystem = FreeTermSystem
                           ) extends Term with StructuredTermOps
+
+object StructuredTerm
+{
+    def apply(n:Name, components: IndexedSeq[Term]): StructuredTerm =
+          StructuredTerm(FreeTermStructure(n),components)
+}
 
 case class VarTerm(val name: Name,
               override val scope: Option[Term] = None,

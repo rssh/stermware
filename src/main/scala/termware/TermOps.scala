@@ -8,7 +8,9 @@ trait TermOps
 
   def arity: Int 
 
-  def componentNames: IndexedSeq[Name] 
+  def componentName(i:Int): Option[Name] 
+
+  def componentIndex(n:Name): Option[Int] 
 
   def component(i: Int): Option[Term] 
 
