@@ -1,12 +1,16 @@
 package termware
 
 
-trait AtomTermOps extends TermEmptyComponents with UnattributedTermOps
+trait AtomTermOps extends TermEmptyComponents 
 {
 
   this: AtomTerm =>
 
-  def isFreeVar = false
+  override def isScoped = true
+
+  override def scope = None 
+
+  override def isVar = false
 
 }
 

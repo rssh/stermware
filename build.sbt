@@ -14,7 +14,6 @@ libraryDependencies <+= (scalaVersion){ "org.scala-lang" % "scala-reflect" % _ }
 libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.1" % "test"
 
 
-
 publishMavenStyle := true
 
 publishTo <<= version { (v: String) =>

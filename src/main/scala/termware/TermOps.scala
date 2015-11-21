@@ -14,12 +14,10 @@ trait TermOps
 
   def component(n: Name): Option[Term] 
 
-  def isAttributed: Boolean 
+  def isScoped: Boolean
 
-  def isSystemized: Boolean
+  def scope: Option[Term]
 
-  def attributes: Map[Name,Term]
-
-  def isFreeVar: Boolean
+  def isVar: Boolean
 
 }

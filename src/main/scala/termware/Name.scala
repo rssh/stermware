@@ -3,7 +3,9 @@ package termware
 
 sealed trait Name extends Ordered[Name]
 {
+
   def typeIndex: Int
+
   def compare(that: Name): Int =
   {
     val cmp = typeIndex - that.typeIndex

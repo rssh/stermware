@@ -2,6 +2,6 @@ package termware
 
 trait NumericTermOps {
 
- this: Term =>
+ this: NumericTerm =>
 
 }
