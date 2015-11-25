@@ -40,12 +40,12 @@
 
 \section{Motivation}
 
-  Rule-based deduction and rewriting is well known
+  Rule-based deduction and rewriting is a well known formal method techniques.
 
- Let we have some big structure with some semantics, which can be expressed as expression in some DSL (in case of source code
- analysis -- analysed language)
 
- Rule rewriting allow to discover patternsm
+  
+  
+
 
 \section{Basic definitions}
 
@@ -57,10 +57,44 @@
  \item variable terms $x_{i}$ which can be inside variable-bound terms.
  \item variable bounds term, i.e. so-called 'with-expressions': $with(x_1,\dots x_n):t$
  \item let terms, i.e. so-called 'let expressions' $let \{ x_i \leftarrow t_i \}_{1\dots n} t  \in T$
- \item rule terms, i. e. so-called 'rule expressions': $ruleset(p_1 \to r_1 ; p_2 \to r_2; .. p_n => r_n)$
+ \item rule terms, i. e. so-called 'rule expressions': 
+       $rule(p_1 ; p_2 ; \dots p_n \to r_n : p_{fail})$
+ \item application $a b$
+\end{itemize}
+
+  Let's define usual term operations:
+  \begin{itemize}
+    \item s contains t: $s \cap t$
+  \end{itemize}
+
+  Transformations:
+
+\begin{itemize}
+     \item application reduction
+           $$ rule(with(x_i):p_i \to r_i, ... ) q = 
+                    \left\{\begin{array}{l l}
+                             \sigma r_i & if \;  \sigma=unify(p_i,q)/x_{i} \\
+                             p_{fail}   & otherwise \\
+                           \end{array}
+                    \right\} 
+           $$
+     \item with propagation
+           $$ with(x):rule(p_1 \dots p_{n}, p_{fail}) =
+               rule(with(x,p_1) \dots with(x,p_{n}), with(p_{fail})) =
+           $$
+     \item with chaining
+           $$ with(x_1 \dots x_n):with(y_1 \dots y_n):p =
+                with(x_1 \dots x_n, y_1 \dots y_n):p $$
+     \item with variable elimination
+           $$ with(x_{1} \dots x_{i} \dots x_{n}):p = 
+              with(x_{1} \dots x_{i-1}, x_{i+1}, \dots x_{n})p \; if x_i \not\in p $$  
 \end{itemize}
 
 
+\section{Related work}
+
+  Pure pattern calculus \cite{Jay05purepattern} is a most close formal system.  It's congruent by 
+ price of not 
 
 \bibliographystyle{abbrv}
 \bibliography{stermware}

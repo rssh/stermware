@@ -67,6 +67,7 @@ case class OpaqueTerm(value: Array[Byte],
   override val name = OpaqueName(value)
 }
 
+// TODO: add min/max index.
 case class StructuredTerm(
                           termStructure: TermStructure, 
                           components: IndexedSeq[Term],
@@ -82,6 +83,7 @@ object StructuredTerm
 }
 
 case class VarTerm(val name: Name,
+                   val index: Int,
               override val scope: Option[Term] = None,
               override val attributes: Map[Name,Term] = Map(), 
               override val termSystem: TermSystem = FreeTermSystem
