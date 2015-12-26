@@ -6,11 +6,11 @@ object FreeTermSystem extends TermSystem
 
    def name: Term = new AtomTerm("Free")
 
-   def adopt(t: Term): Term = t
+   override def adopt(t: Term): Term = t
 
-   def mergeAttributes(attrName: Name, x:Term, y:Term): Term = ???
+   override def unification: Unification = free.Unification
 
-   def isFree: Boolean = true
+   override def isFree: Boolean = true
 
 }
 

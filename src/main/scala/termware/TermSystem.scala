@@ -3,13 +3,16 @@ package termware
 
 trait TermSystem
 {
-
    def name: Term
 
-   def adopt(t: Term): Term
+   def adopt(t: Term): Term = t
 
-   def mergeAttributes(attrName: Name, x:Term, y:Term): Term
+   def unification: Unification = free.Unification
 
-   def isFree: Boolean
+   def storage: TermStorage = ???
+
+   def serializer: TermSerializer = free.Serializer
+
+   def isFree: Boolean = false
 }
 

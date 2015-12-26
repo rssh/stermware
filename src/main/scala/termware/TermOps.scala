@@ -22,4 +22,6 @@ trait TermOps
 
   def isVar: Boolean
 
+  def withAttributes(attributes: Map[Name,Term]): Term
+
 }

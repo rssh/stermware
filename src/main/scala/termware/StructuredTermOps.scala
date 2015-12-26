@@ -22,6 +22,8 @@ trait StructuredTermOps extends TermOps
 
   override def isVar: Boolean = false
 
-  override def isScoped = scope.isDefined
+  override def scope = None
+
+  override def isScoped = false
 
 }
