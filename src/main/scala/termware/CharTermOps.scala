@@ -2,6 +2,9 @@ package termware
 
 trait CharTermOps {
 
- this: Term =>
+ this: CharTerm =>
+
+ override def withAttributes(newAttributes: Map[Name,Term]) =
+     copy(attributes = newAttributes)
 
 }

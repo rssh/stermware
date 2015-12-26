@@ -12,5 +12,7 @@ trait AtomTermOps extends TermEmptyComponents
 
   override def isVar = false
 
+  override def withAttributes(newAttributes: Map[Name,Term]) =
+     copy(attributes = newAttributes)
 }
 

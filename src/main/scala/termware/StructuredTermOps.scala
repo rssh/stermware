@@ -26,4 +26,6 @@ trait StructuredTermOps extends TermOps
 
   override def isScoped = false
 
+  override def withAttributes(newAttributes: Map[Name,Term]) = copy(attributes = newAttributes)
+
 }
