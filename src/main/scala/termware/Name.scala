@@ -47,7 +47,7 @@ case class StringName(v:String) extends StringLikeName(v)
   def typeIndex = STRING
 }
 
-sealed class CharLikeName(val value:Char) extends Name
+sealed abstract class CharLikeName(val value:Char) extends Name
 {
   def typeIndex = CHAR
 

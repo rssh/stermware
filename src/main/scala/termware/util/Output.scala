@@ -47,6 +47,12 @@ trait Output
 
    def <<(v:Double): this.type = writeDouble(v)
 
+   def <<(v:Array[Byte]): this.type = {
+     writeInt(v.length)
+     write(v)
+     this
+   }
+
 }
 
 

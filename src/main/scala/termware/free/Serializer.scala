@@ -85,7 +85,7 @@ trait Serializer extends TermSerializer
         case TAG_ATOM => (AtomTerm(in.readString,Map(),termSystem),bc)
         case TAG_STRUCTURED => readStructured(in, bc)
         case TAG_TERMSTRUCTURE => readTerm(in,readTermStructure(in,bc)) 
-        case TAG_VAR => readVar(in,bc)
+        case TAG_VAR => (readVar(in,bc),bc)
         case x if ((x|TAG_PRIMITIVE)!=0) => (readPrimitive(x,in), bc)
         case _ => throw new IllegalStateException("Invalid term tag:"+tag)
       }
@@ -170,14 +170,50 @@ trait Serializer extends TermSerializer
                        case None => -1
                     }
      out.writeInt(scopeIndex)
+     writeName(t.name, out)
+     out.writeInt(t.index)
      bc
    }
 
-   private def readVar(in: Input, bc: BlockContext): (VarTerm, BlockContext) = ???
+   private def readVar(in: Input, bc: BlockContext): VarTerm = 
+   {
+     val scopeIndex = in.readInt
+     // TODO: handle error when scopeIndex is invalid ?
+     val scope: Option[Term] = if (scopeIndex == -1) None else bc.scopes.get(scopeIndex)
+     val name = readName(in)                          
+     val index = in.readInt()
+     VarTerm(name,index,scope,Map(),termSystem)
+   }
 
-   private def writeName(name:Name, out: Output): Unit = ???
+   private def writeName(name:Name, out: Output): Unit = 
+   {
+    out.writeInt(name.typeIndex)
+    name match {
+      case AtomName(v) => out << v
+      case StringName(v) => out << v
+      case CharName(v) => out << v
+      case LongName(v) => out << v
+      case IntName(v) => out << v
+      case DoubleName(v) => out << v
+      case OpaqueName(v) => out << v
+    }
+   }
 
-   private def readName(in: Input): Name = ???
+
+   private def readName(in: Input): Name = 
+   {
+    import NameTypeIndexes._
+    val typeIndex = in.readInt
+    typeIndex match {
+      case ATOM   => AtomName(in.readString)
+      case STRING => StringName(in.readString)
+      case CHAR   => CharName(in.readChar)
+      case LONG   => LongName(in.readLong)
+      case INT    => IntName(in.readInt)
+      case DOUBLE => DoubleName(in.readDouble)
+      case OPAQUE => OpaqueName(in.readOpaque)
+    }
+   }
 
    private def writeAttributes(attributes: Map[Name,Term], bc: BlockContext, out: Output): BlockContext = 
    {
