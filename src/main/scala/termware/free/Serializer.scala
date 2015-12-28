@@ -10,9 +10,11 @@ import termware.TermAttributes.{empty=>emptyAttributes}
 trait Serializer extends TermSerializer
 {
 
-   def apply(t: Term, out: Output): Unit = ???
+   def apply(t: Term, out: Output): Unit = 
+   { writeTerm(t,BlockContext(),out) }
 
-   def unapply(input: Input): Term = ???
+   def unapply(in: Input): Term =
+    readTerm(in,BlockContext())._1
 
    def termSystem: TermSystem
 
@@ -36,6 +38,7 @@ trait Serializer extends TermSerializer
          case Some(si) => this
        }
      }
+
 
      def withScope(scope: Term): BlockContext =
      {
@@ -84,7 +87,7 @@ trait Serializer extends TermSerializer
       val (t,nbc0) = tag match {
         case TAG_ATOM => (AtomTerm(in.readString,Map(),termSystem),bc)
         case TAG_STRUCTURED => readStructured(in, bc)
-        case TAG_TERMSTRUCTURE => readTerm(in,readTermStructure(in,bc)) 
+        case TAG_TERMSTRUCTURE => readTerm(in,readAndAdoptTermStructure(in,bc)) 
         case TAG_VAR => (readVar(in,bc),bc)
         case x if ((x|TAG_PRIMITIVE)!=0) => (readPrimitive(x,in), bc)
         case _ => throw new IllegalStateException("Invalid term tag:"+tag)
@@ -131,7 +134,7 @@ trait Serializer extends TermSerializer
                          val newTs = bc.structures.updated(newTsi,ts)
                          val newInvTs = bc.invStructures.updated(ts, newTsi)
                          out.writeInt(TAG_TERMSTRUCTURE) 
-                         writeStructure(ts,bc,out)
+                         writeTermStructure(ts,out)
                          bc.copy(structures=newTs, invStructures=newInvTs, structureIndex=newTsi)
       }
       val newScopeIndex = bc.scopeIndex+1
@@ -185,7 +188,7 @@ trait Serializer extends TermSerializer
      VarTerm(name,index,scope,Map(),termSystem)
    }
 
-   private def writeName(name:Name, out: Output): Unit = 
+   def writeName(name:Name, out: Output): Unit = 
    {
     out.writeInt(name.typeIndex)
     name match {
@@ -200,7 +203,7 @@ trait Serializer extends TermSerializer
    }
 
 
-   private def readName(in: Input): Name = 
+   def readName(in: Input): Name = 
    {
     import NameTypeIndexes._
     val typeIndex = in.readInt
@@ -224,12 +227,28 @@ trait Serializer extends TermSerializer
      }
    }
    
-   private def readAttributes(in: Input, bc: BlockContext): (Map[Name,Term], BlockContext) = ???
+   private def readAttributes(in: Input, bc: BlockContext): (Map[Name,Term], BlockContext) = 
+   {
+     val r: Map[Name,Term] = Map()
+     val nAttributes = in.readInt
+     (1 to nAttributes).foldLeft((r,bc)) { (s,i) =>
+       val name = readName(in)
+       val (t,nbc) = readTerm(in,s._2)
+       (s._1.updated(name,t),nbc)
+     }
+   }
 
-   private def writeStructure(ts: TermStructure, bc: BlockContext, out: Output): BlockContext = ???
+   private def writeTermStructure(ts: TermStructure, out: Output): Unit = 
+       TermStructure.write(ts,out)
 
-   private def readTermStructure(in: Input, bc: BlockContext): BlockContext = ???
+   private def readTermStructure(in: Input): TermStructure = 
+       TermStructure.read(in)
 
+   private def readAndAdoptTermStructure(in: Input, bc: BlockContext): BlockContext = 
+   {
+     val ts = TermStructure.read(in)
+     bc withStructure ts      
+   }
 
 }
 
