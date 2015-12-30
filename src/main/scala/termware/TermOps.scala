@@ -16,11 +16,15 @@ trait TermOps
 
   def component(n: Name): Option[Term] 
 
+  def isScope: Boolean
+
   def isScoped: Boolean
 
-  def scope: Option[Term]
+  def scopeIndex: Int
 
   def isVar: Boolean
+
+  def varIndex: Int
 
   def withAttributes(attributes: Map[Name,Term]): Term
 

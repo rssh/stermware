@@ -16,5 +16,7 @@ trait TermEmptyComponents
 
   override def componentIndex(n:Name) = None
 
+  override def isScope = true
+
 }
 

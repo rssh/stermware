@@ -17,9 +17,13 @@ trait PrimitiveTermOps
 
   override def isVar = false
 
+  override def varIndex = -1
+
   override def isScoped = false
 
-  override def scope = None
+  override def isScope = false
+
+  override def scopeIndex = -1
 
 
 }

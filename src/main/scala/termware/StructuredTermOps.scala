@@ -22,9 +22,13 @@ trait StructuredTermOps extends TermOps
 
   override def isVar: Boolean = false
 
-  override def scope = None
+  override def varIndex = -1
+
+  override def scopeIndex = -1
 
   override def isScoped = false
+
+  override def isScope = termStructure.isScope
 
   override def withAttributes(newAttributes: Map[Name,Term]) = copy(attributes = newAttributes)
 

@@ -10,6 +10,10 @@ trait Output
 
    def write(value: Byte): Unit 
 
+   def writeByte(value: Byte): Unit = write(value)
+
+   def writeBoolean(value: Boolean): Unit =
+     writeByte( if (value) 1 else 0 )
 
    def writeChar(v:Char): this.type =
      writeInt(v.toInt)   

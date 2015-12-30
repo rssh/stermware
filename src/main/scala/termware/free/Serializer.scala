@@ -22,33 +22,37 @@ trait Serializer extends TermSerializer
    case class BlockContext(
      val structures: Map[Int, TermStructure] = Map(),
      val invStructures: Map[TermStructure, Int] = Map(),
-     val structureIndex: Int = 0,
+     val nextStructureIndex: Int = 0,
      val scopes:     Map[Int, Term] = Map(),
      val invScopes:  Map[Term,Int] = Map(),
-     val scopeIndex: Int = 0
+     val nextScopeIndex: Int = 0
    ) {
 
-     def withStructure(structure: TermStructure): BlockContext =
+     def withStructure(structure: TermStructure): (BlockContext, Int) =
      {
        invStructures.get(structure) match {
-         case None => val si = structureIndex+1
-                      copy(structures = structures.updated(si, structure),
-                      invStructures = invStructures.updated(structure,si),
-                      structureIndex = si)
-         case Some(si) => this
+         case None => val si = nextStructureIndex
+                      val nsi = si+1
+                      (copy(structures = structures.updated(si, structure),
+                            invStructures = invStructures.updated(structure,si),
+                            nextStructureIndex = nsi), nsi)
+         case Some(si) => (this, si)
        }
      }
 
+     def retrieveStructure(i: Int): TermStructure =
+       structures.get(i).getOrElse(throw new IllegalStateException("Invalid structure index"))
 
-     def withScope(scope: Term): BlockContext =
+     def withScope(scope: Term): (BlockContext, Int) =
      {
        invScopes.get(scope) match {
          case None =>
-              val si = scopeIndex+1
-              copy(scopes = scopes.updated(si,scope),
-                   invScopes = invScopes.updated(scope,si),
-                   scopeIndex = si)
-         case Some(_) => this
+              val si = nextScopeIndex
+              val nsi = si+1
+              (copy(scopes = scopes.updated(si,scope),
+                    invScopes = invScopes.updated(scope,si),
+                    nextScopeIndex = nsi), nsi)
+         case Some(si) => (this, si)
        }
      }
 
@@ -127,22 +131,19 @@ trait Serializer extends TermSerializer
    private def writeStructured(t: StructuredTerm, bc: BlockContext, out: Output): BlockContext =
    {
       val ts = t.termStructure;
-      val nbc0 = bc.invStructures.get(ts) match {
-                  case Some(tsi) => bc
-                  case None =>
-                         val newTsi = bc.structureIndex+1
-                         val newTs = bc.structures.updated(newTsi,ts)
-                         val newInvTs = bc.invStructures.updated(ts, newTsi)
-                         out.writeInt(TAG_TERMSTRUCTURE) 
-                         writeTermStructure(ts,out)
-                         bc.copy(structures=newTs, invStructures=newInvTs, structureIndex=newTsi)
+      val nextSti = bc.nextStructureIndex
+      val (nbc0, sti) = bc.withStructure(ts)
+      if (nextSti == sti) {
+          out.writeInt(TAG_TERMSTRUCTURE) 
+          out.writeInt(sti)
+          writeTermStructure(ts,out)
       }
-      val newScopeIndex = bc.scopeIndex+1
-      val newScopes = bc.scopes.updated(newScopeIndex,t)
-      val newInvScopes = bc.invScopes.updated(t,newScopeIndex)
-      val nbc = nbc0.copy(scopes=newScopes, invScopes=newInvScopes, scopeIndex=newScopeIndex) 
+      val (nbc, sci) = if (t.isScope) {
+                          nbc0 withScope t
+                       } else (nbc0, -1)
       out.writeInt(TAG_STRUCTURED) 
-      out.writeInt(nbc.structureIndex)
+      out.writeInt(sti)
+      out.writeInt(sci)
       out.writeInt(t.arity)
       t.components.foldLeft(nbc) { (s,e) =>
          writeTerm(e,s,out)
@@ -151,9 +152,11 @@ trait Serializer extends TermSerializer
 
    private def readStructured(in: Input, bc: BlockContext): (Term, BlockContext) =
    {
-     val tsi = in.readInt
-     val ts: TermStructure = bc.structures.getOrElse(tsi,throw new IllegalStateException(
-                                           "invalid structure index "))
+     val ts = bc.retrieveStructure(in.readInt)
+     val sci = in.readInt
+     if (sci != -1) {
+        ???
+     }
      val arity = in.readInt 
      val subterms = new Array[Term](arity)
      var cbc = bc
@@ -167,25 +170,18 @@ trait Serializer extends TermSerializer
 
    private def writeVar(t: VarTerm, bc: BlockContext, out: Output): BlockContext =
    {
-     val scopeIndex = t.scope match {
-                       case Some(u) => bc.invScopes.getOrElse(u,
-                                        throw new IllegalStateException("scope not found in uplevel"))
-                       case None => -1
-                    }
-     out.writeInt(scopeIndex)
      writeName(t.name, out)
-     out.writeInt(t.index)
+     out.writeInt(t.varIndex)
+     out.writeInt(t.scopeIndex)
      bc
    }
 
    private def readVar(in: Input, bc: BlockContext): VarTerm = 
    {
-     val scopeIndex = in.readInt
-     // TODO: handle error when scopeIndex is invalid ?
-     val scope: Option[Term] = if (scopeIndex == -1) None else bc.scopes.get(scopeIndex)
      val name = readName(in)                          
-     val index = in.readInt()
-     VarTerm(name,index,scope,Map(),termSystem)
+     val varIndex = in.readInt()
+     val scopeIndex = in.readInt
+     VarTerm(name=name,varIndex,scopeIndex,Map(),termSystem)
    }
 
    def writeName(name:Name, out: Output): Unit = 
@@ -247,7 +243,7 @@ trait Serializer extends TermSerializer
    private def readAndAdoptTermStructure(in: Input, bc: BlockContext): BlockContext = 
    {
      val ts = TermStructure.read(in)
-     bc withStructure ts      
+     (bc withStructure ts)._1
    }
 
 }
