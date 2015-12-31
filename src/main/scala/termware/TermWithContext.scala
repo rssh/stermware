@@ -4,8 +4,7 @@ case class TermWithContext(term: Term, context: TermContext)
 {
 
    def scope(): Option[Term] = 
-    if (term.scopeIndex == -1) None else Some(context.scope(term.scopeIndex))
-
+    if (term.scopeIndex == -1) None else Some(context.scope(term,term.scopeIndex))
 
    def name: Name = term.name
 

@@ -10,15 +10,15 @@ object Unification extends termware.Unification
   def apply(x: TermWithContext, y: TermWithContext, scope: Term): Match =
   {
     x.term match {
-      case AtomTerm(xv,xa,xts) =>
+      case AtomTerm(xv,xa) =>
         y.term match {
-           case AtomTerm(yv,ya,yts) =>
+           case AtomTerm(yv,ya) =>
              if (xv == yv) {
                 Substitution.empty
              } else {
                 MatchFailure(x,y,"different atoms")
              }
-           case VarTerm(yn,yi,ys,xa,ts) =>
+           case VarTerm(yn,yi,ys,xa) =>
              if (y.scope.forall(_ eq scope)) {
                 Substitution(Map(y->x))
              } else {
@@ -30,7 +30,7 @@ object Unification extends termware.Unification
       case px:PrimitiveTerm =>
         y.term match {
            case py:PrimitiveTerm => applyPrimitive(px,py,x,y)
-           case VarTerm(yn,yi,ys,xa,ts) =>
+           case VarTerm(yn,yi,ys,xa) =>
              if (y.scope.forall(_ eq scope)) {
                 Substitution(Map(y->x))
              } else {
@@ -39,9 +39,9 @@ object Unification extends termware.Unification
            case _ =>
                 MatchFailure(x,y,"can't unify primitive with non-primitive")
         }
-      case StructuredTerm(xstructure,xcomponents,xa,xts) =>
+      case StructuredTerm(xstructure,xcomponents,xa) =>
          y.term match {
-           case StructuredTerm(ystructure,ycomponents,ya,yts) =>
+           case StructuredTerm(ystructure,ycomponents,ya) =>
              if (ystructure.name != ystructure.name) {
                 MatchFailure(x,y,"name mismatch")
              } else if (xcomponents.length != ycomponents.length) {
@@ -52,7 +52,7 @@ object Unification extends termware.Unification
                 (x.components zip y.components).foldLeft(s0){ (s,e) => 
                                  s.merge(apply(e._1,e._2,scope),this,scope) }
              }
-           case VarTerm(yn,yi,ys,xa,ts) =>
+           case VarTerm(yn,yi,ys,xa) =>
              if (y.scope.forall(_ eq scope)) {
                 Substitution(Map(y->x))
              } else {
@@ -61,12 +61,12 @@ object Unification extends termware.Unification
            case _ =>
                 MatchFailure(x,y,"structure mismatch")
          }
-      case VarTerm(xn,xi,xs,xa,ts) =>
+      case VarTerm(xn,xi,xs,xa) =>
          if (x.scope.forall(_ eq scope)) {
            Substitution(Map(x->y))
          } else {
            y.term match {
-             case VarTerm(yn,yi,ys,xa,ts) =>
+             case VarTerm(yn,yi,ys,xa) =>
                if (y.scope.forall(_ eq scope)) {
                  Substitution(Map(y->x))
                } else if ( (y.scope.get eq x.scope.get) && xi == yi) {
@@ -84,49 +84,49 @@ object Unification extends termware.Unification
 
   def applyPrimitive(x: PrimitiveTerm, y: PrimitiveTerm, xc: TermWithContext, yc: TermWithContext): Match =
     x match {
-      case StringTerm(xv,xa,xts) =>
+      case StringTerm(xv,xa) =>
              y match {
-               case StringTerm(yv,ya,yts) =>
+               case StringTerm(yv,ya) =>
                       if (xv == yv) Substitution.empty 
                         else MatchFailure(xc,yc,"string mismatch")
                case _ =>
                       MatchFailure(xc,yc,"type mismatch")
              }
-      case CharTerm(xv,xa,xts) =>
+      case CharTerm(xv,xa) =>
              y match {
-               case CharTerm(yv,ya,yts) =>
+               case CharTerm(yv,ya) =>
                       if (xv == yv) Substitution.empty 
                         else MatchFailure(xc,yc,"char mismatch")
                case _ =>
                       MatchFailure(xc,yc,"type mismatch")
              }
-      case Int32Term(xv,xa,xts) =>
+      case Int32Term(xv,xa) =>
              y match {
-               case Int32Term(yv,ya,yts) =>
+               case Int32Term(yv,ya) =>
                       if (xv == yv) Substitution.empty 
                         else MatchFailure(xc,yc,"int32 mismatch")
                case _ =>
                       MatchFailure(xc,yc,"type mismatch")
              }
-      case Int64Term(xv,xa,xts) =>
+      case Int64Term(xv,xa) =>
              y match {
-               case Int64Term(yv,ya,yts) =>
+               case Int64Term(yv,ya) =>
                       if (xv == yv) Substitution.empty 
                         else MatchFailure(xc,yc,"int64 mismatch")
                case _ =>
                       MatchFailure(xc,yc,"type mismatch")
              }
-      case DoubleTerm(xv,xa,xts) =>
+      case DoubleTerm(xv,xa) =>
              y match {
-               case DoubleTerm(yv,ya,yts) =>
+               case DoubleTerm(yv,ya) =>
                       if (xv == yv) Substitution.empty 
                         else MatchFailure(xc,yc,"double mismatch")
                case _ =>
                       MatchFailure(xc,yc,"type mismatch")
              }
-      case OpaqueTerm(xv,xa,xts) =>
+      case OpaqueTerm(xv,xa) =>
              y match {
-               case OpaqueTerm(yv,ya,yts) =>
+               case OpaqueTerm(yv,ya) =>
                       if (xv == yv) Substitution.empty 
                         else MatchFailure(xc,yc,"double mismatch")
                case _ =>

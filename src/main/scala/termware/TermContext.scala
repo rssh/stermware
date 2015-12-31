@@ -3,7 +3,9 @@ package termware
 trait TermContext
 {
 
-   def scope(index:Int):Term
+   def scope(source: Term, index:Int):Term
+
+   def termSystem(): TermSystem
 
  //  def variable(scopeIndex:Int, varIndex:Int):VarTerm
 

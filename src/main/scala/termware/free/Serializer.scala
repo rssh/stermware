@@ -7,7 +7,7 @@ import termware.TermAttributes.{empty=>emptyAttributes}
 
 // TODO: write input pos on error.
 
-trait Serializer extends TermSerializer
+object Serializer extends TermSerializer
 {
 
    def apply(t: Term, out: Output): Unit = 
@@ -15,9 +15,6 @@ trait Serializer extends TermSerializer
 
    def unapply(in: Input): Term =
     readTerm(in,BlockContext())._1
-
-   def termSystem: TermSystem
-
 
    case class BlockContext(
      val structures: Map[Int, TermStructure] = Map(),
@@ -89,7 +86,7 @@ trait Serializer extends TermSerializer
    {
       val tag = in.readInt
       val (t,nbc0) = tag match {
-        case TAG_ATOM => (AtomTerm(in.readString,Map(),termSystem),bc)
+        case TAG_ATOM => (AtomTerm(in.readString,Map()),bc)
         case TAG_STRUCTURED => readStructured(in, bc)
         case TAG_TERMSTRUCTURE => readTerm(in,readAndAdoptTermStructure(in,bc)) 
         case TAG_VAR => (readVar(in,bc),bc)
@@ -105,12 +102,12 @@ trait Serializer extends TermSerializer
    {
      out << (TAG_PRIMITIVE | p.name.typeIndex)
      p match {
-       case StringTerm(v,_,_) => out << v
-       case CharTerm(v,_,_)   => out << v
-       case Int32Term(v,_,_)  => out << v
-       case Int64Term(v,_,_)  => out << v
-       case DoubleTerm(v,_,_) => out << v
-       case OpaqueTerm(v,_,_) => (out << v.size).write(v)
+       case StringTerm(v,_) => out << v
+       case CharTerm(v,_)   => out << v
+       case Int32Term(v,_)  => out << v
+       case Int64Term(v,_)  => out << v
+       case DoubleTerm(v,_) => out << v
+       case OpaqueTerm(v,_) => (out << v.size).write(v)
      }
    }
 
@@ -118,12 +115,12 @@ trait Serializer extends TermSerializer
    {
       import NameTypeIndexes._
       (tag & (~TAG_PRIMITIVE)) match {
-        case STRING =>  StringTerm(in.readString,Map(),termSystem)
-        case CHAR   =>  CharTerm(in.readChar,Map(),termSystem)
-        case INT    =>  Int32Term(in.readInt,Map(),termSystem)
-        case LONG   =>  Int64Term(in.readLong,Map(),termSystem)
-        case DOUBLE =>  DoubleTerm(in.readDouble(),Map(),termSystem) 
-        case OPAQUE =>  OpaqueTerm(in.readOpaque(),Map(),termSystem)       
+        case STRING =>  StringTerm(in.readString,Map())
+        case CHAR   =>  CharTerm(in.readChar,Map())
+        case INT    =>  Int32Term(in.readInt,Map())
+        case LONG   =>  Int64Term(in.readLong,Map())
+        case DOUBLE =>  DoubleTerm(in.readDouble(),Map()) 
+        case OPAQUE =>  OpaqueTerm(in.readOpaque(),Map())       
         case _ => throw new IllegalStateException("Invalid primitive tag: "+tag)
       }
    }
@@ -165,7 +162,7 @@ trait Serializer extends TermSerializer
         subterms(i)=t
         cbc = nbc
      }
-     (StructuredTerm(ts,subterms.toIndexedSeq,emptyAttributes,termSystem), cbc)
+     (StructuredTerm(ts,subterms.toIndexedSeq,emptyAttributes), cbc)
    }
 
    private def writeVar(t: VarTerm, bc: BlockContext, out: Output): BlockContext =
@@ -181,7 +178,7 @@ trait Serializer extends TermSerializer
      val name = readName(in)                          
      val varIndex = in.readInt()
      val scopeIndex = in.readInt
-     VarTerm(name=name,varIndex,scopeIndex,Map(),termSystem)
+     VarTerm(name=name,varIndex,scopeIndex,Map())
    }
 
    def writeName(name:Name, out: Output): Unit = 
@@ -248,7 +245,3 @@ trait Serializer extends TermSerializer
 
 }
 
-object Serializer extends Serializer
-{
-  def termSystem = FreeTermSystem
-}

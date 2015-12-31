@@ -7,8 +7,7 @@ case class TermBuilder(
   private val components: IndexedSeq[Term]=IndexedSeq(),
   private val scopeIndex: Int,
   private val lastScopeIndex: Int,
-  private val nVariables: Int,
-  private val termSystem: TermSystem
+  private val nVariables: Int
                  )
 {
 
@@ -19,12 +18,12 @@ case class TermBuilder(
                                         val newScopeIndex = lastScopeIndex+1 
                                         (newScopeIndex, newScopeIndex)
                                       } else (-1, lastScopeIndex)
-   new TermBuilder(Some(this),ts,IndexedSeq(), newScopeIndex, newLastScopeIndex, 0, termSystem)
+   new TermBuilder(Some(this),ts,IndexedSeq(), newScopeIndex, newLastScopeIndex, 0)
   }
 
   def finishChild(): TermBuilder =
   {
-   parent.get.addTermWithScope(StructuredTerm(structure,components,Map(),termSystem),lastScopeIndex)
+   parent.get.addTermWithScope(StructuredTerm(structure,components,Map()),lastScopeIndex)
   }
 
   def addTermWithScope(t: Term, newLastScopeIndex: Int): TermBuilder =
