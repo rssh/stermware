@@ -8,21 +8,31 @@ import util._
 sealed trait TermStructure
 {
 
-  
   def name: Name
 
   def componentIndex(name:Name): Option[Int]
 
   def componentName(i: Int): Option[Name]
 
+ // def component(i:Int, t:Term): Option[Term]
+//:w
+ // def component(n:Name, t:Term): Option[Term] =
+ //      componentIndex(n).flatMap(component(_,t))
+
   /**
    * is this term define a scope ?
    */
   def isScope: Boolean
 
+  def varIndex(name:Name): Option[Int]
+
 }
 
-case class DefaultTermStructure(name:Name, componentNames: IndexedSeq[Name], isScope: Boolean) extends TermStructure
+/**
+ * default term structure
+ * TODO: add vars
+ **/
+case class DefaultTermStructure(name:Name, componentNames: IndexedSeq[Name]) extends TermStructure
 {
 
   val componentIndexes = componentNames.foldLeft(Map[Name,Int]()){ (s,e) => s.updated(e,s.size+1) }
@@ -34,6 +44,10 @@ case class DefaultTermStructure(name:Name, componentNames: IndexedSeq[Name], isS
          Some(componentNames(i))
      } else None
 
+  def isScope: Boolean = false
+
+  def varIndex(name:Name): Option[Int] = None
+
 }
 
 object DefaultTermStructure
@@ -41,7 +55,7 @@ object DefaultTermStructure
   val typeIndex = 1
 }
 
-case class SeqTermStructure(name:Name, isScope: Boolean) extends TermStructure
+case class SeqTermStructure(name:Name) extends TermStructure
 {
 
   override def componentIndex(name:Name): Option[Int] =
@@ -52,6 +66,10 @@ case class SeqTermStructure(name:Name, isScope: Boolean) extends TermStructure
 
   override def componentName(i:Int): Option[Name] = Some(IntName(i))
   
+  def isScope: Boolean = false
+
+  def varIndex(name:Name): Option[Int] = None
+
 }
 
 object SeqTermStructure
@@ -65,9 +83,9 @@ object TermStructure
    def write(ts: TermStructure, out:Output): Unit =
    {
     ts match {
-      case DefaultTermStructure(name,components,isScope) =>
+      case DefaultTermStructure(name,components) =>
              out.writeInt(DefaultTermStructure.typeIndex)
-             out.writeBoolean(isScope)
+             //out.writeBoolean(isScope)
              free.Serializer.writeName(ts.name,out)
              val nComponents = components.size
              out.writeInt(nComponents)
@@ -75,9 +93,9 @@ object TermStructure
                 val component = components(i)
                 free.Serializer.writeName(component,out)
              }
-       case SeqTermStructure(name,isScope) =>
+       case SeqTermStructure(name) =>
              out.writeInt(SeqTermStructure.typeIndex)
-             out.writeBoolean(isScope)
+             //out.writeBoolean(isScope)
              free.Serializer.writeName(ts.name,out)
     }
   }
@@ -85,7 +103,7 @@ object TermStructure
    def read(in: Input): TermStructure = 
    {
      val typeIndex = in.readInt
-     val isScope = (in.readByte != 0)
+     //val isScope = (in.readByte != 0)
      val name = free.Serializer.readName(in)
      typeIndex match {
        case DefaultTermStructure.typeIndex =>
@@ -94,9 +112,9 @@ object TermStructure
              val componentNames = (1 to arity).foldLeft(s0){ (s,i)=>
                                     s :+ free.Serializer.readName(in)
                                   }
-             DefaultTermStructure(name,componentNames,isScope)
+             DefaultTermStructure(name,componentNames)
        case SeqTermStructure.typeIndex =>
-             SeqTermStructure(name, isScope)
+             SeqTermStructure(name)
        case _ =>
              throw new IllegalStateException("Unknown term-structure type index: typeIndex");
      }

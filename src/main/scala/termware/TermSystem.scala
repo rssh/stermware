@@ -9,13 +9,15 @@ trait TermSystem
 
    def unification: Unification = free.Unification
 
-   def resolve(name: Term): Option[Term] = ??? // Todo: s/Option/ResolveResult
+   def resolve(name: Term): TrackedResult[Term] = ??? 
 
    def storage: TermStorage = ??? // baseTermStorage(name)
 
    def serializer: TermSerializer = free.Serializer
 
    def isFree: Boolean = false
+
+   def createVM(): TermVM
 }
 
 

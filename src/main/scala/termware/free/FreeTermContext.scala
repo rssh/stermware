@@ -3,6 +3,11 @@ package termware.free
 import termware._
 
 sealed trait FreeTermContext extends TermContext
+{
+
+ override def resolve(source: Term, name: Term): TrackedResult[Term] = TrackedFailure("not iplemented")
+
+}
 
 case class TopLevelTermContext(override val termSystem: TermSystem) extends FreeTermContext
 {

@@ -74,7 +74,7 @@ case class StructuredTerm(
 object StructuredTerm
 {
     def apply(n:Name, components: IndexedSeq[Term]): StructuredTerm =
-          StructuredTerm(SeqTermStructure(n,false),components)
+          StructuredTerm(SeqTermStructure(n),components)
 }
 
 case class VarTerm(val name: Name,

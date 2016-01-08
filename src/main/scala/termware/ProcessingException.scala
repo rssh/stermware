@@ -1,9 +1,14 @@
 package termware
 
 
-class ProcessingException(s:String,e:Throwable) extends RuntimeException(s,e)
+class ProcessingException(
+           val message:String, 
+           val tracking: Seq[String], 
+           val cause:Throwable) extends RuntimeException(message,cause)
 {
 
-  def this(s:String) = this(s, null)
+  def this(message:String) = this(message, Seq(), null)
 
+  def this(message:String, tracking:Seq[String]) = this(message, tracking, null)
+ 
 }

@@ -6,6 +6,9 @@ case class TermWithContext(term: Term, context: TermContext)
    def scope(): Option[Term] = 
     if (term.scopeIndex == -1) None else Some(context.scope(term,term.scopeIndex))
 
+   def scope(index: Int): Term =
+     context.scope(term, index)
+
    def name: Name = term.name
 
    def arity: Int = term.arity

@@ -12,5 +12,8 @@ object FreeTermSystem extends TermSystem
 
    override def isFree: Boolean = true
 
+   // TODO: rethink
+   override def createVM: TermVM = ???
+
 }
 
