@@ -10,6 +10,7 @@
 
 \documentclass[12pt]{article}
 \usepackage{listings}
+\usepackage{amsmath}
 
 % "define" Scala
 \lstdefinelanguage{scala}{
@@ -41,40 +42,40 @@
 \section{Motivation}
 
   Rule-based deduction and rewriting is a well known techniques. Exists many formalizations, from
-   to $\rho$-caclulus and pure pattern calculus;  and 
+  equational logic to $\rho$-caclulus \cite{RhoCal-Wrla2002} and pure pattern calculus\cite{Jay05purepattern}   Few programming languages are build
+  with 
 
 
+  We need compact and clean formalizm for definition of programming language construction. Classical term
+ rewriting can be used for describing program transformations 'in small', but leave dealing with context out 
+ of scope of analythis. Exists different approaches for solving such issues: program analyzers based on 
+ termware framework \cite{DBLP:journals/fuin/DoroshenkoS06} uses terms enriched by context parameters wich provide
+ API for quering semantics properties, Statego\cite{BravenboerKVV08} use dynamic context-specific rules.
   
   
 
 
 \section{Basic definitions}
 
-   Let's build term algebra on top of some set of constants, whuch constists from
+   Let's build term algebra on top of some set of constants, which constists from
 \begin{itemize}
  \item original constants ${c_i} \in C$ Also we
  will need to distinguish some special subset of constants: atoms ${a_i}$
- \item functional term $f_i \in F$  i.e. if $f \in F, c_i \in C (i \in 1..n)$, then $f(c_{1} \dots c_{n}) \in T$
+ \item functional term $f_i \in F$  i.e. if $f \in F, c_i \in T (i \in 1..n)$, then $f(c_{1} \dots c_{n}) \in T$
  \item variable terms $x_{i}$ which can be inside variable-bound terms.
- \item variable bounds term, i.e. so-called 'with-expressions': $with(x_1,\dots x_n):t$
- \item let terms, i.e. so-called 'let expressions' $let \{ x_i \leftarrow t_i \}_{1\dots n} t  \in T$
+ \item variable bounds term, i.e. so-called 'with-expressions': $with(x_1 \to t_i,\dots x_n\to t_n):t$
  \item rule terms, i. e. so-called 'rule expressions': 
-       $rule(p_1 ; p_2 ; \dots p_n \to r_n : p_{fail})$
+       $rule(p_1 \to r_1; p_2 \to r_2 ; \dots p_n \to r_n : p_{fail})$
  \item application $a b$
 \end{itemize}
-
-  Let's define usual term operations:
-  \begin{itemize}
-    \item s contains t: $s \cap t$
-  \end{itemize}
 
   Transformations:
 
 \begin{itemize}
      \item application reduction
-           $$ rule(with(x_i):p_i \to r_i, ... ) q = 
+           $$ rule(with(x_i\to x_i):p_i \to r_i, ... ) q = 
                     \left\{\begin{array}{l l}
-                             \sigma r_i & if \;  \sigma=unify(p_i,q)/x_{i} \\
+                             \sigma r_i & \text{if $\sigma=\text{unify}(p_i,q)/x_{i}$} \\
                              p_{fail}   & otherwise \\
                            \end{array}
                     \right\} 
@@ -92,10 +93,7 @@
 \end{itemize}
 
 
-\section{Related work}
 
-  Pure pattern calculus \cite{Jay05purepattern} is a most close formal system.  It's congruent by 
- price of not 
 
 \bibliographystyle{abbrv}
 \bibliography{stermware}

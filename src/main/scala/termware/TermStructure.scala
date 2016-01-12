@@ -14,23 +14,15 @@ sealed trait TermStructure
 
   def componentName(i: Int): Option[Name]
 
- // def component(i:Int, t:Term): Option[Term]
+//  def component(i:Int, t:Term): Option[Term]
 //:w
  // def component(n:Name, t:Term): Option[Term] =
  //      componentIndex(n).flatMap(component(_,t))
-
-  /**
-   * is this term define a scope ?
-   */
-  def isScope: Boolean
-
-  def varIndex(name:Name): Option[Int]
 
 }
 
 /**
  * default term structure
- * TODO: add vars
  **/
 case class DefaultTermStructure(name:Name, componentNames: IndexedSeq[Name]) extends TermStructure
 {
@@ -43,8 +35,6 @@ case class DefaultTermStructure(name:Name, componentNames: IndexedSeq[Name]) ext
      if (i < componentNames.size) {
          Some(componentNames(i))
      } else None
-
-  def isScope: Boolean = false
 
   def varIndex(name:Name): Option[Int] = None
 
@@ -66,8 +56,6 @@ case class SeqTermStructure(name:Name) extends TermStructure
 
   override def componentName(i:Int): Option[Name] = Some(IntName(i))
   
-  def isScope: Boolean = false
-
   def varIndex(name:Name): Option[Int] = None
 
 }

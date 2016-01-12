@@ -7,11 +7,11 @@ object Unification extends termware.Unification
 
   // naive recursive implementation.
   // TODO: rewrite
-  def apply(x: TermWithContext, y: TermWithContext, scope: Term): Match =
+  def apply(x: Term, y: Term, scope: Term): Match =
   {
-    x.term match {
+    x match {
       case AtomTerm(xv,xa) =>
-        y.term match {
+        y match {
            case AtomTerm(yv,ya) =>
              if (xv == yv) {
                 Substitution.empty
@@ -19,7 +19,7 @@ object Unification extends termware.Unification
                 MatchFailure(x,y,"different atoms")
              }
            case VarTerm(yn,yi,ys,xa) =>
-             if (y.scope.forall(_ eq scope)) {
+             if (y.scopeIndex == scope.scopeIndex) {
                 Substitution(Map(y->x))
              } else {
                 MatchFailure(x,y,"can't unify atom and non-with var")
@@ -28,10 +28,10 @@ object Unification extends termware.Unification
                 MatchFailure(x,y,"can't unify atom with non-atom")
         }
       case px:PrimitiveTerm =>
-        y.term match {
-           case py:PrimitiveTerm => applyPrimitive(px,py,x,y)
+        y match {
+           case py:PrimitiveTerm => applyPrimitive(px,py)
            case VarTerm(yn,yi,ys,xa) =>
-             if (y.scope.forall(_ eq scope)) {
+             if (y.scopeIndex == scope.scopeIndex) {
                 Substitution(Map(y->x))
              } else {
 	        MatchFailure(x,y,"can't unify primitive and non-with var")
@@ -40,7 +40,7 @@ object Unification extends termware.Unification
                 MatchFailure(x,y,"can't unify primitive with non-primitive")
         }
       case StructuredTerm(xstructure,xcomponents,xa) =>
-         y.term match {
+         y match {
            case StructuredTerm(ystructure,ycomponents,ya) =>
              if (ystructure.name != ystructure.name) {
                 MatchFailure(x,y,"name mismatch")
@@ -49,11 +49,11 @@ object Unification extends termware.Unification
              } else {
                 var s0: Match = Substitution.empty           
                 // TODO: define components as term-with-context.
-                (x.components zip y.components).foldLeft(s0){ (s,e) => 
+                (xcomponents zip ycomponents).foldLeft(s0){ (s,e) => 
                                  s.merge(apply(e._1,e._2,scope),this,scope) }
              }
            case VarTerm(yn,yi,ys,xa) =>
-             if (y.scope.forall(_ eq scope)) {
+             if (y.scopeIndex == scope.scopeIndex) {
                 Substitution(Map(y->x))
              } else {
 	        MatchFailure(x,y,"can't unify structured term and non-with var")
@@ -62,14 +62,14 @@ object Unification extends termware.Unification
                 MatchFailure(x,y,"structure mismatch")
          }
       case VarTerm(xn,xi,xs,xa) =>
-         if (x.scope.forall(_ eq scope)) {
+         if (x.scopeIndex == scope.scopeIndex) {
            Substitution(Map(x->y))
          } else {
-           y.term match {
+           y match {
              case VarTerm(yn,yi,ys,xa) =>
-               if (y.scope.forall(_ eq scope)) {
+               if (y.scopeIndex == scope.scopeIndex) {
                  Substitution(Map(y->x))
-               } else if ( (y.scope.get eq x.scope.get) && xi == yi) {
+               } else if ( y.scopeIndex == x.scopeIndex && xi == yi) {
                  // TODO: review.
                  Substitution.empty
                } else {
@@ -82,55 +82,55 @@ object Unification extends termware.Unification
     }
   }
 
-  def applyPrimitive(x: PrimitiveTerm, y: PrimitiveTerm, xc: TermWithContext, yc: TermWithContext): Match =
+  def applyPrimitive(x: PrimitiveTerm, y: PrimitiveTerm): Match =
     x match {
       case StringTerm(xv,xa) =>
              y match {
                case StringTerm(yv,ya) =>
                       if (xv == yv) Substitution.empty 
-                        else MatchFailure(xc,yc,"string mismatch")
+                        else MatchFailure(x,y,"string mismatch")
                case _ =>
-                      MatchFailure(xc,yc,"type mismatch")
+                      MatchFailure(x,y,"type mismatch")
              }
       case CharTerm(xv,xa) =>
              y match {
                case CharTerm(yv,ya) =>
                       if (xv == yv) Substitution.empty 
-                        else MatchFailure(xc,yc,"char mismatch")
+                        else MatchFailure(x,y,"char mismatch")
                case _ =>
-                      MatchFailure(xc,yc,"type mismatch")
+                      MatchFailure(x,y,"type mismatch")
              }
       case Int32Term(xv,xa) =>
              y match {
                case Int32Term(yv,ya) =>
                       if (xv == yv) Substitution.empty 
-                        else MatchFailure(xc,yc,"int32 mismatch")
+                        else MatchFailure(x,y,"int32 mismatch")
                case _ =>
-                      MatchFailure(xc,yc,"type mismatch")
+                      MatchFailure(x,y,"type mismatch")
              }
       case Int64Term(xv,xa) =>
              y match {
                case Int64Term(yv,ya) =>
                       if (xv == yv) Substitution.empty 
-                        else MatchFailure(xc,yc,"int64 mismatch")
+                        else MatchFailure(x,y,"int64 mismatch")
                case _ =>
-                      MatchFailure(xc,yc,"type mismatch")
+                      MatchFailure(x,y,"type mismatch")
              }
       case DoubleTerm(xv,xa) =>
              y match {
                case DoubleTerm(yv,ya) =>
                       if (xv == yv) Substitution.empty 
-                        else MatchFailure(xc,yc,"double mismatch")
+                        else MatchFailure(x,y,"double mismatch")
                case _ =>
-                      MatchFailure(xc,yc,"type mismatch")
+                      MatchFailure(x,y,"type mismatch")
              }
       case OpaqueTerm(xv,xa) =>
              y match {
                case OpaqueTerm(yv,ya) =>
                       if (xv == yv) Substitution.empty 
-                        else MatchFailure(xc,yc,"double mismatch")
+                        else MatchFailure(x,y,"double mismatch")
                case _ =>
-                      MatchFailure(xc,yc,"type mismatch")
+                      MatchFailure(x,y,"type mismatch")
              }
     }
 

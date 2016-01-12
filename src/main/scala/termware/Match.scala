@@ -2,17 +2,17 @@ package termware
 
 sealed trait Match
 {
-  def put(x:TermWithContext ,y:TermWithContext, u: Unification, s: Term): Match
+  def put(x:Term ,y:Term, u: Unification, s: Term): Match
                      // ts ?
   def merge(x: Match, u: Unification, s:Term): Match
 
 }
 
 
-case class Substitution(mapping: Map[TermWithContext,TermWithContext]) extends Match
+case class Substitution(mapping: Map[Term,Term]) extends Match
 {
 
-  def put(x:TermWithContext, y:TermWithContext, u: Unification, s: Term): Match =
+  def put(x:Term, y:Term, u: Unification, s: Term): Match =
   {
     def updated = Substitution(mapping.updated(x,y))
     mapping.get(x) match {
@@ -34,10 +34,10 @@ case class Substitution(mapping: Map[TermWithContext,TermWithContext]) extends M
 
 }
 
-case class MatchFailure(val x: TermWithContext, val y: TermWithContext, val reason: String) extends Match
+case class MatchFailure(val x: Term, val y: Term, val reason: String) extends Match
 {
 
-  def put(x:TermWithContext,y:TermWithContext, u: Unification, s: Term): Match = this
+  def put(x:Term,y:Term, u: Unification, s: Term): Match = this
 
   def merge(x: Match, u: Unification, s:Term ): Match = this
 

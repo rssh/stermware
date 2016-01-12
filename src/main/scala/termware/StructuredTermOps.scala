@@ -26,9 +26,21 @@ trait StructuredTermOps extends TermOps
 
   override def scopeIndex = -1
 
+  override def scopeArity = 0
+
   override def isScoped = false
 
-  override def isScope = termStructure.isScope
+  override def resolve(t: Term) = None
+
+  override def isScope = false
+
+  override def scopeVar(n: Name): Option[Term] = None
+
+  override def scopeVar(i: Int): Option[Term] = None
+
+  override def scopeVarIndex(n: Name): Option[Int] = None
+
+  override def scopeVarName(i: Int): Option[Name] = None
 
   override def withAttributes(newAttributes: Map[Name,Term]) = copy(attributes = newAttributes)
 

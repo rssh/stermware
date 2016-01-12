@@ -18,7 +18,19 @@ trait TermOps
 
   def isScope: Boolean
 
+  def scopeArity: Int
+
+  def scopeVar(i: Int): Option[Term]
+
+  def scopeVar(n: Name): Option[Term]
+
+  def scopeVarName(i: Int): Option[Name]
+
+  def scopeVarIndex(n: Name): Option[Int]
+
   def isScoped: Boolean
+
+  def resolve(t: Term): Option[Term]
 
   def scopeIndex: Int
 

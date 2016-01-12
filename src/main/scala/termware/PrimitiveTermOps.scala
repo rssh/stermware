@@ -1,19 +1,9 @@
 package termware
 
 
-trait PrimitiveTermOps 
+trait PrimitiveTermOps extends TermEmptyComponents
 {
   this: PrimitiveTerm =>
-
-  override def arity = 0
-
-  override def component(n:Name) = None
-
-  override def component(i:Int) = None
-
-  override def componentName(i:Int) = None
-
-  override def componentIndex(n:Name) = None
 
   override def isVar = false
 
@@ -21,9 +11,8 @@ trait PrimitiveTermOps
 
   override def isScoped = false
 
-  override def isScope = false
-
   override def scopeIndex = -1
 
+  override def resolve(t: Term) = None
 
 }

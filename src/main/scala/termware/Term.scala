@@ -14,7 +14,6 @@ case class AtomTerm(value:String,
 }
 
 
-
 sealed trait PrimitiveTerm extends Term with PrimitiveTermOps 
 
 
@@ -62,7 +61,6 @@ case class OpaqueTerm(value: Array[Byte],
   override val name = OpaqueName(value)
 }
 
-// TODO: add min/max index.
 case class StructuredTerm(
                           termStructure: TermStructure, 
                           components: IndexedSeq[Term],
@@ -76,6 +74,14 @@ object StructuredTerm
     def apply(n:Name, components: IndexedSeq[Term]): StructuredTerm =
           StructuredTerm(SeqTermStructure(n),components)
 }
+
+case class ScopeTerm(
+                     scopeIndex: Int,
+                     vars: IndexedSeq[(VarTerm,Term)],
+                     body: Term,
+                     override val attributes: Map[Name,Term] = Map()
+                    ) extends Term with ScopeTermOps 
+
 
 case class VarTerm(val name: Name,
                    val varIndex: Int,  // index in scope. 

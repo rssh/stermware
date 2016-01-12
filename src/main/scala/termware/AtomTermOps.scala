@@ -12,6 +12,8 @@ trait AtomTermOps extends TermEmptyComponents
 
   override def scopeIndex = -1
 
+  override def resolve(t: Term) = None
+
   override def isVar = false
 
   override def varIndex = -1

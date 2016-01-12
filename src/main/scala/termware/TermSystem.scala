@@ -3,21 +3,17 @@ package termware
 
 trait TermSystem
 {
-   def name: Term
 
-   def adopt(t: Term): TermWithContext = ???
+  def name: Term
 
-   def unification: Unification = free.Unification
+  def adopt(t: Term): Term = t
 
-   def resolve(name: Term): TrackedResult[Term] = ??? 
+  def unification: Unification = free.Unification 
 
-   def storage: TermStorage = ??? // baseTermStorage(name)
+  def storage: TermStorage = ???
 
-   def serializer: TermSerializer = free.Serializer
+  def serializer: TermSerializer = free.Serializer
 
-   def isFree: Boolean = false
+  def isFree: Boolean = false
 
-   def createVM(): TermVM
 }
-
-
