@@ -11,6 +11,9 @@
 \documentclass[12pt]{article}
 \usepackage{listings}
 \usepackage{amsmath}
+\usepackage{pgf}
+\usepackage{tikz}
+\usetikzlibrary{arrows,automata}
 
 % "define" Scala
 \lstdefinelanguage{scala}{
@@ -48,11 +51,12 @@
 
   We need compact and clean formalizm for definition of programming language construction. Classical term
  rewriting can be used for describing program transformations 'in small', but leave dealing with context out 
- of scope of analythis. Exists different approaches for solving such issues: program analyzers based on 
+ of scope of analysis. Exists different approaches for solving such issues: program analyzers based on 
  termware framework \cite{DBLP:journals/fuin/DoroshenkoS06} uses terms enriched by context parameters wich provide
  API for quering semantics properties, Statego\cite{BravenboerKVV08} use dynamic context-specific rules.
-  
-  
+
+ Another approaches is hight order abstract syntax\cite{Pfenning:1988:HAS:53990.54010}: AST with binding information encoded as lambda terms, where binded names represented as binded variables.  
+
 
 
 \section{Basic definitions}
@@ -63,9 +67,10 @@
  will need to distinguish some special subset of constants: atoms ${a_i}$
  \item functional term $f_i \in F$  i.e. if $f \in F, c_i \in T (i \in 1..n)$, then $f(c_{1} \dots c_{n}) \in T$
  \item variable terms $x_{i}$ which can be inside variable-bound terms.
- \item variable bounds term, i.e. so-called 'with-expressions': $with(x_1 \to t_i,\dots x_n\to t_n):t$
- \item rule terms, i. e. so-called 'rule expressions': 
-       $rule(p_1 \to r_1; p_2 \to r_2 ; \dots p_n \to r_n : p_{fail})$
+ \item rule terms in form $\eta x_1 \dots x_n : p_{1} \to r_1 | p_2 \to r_2 | \dots ! p_{k}$
+ %\item variable bounds term, i.e. so-called 'with-expressions': $with(x_1 \to t_i,\dots x_n\to t_n):t$
+ %\item rule terms, i. e. so-called 'rule expressions': 
+ %      $rule(p_1 \to r_1; p_2 \to r_2 ; \dots p_n \to r_n : p_{fail})$
  \item application $a b$
 \end{itemize}
 
@@ -73,26 +78,78 @@
 
 \begin{itemize}
      \item application reduction
-           $$ rule(with(x_i\to x_i):p_i \to r_i, ... ) q = 
+           $$ (\eta x_j : p_i \to r_i| \dots ! p_{fail} ) q = 
                     \left\{\begin{array}{l l}
                              \sigma r_i & \text{if $\sigma=\text{unify}(p_i,q)/x_{i}$} \\
                              p_{fail}   & otherwise \\
                            \end{array}
                     \right\} 
            $$
-     \item with propagation
-           $$ with(x):rule(p_1 \dots p_{n}, p_{fail}) =
-               rule(with(x,p_1) \dots with(x,p_{n}), with(p_{fail})) =
-           $$
-     \item with chaining
-           $$ with(x_1 \dots x_n):with(y_1 \dots y_n):p =
-                with(x_1 \dots x_n, y_1 \dots y_n):p $$
-     \item with variable elimination
-           $$ with(x_{1} \dots x_{i} \dots x_{n}):p = 
-              with(x_{1} \dots x_{i-1}, x_{i+1}, \dots x_{n})p \; if x_i \not\in p $$  
 \end{itemize}
 
 
+\subsection{ Matching Net }
+
+  For effecient 
+
+for example, next term
+
+$$
+ \begin{aligned}
+  \eta x, y: & f(x,g(y),x)  \to {p_1}(x,y) | \\
+                    & f(x,x,x)      \to {p_2}(x) | \\
+                    & f(x,y,x)      \to {p_3}(x,y) | \\
+                    & g(y)         \to y | \\
+                    & x \to A \\
+ \end{aligned}       
+$$
+
+ will be represented by matching net, shown below:
+
+\begin{tikzpicture}[->,>=stealth',auto,node distance=2.5cm]
+  
+  \node(initial, state) (I)    { $I$ };
+  \node(state)          (3)    [below right of=I] { $*(*,*,*)$ };
+  \node(state)          (3fx)  [below of=3]   { $f(x,*,*)$ };
+  \node(state)          (3fx1) [below right of =3fx ] { $f(x,*(*),*)$ };
+  \node(state)          (3fx1gy) [below of =3fx1 ] { $f(x,g(y),*)$ };
+  \node(state)          (3fx1gyx) [below right of=3fx1gy]  {$f(x,g(y),x) \to p_1(x,y)$ };
+  \node(state)          (3fxx) [below left of=3fx]  { $f(x,x,*)$ };
+  \node(state)          (3fxxx) [below left of=3fxx]  { $f(x,x,x) \to p_2(x)$ };
+  \node(state)          (3fxy) [below  of=3fxx]  { $f(x,y,*)$ };
+  \node(state)          (F)     [right of=3]  { $x \to A$ };
+  \node(state)          (3fxyx) [ below  of=3fxy ] { $f(x,y,x)\to p_3(x,y)$ };
+  
+
+  \node(state)          (1) [below left of=I]     { $*(*)$ };
+  \node(state)          (1gy) [below left of=1]      { $g(y) \to y$ };
+
+
+  \path[font=\scriptsize]
+          (I)    edge node { arity=3 }  (3)
+               edge node { arity=1 }   (1)
+                edge [dotted] node  { } (F)
+         (3)   edge node { $name=f$ }  (3fx) 
+                 edge [dotted] node { }   (F)
+       (3fx)  edge node { $2:arity=1$ }  (3fx1)
+                 edge node { $2:unify(x)$ }  (3fxx)
+                 edge [dotted] node { } (3fxy)
+       (3fxx) edge node { $3:unify(x)$}  (3fxxx) 
+                 edge [bend left,dotted] node  { } (F)         
+       (3fx1) edge node {2:name==g } (3fx1gy)
+                  edge [bend left, dotted] node { } (3fxy)
+       (3fxy)  edge node {$3:unify(x)$}  (3fxyx)
+                  edge [bend left,dotted] node { } (F)
+       (3fx1gy)  edge node {3:unify(x)}  (3fx1gyx)
+                  edge [bend right,dotted] node { } (F)
+        (1)   edge node {$name=g$}  (1gy)         
+                edge [bend right,dotted] node {fail}  (F) 
+        
+           ;
+
+\end{tikzpicture}
+
+ Here, each node match imply one lookup (via arity or via name) and then match the rest of target term with the received node; on success we will reach termination node; on failure -- exclude looked patch from possible termination and retry unification until termination patch will be found or all possible forward patched exhausted.  If not forward unification is possible in the given node - navigate to next candidate via fallback edge (which are shown as dotted on the scheme).
 
 
 \bibliographystyle{abbrv}
