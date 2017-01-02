@@ -1,10 +1,9 @@
 package termware
 
-trait CharTermOps {
+trait CharTermOps extends TermOps
+{
+  this: CharTerm =>
 
- this: CharTerm =>
-
- override def withAttributes(newAttributes: Map[Name,Term]) =
-     copy(attributes = newAttributes)
+  override val name = CharName(value)
 
 }

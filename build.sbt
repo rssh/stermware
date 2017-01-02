@@ -3,7 +3,7 @@ name:="termware"
 
 organization:="com.github.termware"
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.12.1"
 
 scalacOptions ++= Seq("-unchecked","-deprecation","-feature")
 
@@ -11,7 +11,8 @@ version:="0.0.2"
 
 libraryDependencies <+= (scalaVersion){ "org.scala-lang" % "scala-reflect" % _ }
 
-libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.1" % "test"
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1" % "test"
+//libraryDependencies += "com.github.rssh" %% "trackedfuture" % "0.3" % "test"
 
 
 publishMavenStyle := true

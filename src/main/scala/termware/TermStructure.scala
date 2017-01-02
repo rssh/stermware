@@ -14,17 +14,17 @@ sealed trait TermStructure
 
   def componentName(i: Int): Option[Name]
 
-//  def component(i:Int, t:Term): Option[Term]
-//:w
- // def component(n:Name, t:Term): Option[Term] =
- //      componentIndex(n).flatMap(component(_,t))
+  def component(i:Int, t: StructuredTerm): Option[Term] = t.components.lift(i)
+
+  def component(n:Name, t:StructuredTerm): Option[Term] =
+       componentIndex(n).flatMap(component(_,t))
 
 }
 
 /**
- * default term structure
+ * simple term structure which consists just from sequence of names
  **/
-case class DefaultTermStructure(name:Name, componentNames: IndexedSeq[Name]) extends TermStructure
+case class SimpleTermStructure(name:Name, componentNames: IndexedSeq[Name]) extends TermStructure
 {
 
   val componentIndexes = componentNames.foldLeft(Map[Name,Int]()){ (s,e) => s.updated(e,s.size+1) }
@@ -40,7 +40,7 @@ case class DefaultTermStructure(name:Name, componentNames: IndexedSeq[Name]) ext
 
 }
 
-object DefaultTermStructure
+object SimpleTermStructure
 {
   val typeIndex = 1
 }
@@ -67,45 +67,5 @@ object SeqTermStructure
 
 object TermStructure
 {
-
-   def write(ts: TermStructure, out:Output): Unit =
-   {
-    ts match {
-      case DefaultTermStructure(name,components) =>
-             out.writeInt(DefaultTermStructure.typeIndex)
-             //out.writeBoolean(isScope)
-             free.Serializer.writeName(ts.name,out)
-             val nComponents = components.size
-             out.writeInt(nComponents)
-             for(i <- 1 to nComponents) {
-                val component = components(i)
-                free.Serializer.writeName(component,out)
-             }
-       case SeqTermStructure(name) =>
-             out.writeInt(SeqTermStructure.typeIndex)
-             //out.writeBoolean(isScope)
-             free.Serializer.writeName(ts.name,out)
-    }
-  }
-
-   def read(in: Input): TermStructure = 
-   {
-     val typeIndex = in.readInt
-     //val isScope = (in.readByte != 0)
-     val name = free.Serializer.readName(in)
-     typeIndex match {
-       case DefaultTermStructure.typeIndex =>
-             val arity = in.readInt
-             val s0 = IndexedSeq[Name]()
-             val componentNames = (1 to arity).foldLeft(s0){ (s,i)=>
-                                    s :+ free.Serializer.readName(in)
-                                  }
-             DefaultTermStructure(name,componentNames)
-       case SeqTermStructure.typeIndex =>
-             SeqTermStructure(name)
-       case _ =>
-             throw new IllegalStateException("Unknown term-structure type index: typeIndex");
-     }
-   }
 
 }

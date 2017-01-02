@@ -1,18 +1,13 @@
 package termware
 
-
-trait PrimitiveTermOps extends TermEmptyComponents
+trait PrimitiveTermOps extends TermOps
 {
-  this: PrimitiveTerm =>
 
-  override def isVar = false
+  this: PrimitiveTerm => 
 
-  override def varIndex = -1
+  override def cardinality = TermCardinality.ONE
 
-  override def isScoped = false
+  override def arity: Int = 0
 
-  override def scopeIndex = -1
-
-  override def resolve(t: Term) = None
 
 }

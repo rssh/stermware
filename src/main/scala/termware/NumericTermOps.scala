@@ -1,7 +1,6 @@
 package termware
 
-trait NumericTermOps {
-
- this: NumericTerm =>
-
+trait NumericTermOps extends PrimitiveTermOps
+{
+  this: NumericTerm =>
 }

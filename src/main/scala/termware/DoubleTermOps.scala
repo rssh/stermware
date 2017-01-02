@@ -1,9 +1,10 @@
 package termware
 
-trait DoubleTermOps extends NumericTermOps {
+trait DoubleTermOps extends NumericTermOps
+{
+  this: DoubleTerm =>
 
- this: DoubleTerm =>
+  override val name = DoubleName(value)
 
-  override def withAttributes(newAttributes: Map[Name,Term]) = copy(attributes = newAttributes)
 
 }

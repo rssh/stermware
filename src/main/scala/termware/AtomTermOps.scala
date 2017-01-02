@@ -1,24 +1,13 @@
 package termware
 
 
-trait AtomTermOps extends TermEmptyComponents 
+trait AtomTermOps extends UniTermOps
 {
-
   this: AtomTerm =>
 
-  override def isScoped = true
+  override val name = AtomName(value)
 
-  override def isScope = false
+  override def arity: Int = 0
 
-  override def scopeIndex = -1
-
-  override def resolve(t: Term) = None
-
-  override def isVar = false
-
-  override def varIndex = -1
-
-  override def withAttributes(newAttributes: Map[Name,Term]) =
-     copy(attributes = newAttributes)
+  override def uniTerm() = this
 }
-

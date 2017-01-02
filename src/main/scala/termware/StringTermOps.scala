@@ -1,11 +1,8 @@
 package termware
 
-
 trait StringTermOps extends PrimitiveTermOps
 {
+ this: StringTerm => 
 
-  this: StringTerm =>
-
-  override def withAttributes(newAttributes: Map[Name,Term]) =
-     copy(attributes = newAttributes)
+ override val name = StringName(value)
 }

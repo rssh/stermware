@@ -26,13 +26,17 @@ sealed abstract class StringLikeName(val value:String) extends Name
 
 object NameTypeIndexes
 {
-  val ATOM = 1
-  val STRING = 2
-  val LONG = 3
+  final val ATOM = 1
+  final val STRING = 2
+  final val LONG = 3
   val INT = 4
   val CHAR = 5
   val DOUBLE = 6
   val OPAQUE = 7
+  val SET = 8
+  val ARROW = 9
+  val UNIVERSUM = 10
+  val ERROR = 11
 }
 
 import NameTypeIndexes._
@@ -108,5 +112,25 @@ case class OpaqueName(val value: Array[Byte]) extends Name
     }
   }
 
+}
+
+case object SetName extends StringLikeName("set")
+{
+  def typeIndex = SET
+}
+
+case object ArrowName extends StringLikeName("arrow")
+{
+  def typeIndex = ARROW
+}
+
+case object UniversumName extends StringLikeName("Universum")
+{
+  def typeIndex = UNIVERSUM
+}
+
+case object ErrorName extends StringLikeName("Error")
+{
+  def typeIndex = ERROR
 }
 

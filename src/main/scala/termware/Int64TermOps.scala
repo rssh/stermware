@@ -1,9 +1,9 @@
 package termware
 
-trait Int64TermOps extends NumericTermOps {
+trait Int64TermOps extends NumericTermOps
+{
+  this: Int64Term =>
 
- this: Int64Term =>
-
- override def withAttributes(newAttributes: Map[Name,Term]) = copy(attributes = newAttributes)
+  override val name = LongName(value)
 
 }

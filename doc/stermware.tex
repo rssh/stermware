@@ -45,9 +45,7 @@
 \section{Motivation}
 
   Rule-based deduction and rewriting is a well known techniques. Exists many formalizations, from
-  equational logic to $\rho$-caclulus \cite{RhoCal-Wrla2002} and pure pattern calculus\cite{Jay05purepattern}   Few programming languages are build
-  with 
-
+  equational logic to $\rho$-caclulus \cite{RhoCal-Wrla2002} and pure pattern calculus\cite{Jay05purepattern}   Few programming languages are build on top of rule rewriting technique.
 
   We need compact and clean formalizm for definition of programming language construction. Classical term
  rewriting can be used for describing program transformations 'in small', but leave dealing with context out 
@@ -57,22 +55,85 @@
 
  Another approaches is hight order abstract syntax\cite{Pfenning:1988:HAS:53990.54010}: AST with binding information encoded as lambda terms, where binded names represented as binded variables.  
 
-
+ Our proposed approach is an algebra of context-depended term, where operations under term with context are expressed in explicit form.
 
 \section{Basic definitions}
 
    Let's build term algebra on top of some set of constants, which constists from
 \begin{itemize}
  \item original constants ${c_i} \in C$ Also we
- will need to distinguish some special subset of constants: atoms ${a_i}$
+ will need to distinguish some special subset of constants: atoms ${a_i}$ and also have some special set 
+of atoms.
  \item functional term $f_i \in F$  i.e. if $f \in F, c_i \in T (i \in 1..n)$, then $f(c_{1} \dots c_{n}) \in T$
- \item variable terms $x_{i}$ which can be inside variable-bound terms.
+ %\item variable terms $x_{i}$ which can be inside variable-bound terms.
  \item rule terms in form $\eta x_1 \dots x_n : p_{1} \to r_1 | p_2 \to r_2 | \dots ! p_{k}$
  %\item variable bounds term, i.e. so-called 'with-expressions': $with(x_1 \to t_i,\dots x_n\to t_n):t$
  %\item rule terms, i. e. so-called 'rule expressions': 
  %      $rule(p_1 \to r_1; p_2 \to r_2 ; \dots p_n \to r_n : p_{fail})$
  \item application $a b$
+ \item context-terms in form of $context(a,b)$ where $a$ is $rule-term$ which can be  delayed operation
+ \item set-term $\{ t_1 \dots t_2 \}$ which define set of term. Also, let's define special atom for empty
+  set: $\emptyset$ and for universum $U$
 \end{itemize}
+
+ And set of usual term operations:
+ \begin{itemize}
+   \item subterm:  
+        $$ \left.\begin{array}{l}
+           subterm(f(t_1,..t_n),i)=x_i  \\
+           subterm(context(S,t),i)=context(S,subterm(t,i)) \\
+           subterm(\{t_1 \dots t_n \},i)=\{subterm(t_1,i), \dots subterm(t_n,i)\}  \\
+           subterm(F,i)=\emptyset \\
+           \end{array}\right.
+        $$
+   \item union: $ x | y = \{ x, y \}$
+        $$ \left.\begin{array}{l}
+             x | \emptyset = x  \\
+             U | x = U \\
+             {x | x } = x \\
+	     \{ x \to a, x \to b \} = x \to \{a,b\} \\
+             \{ x \to a, y \to a \} = \{ x, y\} \to a \\
+             context(c,x) | context(c,y) = context(c, x|y) \\
+           \end{array}\right.
+        $$
+       also we will identify term and one-element set.
+
+   \item intersection: $ x \& y $
+        $$ \left.\begin{array}{l}
+             x \& \emptyset = \emptyset  \\
+             U \& x = x \\
+             {x \& x } = x \\
+             x \to a \& x \to b  = x \to a \& b \\
+             (a | b ) \& c = a\& c | b\&c \\
+             (a \& b ) | c = a\& c | b\&c \\
+           \end{array}\right.
+        $$
+         Also usefule will be notation $\langle x_1 \dots x_n \rangle$ wich we will call 'compatible set'.
+
+         
+   \item substitution and unification:  
+        Note, that in out formalizm substitution and unification results can be represented as ordinary terms
+        (set of arrows). Also note, that we can any term $t$ repesent as arrow $\emptyset \to t$, by
+        (let's name on 'substituion term')
+        $$ subst(x,y) = 
+           \left\{\begin{array}{l l l }
+             x=\emptyset &             & \emptyset \\
+                         & y=\emptyset & x \\
+             x           & y=a_{y} \to b_{y} & subst(b_{y},unify(x,a_{y})) \\
+           \end{array}\right.
+        $$
+
+        $$ unify(x,y) = 
+           \left\{\begin{array}{l l l }
+             x=\emptyset &              & \emptyset \\
+             x           & \emptyset    & \emptyset \\
+              c_i \in C  &    c_j \in C & c_i == c_j \\
+              a -> b     &              &  \\
+           \end{array}\right.
+        $$
+        
+ \end{itemize}
+
 
   Transformations:
 
@@ -84,6 +145,14 @@
                              p_{fail}   & otherwise \\
                            \end{array}
                     \right\} 
+           $$
+     \item application 
+           $$
+             (a->b) c = \left\{
+                          \begin{array}{l l}
+                             sigma b & \text{ if $\sigma=\text{unify}(a,c) $  }
+                          \end{array}{l l}
+                        \right\}
            $$
 \end{itemize}
 
